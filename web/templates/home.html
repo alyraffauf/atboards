@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4">
+    <h1 class="text-lg text-neutral-200 mb-1">atboards</h1>
+    <p class="text-neutral-500 mb-8">Decentralized bulletin boards on <a href="https://atproto.com" class="text-neutral-400 hover:text-neutral-300">atproto</a>. Anyone can run a BBS from their own account, no server required. Users own their posts, and communities can migrate freely.</p>
+    <div class="border-t border-neutral-800 pt-6">
+        <p class="text-neutral-500 mb-4">Enter a handle to connect to a BBS.</p>
+    </div>
+    <form action="/" method="get" id="handle-form" class="flex gap-2 mb-8">
+        <input
+            type="text"
+            name="handle"
+            placeholder="handle.example.com"
+            required
+            class="flex-1 bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+        >
+        <button type="submit" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
+            go
+        </button>
+    </form>
+
+    <div id="discover" class="border-t border-neutral-800 pt-6 mb-8 hidden">
+        <h2 class="text-xs text-neutral-500 uppercase tracking-wide mb-3">Discover</h2>
+        <div id="discover-list" class="space-y-1"></div>
+    </div>
+</div>
+<script>
+    document.getElementById("handle-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const handle = this.elements["handle"].value.trim();
+        if (handle) window.location.href = "/bbs/" + encodeURIComponent(handle);
+    });
+
+    fetch("/api/discover")
+        .then(r => r.json())
+        .then(data => {
+            if (data.bbses && data.bbses.length > 0) {
+                const list = document.getElementById("discover-list");
+                data.bbses.forEach(bbs => {
+                    const a = document.createElement("a");
+                    a.href = "/bbs/" + encodeURIComponent(bbs.handle);
+                    a.className = "flex items-baseline gap-3 px-3 py-2 -mx-3 rounded hover:bg-neutral-900 group";
+                    a.innerHTML = `<span class="text-neutral-200 group-hover:text-white">${bbs.name || bbs.handle}</span><span class="text-neutral-500">${bbs.description}</span>`;
+                    list.appendChild(a);
+                });
+                document.getElementById("discover").classList.remove("hidden");
+            }
+        })
+        .catch(() => {});
+</script>
+{% endblock %}

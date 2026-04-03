@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ bbs.site.name }} — atboards{% endblock %}
+{% block breadcrumb %}
+<span>/</span>
+<span class="text-neutral-400">{{ bbs.identity.handle }}</span>
+{% endblock %}
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-lg text-neutral-200 mb-1">{{ bbs.site.name }}</h1>
+    <p class="text-neutral-500">{{ bbs.site.description }}</p>
+</div>
+
+{% if bbs.site.intro %}
+<pre class="bg-neutral-900 border border-neutral-800 rounded p-4 mb-8 overflow-x-auto text-neutral-500 text-xs leading-snug">{{ bbs.site.intro }}</pre>
+{% endif %}
+
+<section class="mb-8">
+    <h2 class="text-xs text-neutral-500 uppercase tracking-wide mb-3">Boards</h2>
+    <div class="space-y-1">
+        {% for board in bbs.site.boards %}
+        <a href="/bbs/{{ handle }}/board/{{ board.slug }}" class="flex items-baseline gap-3 px-3 py-2 -mx-3 rounded hover:bg-neutral-900 group">
+            <span class="text-neutral-200 group-hover:text-white">{{ board.name }}</span>
+            <span class="text-neutral-500">{{ board.description }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<section>
+    <h2 class="text-xs text-neutral-500 uppercase tracking-wide mb-3">News</h2>
+
+    {% if g.user and g.user.did == bbs.identity.did %}
+    <details class="mb-4 border border-neutral-800 rounded p-4">
+        <summary class="text-neutral-300 cursor-pointer">post news</summary>
+        <form method="post" action="/bbs/{{ handle }}/news/new" class="mt-4 space-y-3">
+            <input
+                type="text"
+                name="title"
+                placeholder="Headline"
+                required
+                class="w-full bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+            >
+            <textarea
+                name="body"
+                placeholder="Announcement body..."
+                required
+                rows="3"
+                class="w-full bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600 resize-y"
+            ></textarea>
+            <button type="submit" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
+                post
+            </button>
+        </form>
+    </details>
+    {% endif %}
+
+    {% if bbs.news %}
+    {% for item in bbs.news %}
+    <div class="bg-neutral-900 border border-neutral-800 rounded p-4 {% if not loop.last %}mb-2{% endif %}">
+        <div class="flex items-baseline justify-between mb-2">
+            <span class="text-neutral-200">{{ item.title }}</span>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-neutral-500">{{ item.created_at | datetime }}</span>
+                {% if g.user and g.user.did == bbs.identity.did %}
+                <form method="post" action="/bbs/{{ handle }}/news/{{ item.tid }}/delete" class="inline" onsubmit="return confirm('Delete this news post?')">
+                    <button type="submit" class="text-xs text-neutral-500 hover:text-red-400">delete</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        <p class="text-neutral-500">{{ item.body }}</p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-neutral-500">No news yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

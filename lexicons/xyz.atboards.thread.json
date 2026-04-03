@@ -1,0 +1,41 @@
+{
+  "lexicon": 1,
+  "id": "xyz.atboards.thread",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": [
+          "board",
+          "title",
+          "body",
+          "createdAt"
+        ],
+        "properties": {
+          "board": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

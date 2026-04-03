@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ thread.title }} — {{ bbs.site.name }}{% endblock %}
+{% block breadcrumb %}
+<span>/</span>
+<a href="/bbs/{{ handle }}" class="text-neutral-500 hover:text-neutral-300">{{ bbs.site.name }}</a>
+<span>/</span>
+<a href="/bbs/{{ handle }}/board/{{ board.slug }}" class="text-neutral-500 hover:text-neutral-300">{{ board.name }}</a>
+<span>/</span>
+<span class="text-neutral-400 truncate">{{ thread.title }}</span>
+{% endblock %}
+{% block content %}
+<article class="bg-neutral-900 border border-neutral-800 rounded p-4 mb-4">
+    <div class="flex items-baseline justify-between mb-3">
+        <span class="text-neutral-200">{{ thread.author.handle }}</span>
+        <div class="flex items-center gap-3">
+            <span class="text-xs text-neutral-500">{{ thread.created_at | datetime }}</span>
+            {% if g.user and g.user.did == thread.author.did %}
+            <form method="post" action="/bbs/{{ handle }}/thread/{{ thread.author.did }}/{{ thread.uri.split('/')[-1] }}/delete" class="inline" onsubmit="return confirm('Delete this thread?')">
+                <button type="submit" class="text-xs text-neutral-500 hover:text-red-400">delete</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    <h1 class="text-base text-neutral-200 font-bold mb-3">{{ thread.title }}</h1>
+    <p class="text-neutral-400 whitespace-pre-wrap leading-relaxed">{{ thread.body }}</p>
+</article>
+
+<div id="replies" class="space-y-2">
+    <p id="replies-loading" class="text-neutral-500">Loading replies...</p>
+</div>
+<div id="replies-next" class="mt-6 text-center hidden">
+    <button id="load-more" class="text-neutral-500 hover:text-neutral-300">next page →</button>
+</div>
+
+{% if g.user %}
+<form method="post" action="/bbs/{{ handle }}/thread/{{ thread.author.did }}/{{ thread.uri.split('/')[-1] }}/reply" class="mt-6 border border-neutral-800 rounded p-4">
+    <textarea
+        name="body"
+        placeholder="Write a reply..."
+        required
+        rows="3"
+        class="w-full bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600 resize-y mb-3"
+    ></textarea>
+    <button type="submit" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
+        reply
+    </button>
+</form>
+{% endif %}
+
+<script>
+    const threadDid = "{{ thread.author.did }}";
+    const threadTid = "{{ thread.uri.split('/')[-1] }}";
+    const handle = "{{ handle }}";
+    const userDid = "{{ g.user.did if g.user else '' }}";
+    let nextCursor = null;
+
+    function formatDate(iso) {
+        const d = new Date(iso);
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
+    }
+
+    function escapeHtml(s) {
+        const el = document.createElement('span');
+        el.textContent = s;
+        return el.innerHTML;
+    }
+
+    function renderReply(r) {
+        let deleteBtn = '';
+        if (userDid && userDid === r.did) {
+            deleteBtn = `<form method="post" action="/bbs/${handle}/thread/${threadDid}/${threadTid}/reply/${r.rkey}/delete" class="inline" onsubmit="return confirm('Delete this reply?')"><button type="submit" class="text-xs text-neutral-500 hover:text-red-400">delete</button></form>`;
+        }
+        return `<div class="border border-neutral-800/50 rounded p-4">
+            <div class="flex items-baseline justify-between mb-2">
+                <span class="text-neutral-300">${escapeHtml(r.handle)}</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-neutral-500">${formatDate(r.created_at)}</span>
+                    ${deleteBtn}
+                </div>
+            </div>
+            <p class="text-neutral-400 whitespace-pre-wrap leading-relaxed">${escapeHtml(r.body)}</p>
+        </div>`;
+    }
+
+    function loadReplies(cursor) {
+        let url = `/api/replies/${threadDid}/${threadTid}?handle=${encodeURIComponent(handle)}`;
+        if (cursor) url += `&cursor=${encodeURIComponent(cursor)}`;
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('replies');
+                const loading = document.getElementById('replies-loading');
+                if (loading) loading.remove();
+
+                data.replies.forEach(r => {
+                    container.insertAdjacentHTML('beforeend', renderReply(r));
+                });
+
+                if (data.cursor) {
+                    nextCursor = data.cursor;
+                    document.getElementById('replies-next').classList.remove('hidden');
+                } else {
+                    nextCursor = null;
+                    document.getElementById('replies-next').classList.add('hidden');
+                }
+
+                if (container.children.length === 0 && !userDid) {
+                    container.innerHTML = '<p class="text-neutral-500">No replies yet.</p>';
+                }
+            })
+            .catch(() => {
+                const loading = document.getElementById('replies-loading');
+                if (loading) loading.textContent = 'Failed to load replies.';
+            });
+    }
+
+    document.getElementById('load-more').addEventListener('click', () => {
+        if (nextCursor) loadReplies(nextCursor);
+    });
+
+    loadReplies(null);
+</script>
+{% endblock %}

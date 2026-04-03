@@ -1,0 +1,25 @@
+[project]
+name = "atboards"
+version = "0.1.0"
+description = "Decentralized bulletin boards on atproto."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "aiohttp>=3.13.5",
+    "authlib>=1.6.9",
+    "httpx>=0.28.1",
+    "hypercorn>=0.18.0",
+    "quart>=0.20.0",
+    "textual>=8.2.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+atb = "tui.__main__:main"
+atb-web = "web.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["core", "web", "tui"]

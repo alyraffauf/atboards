@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Login — atboards{% endblock %}
+{% block content %}
+<h1 class="text-lg text-neutral-200 mb-1">log in</h1>
+<p class="text-neutral-500 mb-6">Sign in with your atproto handle to post threads and replies.</p>
+<form method="post" action="/oauth/login" class="flex gap-2 max-w-md">
+    <input
+        type="text"
+        name="handle"
+        placeholder="your-handle.bsky.social"
+        required
+        class="flex-1 bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+    >
+    <button type="submit" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
+        log in
+    </button>
+</form>
+{% endblock %}

@@ -1,0 +1,37 @@
+{
+  "lexicon": 1,
+  "id": "xyz.atboards.news",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": [
+          "site",
+          "title",
+          "body",
+          "createdAt"
+        ],
+        "properties": {
+          "site": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

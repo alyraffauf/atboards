@@ -1,0 +1,13 @@
+services:
+  atboards:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - atboards-data:/data
+    environment:
+      - PUBLIC_URL=https://atboards.example.com
+    restart: unless-stopped
+
+volumes:
+  atboards-data:

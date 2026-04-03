@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ board.name }} — {{ bbs.site.name }}{% endblock %}
+{% block breadcrumb %}
+<span>/</span>
+<a href="/bbs/{{ handle }}" class="text-neutral-500 hover:text-neutral-300">{{ bbs.site.name }}</a>
+<span>/</span>
+<span class="text-neutral-400">{{ board.name }}</span>
+{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-lg text-neutral-200 mb-1">{{ board.name }}</h1>
+    <p class="text-neutral-500">{{ board.description }}</p>
+</div>
+
+{% if g.user %}
+<details class="mb-6 border border-neutral-800 rounded p-4">
+    <summary class="text-neutral-300 cursor-pointer">new thread</summary>
+    <form method="post" action="/bbs/{{ handle }}/board/{{ board.slug }}/new-thread" class="mt-4 space-y-3">
+        <input
+            type="text"
+            name="title"
+            placeholder="Thread title"
+            required
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+        >
+        <textarea
+            name="body"
+            placeholder="What's on your mind?"
+            required
+            rows="4"
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600 resize-y"
+        ></textarea>
+        <button type="submit" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
+            post
+        </button>
+    </form>
+</details>
+{% endif %}
+
+<div id="threads">
+    <p id="threads-loading" class="text-neutral-500">Loading threads...</p>
+</div>
+<div id="threads-next" class="mt-6 text-center hidden">
+    <button id="load-more" class="text-neutral-500 hover:text-neutral-300">next page →</button>
+</div>
+
+<script>
+    const handle = "{{ handle }}";
+    const slug = "{{ board.slug }}";
+    let nextCursor = null;
+
+    function formatDate(iso) {
+        const d = new Date(iso);
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
+    }
+
+    function escapeHtml(s) {
+        const el = document.createElement('span');
+        el.textContent = s;
+        return el.innerHTML;
+    }
+
+    function renderThread(t) {
+        const a = document.createElement('a');
+        a.href = `/bbs/${handle}/thread/${t.did}/${t.rkey}`;
+        a.className = "flex items-baseline justify-between gap-4 px-3 py-2.5 -mx-3 rounded hover:bg-neutral-900 group";
+        a.innerHTML = `<span class="text-neutral-300 group-hover:text-white truncate">${escapeHtml(t.title)}</span><span class="shrink-0 text-xs text-neutral-500">${escapeHtml(t.handle)} · ${formatDate(t.created_at)}</span>`;
+        return a;
+    }
+
+    function loadThreads(cursor) {
+        let url = `/api/threads/${encodeURIComponent(handle)}/${encodeURIComponent(slug)}`;
+        if (cursor) url += `?cursor=${encodeURIComponent(cursor)}`;
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('threads');
+                const loading = document.getElementById('threads-loading');
+                if (loading) loading.remove();
+
+                data.threads.forEach(t => {
+                    container.appendChild(renderThread(t));
+                });
+
+                if (data.cursor) {
+                    nextCursor = data.cursor;
+                    document.getElementById('threads-next').classList.remove('hidden');
+                } else {
+                    nextCursor = null;
+                    document.getElementById('threads-next').classList.add('hidden');
+                }
+
+                if (container.children.length === 0) {
+                    container.innerHTML = '<p class="text-neutral-500">No threads yet.</p>';
+                }
+            })
+            .catch(() => {
+                const loading = document.getElementById('threads-loading');
+                if (loading) loading.textContent = 'Failed to load threads.';
+            });
+    }
+
+    document.getElementById('load-more').addEventListener('click', () => {
+        if (nextCursor) loadThreads(nextCursor);
+    });
+
+    loadThreads(null);
+</script>
+{% endblock %}

@@ -1,0 +1,162 @@
+Screen {
+    background: #171717;
+    color: #a3a3a3;
+}
+
+/* breadcrumb bar */
+.breadcrumb-current {
+    color: #a3a3a3;
+    width: auto;
+}
+
+/* headings */
+.title {
+    color: #e5e5e5;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.subtitle {
+    color: #8a8a8a;
+    margin-bottom: 1;
+}
+
+.section-label {
+    color: #8a8a8a;
+}
+
+/* intro block */
+.intro {
+    color: #8a8a8a;
+    padding: 1 2;
+    border: solid #262626;
+}
+
+/* board list */
+ListView {
+    height: auto;
+    background: transparent;
+    border: none;
+}
+
+ListItem {
+    padding: 0 1;
+    height: 1;
+    background: transparent;
+    color: #a3a3a3;
+}
+
+ListItem:hover {
+    background: #1f1f1f;
+}
+
+ListItem.-highlight {
+    background: #262626;
+}
+
+/* thread table */
+DataTable {
+    height: auto;
+    margin: 1 0;
+    background: #171717;
+}
+
+DataTable > .datatable--header {
+    color: #8a8a8a;
+    text-style: none;
+    background: #1f1f1f;
+}
+
+DataTable > .datatable--cursor {
+    background: #262626;
+    color: #e5e5e5;
+}
+
+/* buttons */
+Button {
+    background: #262626;
+    color: #a3a3a3;
+    border: none;
+    min-width: 16;
+    margin: 1 0 0 0;
+}
+
+Button:hover {
+    background: #404040;
+    color: #e5e5e5;
+}
+
+Button.-disabled {
+    opacity: 0.3;
+}
+
+
+/* content screens */
+SiteScreen VerticalScroll {
+    padding: 1 2;
+}
+
+BoardScreen VerticalScroll,
+ThreadScreen VerticalScroll,
+NewsScreen VerticalScroll {
+    padding: 1 4;
+}
+
+ComposeThreadScreen Vertical,
+ComposeReplyScreen Vertical {
+    padding: 1 4;
+}
+
+/* home screen */
+HomeScreen {
+    align: center middle;
+}
+
+HomeScreen #home-container {
+    width: 50;
+    height: auto;
+    padding: 1 2;
+}
+
+HomeScreen Input {
+    margin: 1 0;
+    background: #1f1f1f;
+    border: solid #262626;
+    color: #e5e5e5;
+}
+
+HomeScreen Input:focus {
+    border: solid #404040;
+}
+
+/* login screen */
+LoginScreen {
+    align: center middle;
+}
+
+LoginScreen Vertical {
+    width: 50;
+    height: auto;
+    padding: 1 2;
+}
+
+LoginScreen Input {
+    margin: 1 0;
+    background: #1f1f1f;
+    border: solid #262626;
+    color: #e5e5e5;
+}
+
+LoginScreen Input:focus {
+    border: solid #404040;
+}
+
+Footer {
+    background: #1f1f1f;
+    color: #8a8a8a;
+}
+
+Footer > .footer--key {
+    color: #a3a3a3;
+    background: #262626;
+}

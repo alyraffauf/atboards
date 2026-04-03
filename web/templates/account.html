@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Account — atboards{% endblock %}
+{% block content %}
+<h1 class="text-lg text-neutral-200 mb-1">{{ user.handle }}</h1>
+<p class="text-neutral-500 mb-8">{{ user.did }}</p>
+
+<h2 class="text-xs text-neutral-500 uppercase tracking-wide mb-3">Your BBS</h2>
+
+{% if has_bbs %}
+<div class="space-y-2">
+    <a href="/bbs/{{ user.handle }}" class="block px-3 py-2 -mx-3 rounded hover:bg-neutral-900 text-neutral-300 hover:text-white">
+        browse your bbs
+    </a>
+    <a href="/account/edit" class="block px-3 py-2 -mx-3 rounded hover:bg-neutral-900 text-neutral-300 hover:text-white">
+        edit bbs
+    </a>
+</div>
+{% else %}
+<p class="text-neutral-500 mb-4">You haven't set up a BBS yet.</p>
+<a href="/account/create" class="inline-block bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
+    create a bbs
+</a>
+{% endif %}
+{% endblock %}
