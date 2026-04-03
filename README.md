@@ -1,9 +1,9 @@
 [![Build](https://github.com/alyraffauf/atboards/actions/workflows/docker.yml/badge.svg?branch=master)](https://github.com/alyraffauf/atboards/actions/workflows/docker.yml) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Ko-fi](https://img.shields.io/badge/Donate-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/alyraffauf)
 
 <div align="center">
-  <h1>atboards</h1>
-  <h3>Decentralized bulletin boards on atproto.</h3>
-  <p>Anyone can run a BBS from their own account, no server required. Users own their posts, and communities can migrate freely.</p>
+  <h1>@boards</h1>
+  <h3>Bulletin boards on the atmosphere.</h3>
+  <p>Run a BBS from your own account. No server required. Users own their posts, communities migrate freely. Built on <a href="https://atproto.com">atproto</a>.</p>
 </div>
 
 ## Features
