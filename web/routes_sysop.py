@@ -26,8 +26,59 @@ async def account():
     if not user:
         return redirect("/login")
 
+    bbs_name = None
     has_bbs = await _has_bbs(user)
-    return await render_template("account.html", user=user, has_bbs=has_bbs)
+    if has_bbs:
+        try:
+            from core.slingshot import get_record
+            record = await get_record(current_app.http_client, user["did"], "xyz.atboards.site", "self")
+            bbs_name = record.value.get("name", user["handle"])
+        except Exception:
+            bbs_name = user["handle"]
+    return await render_template("account.html", user=user, has_bbs=has_bbs, bbs_name=bbs_name)
+
+
+@bp.route("/account/delete", methods=["POST"])
+async def delete_bbs():
+    user = await get_user()
+    if not user:
+        return redirect("/login")
+
+    client = current_app.http_client
+
+    # Fetch site record to get board slugs and news
+    from core.slingshot import get_record
+    try:
+        existing = await get_record(client, user["did"], "xyz.atboards.site", "self")
+        board_slugs = existing.value.get("boards", [])
+    except Exception:
+        return redirect("/account")
+
+    # Delete board records
+    for slug in board_slugs:
+        try:
+            await authed_delete_record(user, "xyz.atboards.board", slug)
+        except Exception:
+            pass
+
+    # Delete news records (via Constellation backlinks)
+    from core.constellation import get_news
+    site_uri = f"at://{user['did']}/xyz.atboards.site/self"
+    try:
+        backlinks = await get_news(client, site_uri)
+        for ref in backlinks.records:
+            if ref.did == user["did"]:
+                try:
+                    await authed_delete_record(user, "xyz.atboards.news", ref.rkey)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    # Delete site record
+    await authed_delete_record(user, "xyz.atboards.site", "self")
+
+    return redirect("/account")
 
 
 @bp.route("/account/create", methods=["GET", "POST"])

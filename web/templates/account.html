@@ -1,27 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Account — atboards{% endblock %}
 {% block content %}
-<h1 class="text-lg text-neutral-200 mb-1">{{ user.handle }}</h1>
-<p class="text-neutral-500 mb-8">{{ user.did }}</p>
-
-<h2 class="text-xs text-neutral-500 uppercase tracking-wide mb-3">Your BBS</h2>
+<div class="mb-8">
+    <h1 class="text-lg text-neutral-200 mb-1">Account</h1>
+    <p class="text-neutral-500">Logged in as <a href="https://pdsls.dev/at/{{ user.did }}" target="_blank" class="text-neutral-400 hover:text-neutral-300">{{ user.handle }}</a>.</p>
+</div>
 
 {% if has_bbs %}
-<div class="space-y-2">
-    <a href="/bbs/{{ user.handle }}" class="block px-3 py-2 -mx-3 rounded hover:bg-neutral-900 text-neutral-300 hover:text-white">
-        browse bbs
-    </a>
-    <a href="/account/edit" class="block px-3 py-2 -mx-3 rounded hover:bg-neutral-900 text-neutral-300 hover:text-white">
-        edit bbs
-    </a>
-    <a href="/account/moderate" class="block px-3 py-2 -mx-3 rounded hover:bg-neutral-900 text-neutral-300 hover:text-white">
-        moderate bbs
+<div class="mb-8">
+    <h2 class="text-lg text-neutral-200 mb-2">{{ bbs_name }}</h2>
+    <div class="grid grid-cols-2 gap-3 max-w-md">
+        <a href="/bbs/{{ user.handle }}" class="bg-neutral-900 border border-neutral-800 rounded px-4 py-3 text-neutral-300 hover:text-white hover:border-neutral-700">
+            <div class="text-neutral-200 mb-1">Browse</div>
+            <div class="text-xs text-neutral-500">View your BBS.</div>
+        </a>
+        <a href="/account/edit" class="bg-neutral-900 border border-neutral-800 rounded px-4 py-3 text-neutral-300 hover:text-white hover:border-neutral-700">
+            <div class="text-neutral-200 mb-1">Edit</div>
+            <div class="text-xs text-neutral-500">Name, boards, intro.</div>
+        </a>
+        <a href="/account/moderate" class="bg-neutral-900 border border-neutral-800 rounded px-4 py-3 text-neutral-300 hover:text-white hover:border-neutral-700">
+            <div class="text-neutral-200 mb-1">Moderate</div>
+            <div class="text-xs text-neutral-500">Bans and hidden posts.</div>
+        </a>
+        <form method="post" action="/account/delete" onsubmit="return confirm('Are you sure? This will delete your site record, all board records, and all news records. Threads and replies from users will remain in their repos.')">
+            <button type="submit" class="w-full text-left bg-neutral-900 border border-neutral-800 rounded px-4 py-3 hover:border-red-900">
+                <div class="text-neutral-500 mb-1">Delete</div>
+                <div class="text-xs text-neutral-600">Remove your BBS.</div>
+            </button>
+        </form>
+    </div>
+</div>
+
+{% else %}
+<div class="mb-8">
+    <h2 class="text-lg text-neutral-200 mb-2">Your BBS</h2>
+    <p class="text-neutral-500 mb-4">You haven't set up a BBS yet.</p>
+    <a href="/account/create" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded inline-block">
+        create a bbs
     </a>
 </div>
-{% else %}
-<p class="text-neutral-500 mb-4">You haven't set up a BBS yet.</p>
-<a href="/account/create" class="inline-block bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
-    create a bbs
-</a>
 {% endif %}
 {% endblock %}
