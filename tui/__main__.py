@@ -1,8 +1,8 @@
-from tui.app import AtboardsApp
+from tui.app import AtbbsApp
 
 
 def main():
-    app = AtboardsApp()
+    app = AtbbsApp()
     app.run()
 
 

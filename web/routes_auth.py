@@ -56,7 +56,7 @@ async def client_metadata():
         app_url += "/"
     return {
         "client_id": client_id,
-        "client_name": "atboards",
+        "client_name": "atbbs",
         "client_uri": current_app.config["PUBLIC_URL"],
         "application_type": "web",
         "grant_types": ["authorization_code", "refresh_token"],

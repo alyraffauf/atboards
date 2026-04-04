@@ -1,5 +1,5 @@
 [project]
-name = "atboards"
+name = "atbbs"
 version = "0.3.0"
 description = "Decentralized bulletin boards on atproto."
 readme = "README.md"
@@ -18,8 +18,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-atb = "tui.__main__:main"
-atb-web = "web.cli:main"
+atbbs = "tui.__main__:main"
+atbbs-web = "web.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["core", "web", "tui"]

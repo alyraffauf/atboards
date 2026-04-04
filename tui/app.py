@@ -51,11 +51,11 @@ class LogoutConfirmScreen(Screen):
             self.app.pop_screen()
 
 
-DATA_DIR = os.environ.get("ATBOARDS_DATA_DIR", user_data_dir("atboards"))
+DATA_DIR = os.environ.get("ATBBS_DATA_DIR", user_data_dir("atbbs"))
 
 
-class AtboardsApp(App):
-    TITLE = "@boards"
+class AtbbsApp(App):
+    TITLE = "@bbs"
     CSS_PATH = "app.tcss"
     BINDINGS = [
         ("ctrl+q", "quit", "quit"),
@@ -68,7 +68,7 @@ class AtboardsApp(App):
     def on_mount(self) -> None:
         self.http_client = httpx.AsyncClient()
         os.makedirs(DATA_DIR, exist_ok=True)
-        db_path = os.path.join(DATA_DIR, "atboards.db")
+        db_path = os.path.join(DATA_DIR, "atbbs.db")
         self.session_store = SessionStore(db_path)
         self.user_session = None
 

@@ -20,7 +20,7 @@ class SiteScreen(Screen):
     def compose(self) -> ComposeResult:
         from tui.widgets.breadcrumb import Breadcrumb
         yield Breadcrumb(
-            ("@boards", 1),
+            ("@bbs", 1),
             (self.handle, 0),
         )
         with VerticalScroll():

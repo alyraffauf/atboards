@@ -27,7 +27,7 @@ RUN tailwindcss -i web/static/input.css -o web/static/style.css --minify
 # Create data directory for secrets and database
 RUN mkdir -p /data
 
-ENV ATBOARDS_DATA_DIR=/data
+ENV ATBBS_DATA_DIR=/data
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000

@@ -1,7 +1,7 @@
-[![Build](https://github.com/alyraffauf/atboards/actions/workflows/docker.yml/badge.svg?branch=master)](https://github.com/alyraffauf/atboards/actions/workflows/docker.yml) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Ko-fi](https://img.shields.io/badge/Donate-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/alyraffauf)
+[![Build](https://github.com/alyraffauf/atbbs/actions/workflows/docker.yml/badge.svg?branch=master)](https://github.com/alyraffauf/atbbs/actions/workflows/docker.yml) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) [![Ko-fi](https://img.shields.io/badge/Donate-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/alyraffauf)
 
 <div align="center">
-  <h1>@boards</h1>
+  <h1>@bbs</h1>
   <h3>Bulletin boards on the atmosphere.</h3>
   <p>Run a BBS from your own account. No server required. Users own their posts, communities migrate freely. Built on <a href="https://atproto.com">atproto</a>.</p>
 </div>
@@ -27,30 +27,30 @@
 Requires Python 3.14+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-uv tool install atboards
-atb
+uv tool install atbbs
+atbbs
 ```
 
 Or from source:
 
 ```bash
-git clone https://github.com/alyraffauf/atboards.git
-cd atboards
+git clone https://github.com/alyraffauf/atbbs.git
+cd atbbs
 uv sync
-uv run atb
+uv run atbbsbs
 ```
 
 ### Web app (Docker)
 
 ```bash
-docker run -d -p 8000:8000 -v atboards-data:/data -e PUBLIC_URL=https://your-domain.com ghcr.io/alyraffauf/atboards:latest
+docker run -d -p 8000:8000 -v atbbs-data:/data -e PUBLIC_URL=https://your-domain.com ghcr.io/alyraffauf/atbbs:latest
 ```
 
 Or with Docker Compose:
 
 ```bash
-git clone https://github.com/alyraffauf/atboards.git
-cd atboards
+git clone https://github.com/alyraffauf/atbbs.git
+cd atbbs
 docker compose up -d
 ```
 
@@ -59,15 +59,15 @@ Visit `http://localhost:8000`.
 ### Web app (from source)
 
 ```bash
-git clone https://github.com/alyraffauf/atboards.git
-cd atboards
+git clone https://github.com/alyraffauf/atbbs.git
+cd atbbs
 uv sync
 just dev
 ```
 
 ## Architecture
 
-atboards has no backend database for content. All BBS data lives in atproto repos:
+atbbs has no backend database for content. All BBS data lives in atproto repos:
 
 - **Sysop records**: `xyz.atboards.site`, `xyz.atboards.board`, `xyz.atboards.news`
 - **User records**: `xyz.atboards.thread`, `xyz.atboards.reply`
@@ -80,14 +80,14 @@ The web app and TUI query existing network infrastructure:
 
 ## Configuration
 
-On first run, atboards generates:
+On first run, atbbs generates:
 
 - `secrets.json` — app secret key and OAuth client signing key
-- `atboards.db` — SQLite database for OAuth sessions
+- `atbbs.db` — SQLite database for OAuth sessions
 
-**Web app**: Set `ATBOARDS_DATA_DIR` to control where these are stored (default: current directory, `/data` in Docker). Set `PUBLIC_URL` to your domain for OAuth callbacks.
+**Web app**: Set `ATBBS_DATA_DIR` to control where these are stored (default: current directory, `/data` in Docker). Set `PUBLIC_URL` to your domain for OAuth callbacks.
 
-**TUI**: Data is stored in `~/.local/share/atboards/` (Linux), `~/Library/Application Support/atboards/` (macOS), or `%APPDATA%/atboards/` (Windows).
+**TUI**: Data is stored in `~/.local/share/atbbs/` (Linux), `~/Library/Application Support/atbbs/` (macOS), or `%APPDATA%/atbbs/` (Windows).
 
 ## License
 

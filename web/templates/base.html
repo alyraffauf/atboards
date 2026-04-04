@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}atboards{% endblock %}</title>
+    <title>{% block title %}atbbs{% endblock %}</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -12,7 +12,7 @@
     <header class="border-b border-neutral-800">
         <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2 text-neutral-500 overflow-x-auto whitespace-nowrap">
-                <a href="/" class="shrink-0 hover:opacity-80"><span class="text-amber-500" style="margin-right: 0.1em">@</span><span class="text-neutral-200">boards</span></a>
+                <a href="/" class="shrink-0 hover:opacity-80"><span class="text-amber-500" style="margin-right: 0.1em">@</span><span class="text-neutral-200">bbs</span></a>
                 {% block breadcrumb %}{% endblock %}
             </div>
             <div class="shrink-0 ml-4 flex items-center gap-3">
@@ -34,7 +34,7 @@
         <div class="max-w-2xl mx-auto px-4 py-6 flex items-center justify-between text-xs text-neutral-500">
             <span>made by <a href="https://aly.codes" class="text-neutral-500 hover:text-neutral-300">aly.codes</a></span>
             <div class="flex items-center gap-4">
-                <a href="https://github.com/alyraffauf/atboards" class="text-neutral-500 hover:text-neutral-300">github</a>
+                <a href="https://github.com/alyraffauf/atbbs" class="text-neutral-500 hover:text-neutral-300">github</a>
                 <a href="https://ko-fi.com/alyraffauf" class="text-neutral-500 hover:text-neutral-300">ko-fi</a>
             </div>
         </div>

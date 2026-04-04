@@ -12,7 +12,7 @@ def create_app() -> Quart:
     app = Quart(__name__)
 
     # Data directory for secrets and database
-    data_dir = os.environ.get("ATBOARDS_DATA_DIR", ".")
+    data_dir = os.environ.get("ATBBS_DATA_DIR", ".")
 
     # Load secrets
     secrets = load_secrets(data_dir)
@@ -21,7 +21,7 @@ def create_app() -> Quart:
     app.config["PUBLIC_URL"] = os.environ.get("PUBLIC_URL", "http://127.0.0.1:5000")
 
     # Session store
-    db_path = os.path.join(data_dir, "atboards.db")
+    db_path = os.path.join(data_dir, "atbbs.db")
     app.session_store = SessionStore(db_path)
 
     # Jinja filters

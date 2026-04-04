@@ -33,7 +33,7 @@ class BoardScreen(Screen):
     def compose(self) -> ComposeResult:
         from tui.widgets.breadcrumb import Breadcrumb
         yield Breadcrumb(
-            ("@boards", 2),
+            ("@bbs", 2),
             (self.bbs.site.name, 1),
             (self.board.name, 0),
         )

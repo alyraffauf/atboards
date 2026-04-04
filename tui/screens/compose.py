@@ -42,7 +42,7 @@ class ComposeThreadScreen(Screen):
     def compose(self) -> ComposeResult:
         from tui.widgets.breadcrumb import Breadcrumb
         yield Breadcrumb(
-            ("@boards", 3),
+            ("@bbs", 3),
             (self.bbs.site.name, 2),
             (self.board.name, 1),
             ("new thread", 0),
@@ -113,7 +113,7 @@ class ComposeReplyScreen(Screen):
     def compose(self) -> ComposeResult:
         from tui.widgets.breadcrumb import Breadcrumb
         yield Breadcrumb(
-            ("@boards", 3),
+            ("@bbs", 3),
             (self.bbs.site.name, 2),
             (self.thread.title, 1),
             ("reply", 0),

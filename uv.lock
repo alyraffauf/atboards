@@ -96,7 +96,7 @@ wheels = [
 ]
 
 [[package]]
-name = "atboards"
+name = "atbbs"
 version = "0.3.0"
 source = { editable = "." }
 dependencies = [

@@ -86,10 +86,10 @@ async def _try_refresh_token(client, session, session_updater):
         from core.auth.config import load_secrets
         import json, os
 
-        data_dir = os.environ.get("ATBOARDS_DATA_DIR")
+        data_dir = os.environ.get("ATBBS_DATA_DIR")
         if not data_dir:
             from platformdirs import user_data_dir
-            data_dir = user_data_dir("atboards")
+            data_dir = user_data_dir("atbbs")
         secrets = load_secrets(data_dir)
         client_secret_jwk = json.loads(secrets["client_secret_jwk"])
 

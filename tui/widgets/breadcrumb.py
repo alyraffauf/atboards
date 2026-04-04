@@ -20,8 +20,8 @@ class BreadcrumbLink(Static, can_focus=True):
     """
 
     def __init__(self, label: str, pop_count: int, **kwargs) -> None:
-        if label == "@boards":
-            display = " [#d97706]@[/]boards "
+        if label == "@bbs":
+            display = " [#d97706]@[/]bbs "
             super().__init__(display, markup=True, **kwargs)
         else:
             super().__init__(f" {label} ", markup=False, **kwargs)

@@ -15,7 +15,7 @@ def _generate_secret_key() -> str:
 def _generate_client_jwk() -> str:
     key = JsonWebKey.generate_key("EC", "P-256", is_private=True)
     key_dict = json.loads(key.as_json(is_private=True))
-    key_dict["kid"] = f"atboards-{int(time.time())}"
+    key_dict["kid"] = f"atbbs-{int(time.time())}"
     return json.dumps(key_dict)
 
 
