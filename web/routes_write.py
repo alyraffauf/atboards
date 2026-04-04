@@ -2,8 +2,7 @@
 
 from quart import Blueprint, current_app, redirect, request
 
-from core.auth.oauth import pds_request, refresh_tokens
-from core.auth.session import SessionStore
+from core.records import upload_blob
 from core.util import now_iso
 from web.helpers import get_user, session_updater
 
@@ -11,45 +10,13 @@ bp = Blueprint("write", __name__)
 
 
 async def _authed_pds_post(user: dict, endpoint: str, body: dict):
-    """Make an authenticated POST to the user's PDS, with token refresh on 401."""
-    client = current_app.http_client
-    url = f"{user['pds_url']}/xrpc/{endpoint}"
-
-    resp = await pds_request(client, "POST", url, user, session_updater, body=body)
-
-    # Token refresh on 401
-    if resp.status_code == 401:
-        from web.routes_auth import _compute_client_id, _client_secret_jwk
-        client_id, _ = _compute_client_id()
-        client_secret_jwk = _client_secret_jwk()
-
-        token_resp, dpop_nonce = await refresh_tokens(
-            client=client,
-            session=user,
-            client_id=client_id,
-            client_secret_jwk=client_secret_jwk,
-        )
-
-        store: SessionStore = current_app.session_store
-        store.update_session_tokens(
-            user["did"],
-            token_resp["access_token"],
-            token_resp.get("refresh_token", user["refresh_token"]),
-            dpop_nonce,
-        )
-
-        user["access_token"] = token_resp["access_token"]
-        if "refresh_token" in token_resp:
-            user["refresh_token"] = token_resp["refresh_token"]
-        user["dpop_authserver_nonce"] = dpop_nonce
-
-        resp = await pds_request(client, "POST", url, user, session_updater, body=body)
-
-    return resp
+    """Make an authenticated POST to the user's PDS."""
+    from core.records import _pds_post
+    return await _pds_post(current_app.http_client, user, endpoint, body, session_updater)
 
 
 async def authed_delete_record(user: dict, collection: str, rkey: str):
-    """Delete a record from the user's repo via OAuth."""
+    """Delete a record from the user's repo."""
     resp = await _authed_pds_post(user, "com.atproto.repo.deleteRecord", {
         "repo": user["did"],
         "collection": collection,
@@ -84,7 +51,6 @@ async def create_thread(handle: str, slug: str):
     board_uri = f"at://{bbs.identity.did}/xyz.atboards.board/{slug}"
 
     # Handle file attachments
-    from core.records import upload_blob
     attachments = []
     files = (await request.files).getlist("attachments")
     for f in files:
@@ -127,7 +93,6 @@ async def create_reply(handle: str, did: str, tid: str):
     thread_uri = f"at://{did}/xyz.atboards.thread/{tid}"
 
     # Handle file attachments
-    from core.records import upload_blob
     client = current_app.http_client
     attachments = []
     files = (await request.files).getlist("attachments")
