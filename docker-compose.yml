@@ -6,7 +6,7 @@ services:
     volumes:
       - atboards-data:/data
     environment:
-      - PUBLIC_URL=https://atboards.example.com
+      - PUBLIC_URL=http://127.0.0.1:8000
     restart: unless-stopped
 
 volumes:
