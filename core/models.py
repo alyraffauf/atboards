@@ -92,6 +92,7 @@ class Site:
     intro: str
     boards: list[Board]
     banned_dids: set[str]
+    hidden_posts: set[str]
     created_at: str
     updated_at: str | None = None
 

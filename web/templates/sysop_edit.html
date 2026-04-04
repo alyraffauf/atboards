@@ -42,10 +42,10 @@
         <label class="block text-neutral-400 mb-1">Banned Users</label>
         <div id="ban-list" class="space-y-2 mb-3">
             {% for did in bbs.site.banned_dids %}
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-between gap-3 px-3 py-2 -mx-3 rounded hover:bg-neutral-900" title="{{ did }}">
+                <a href="https://pdsls.dev/at/{{ did }}" target="_blank" class="truncate text-neutral-300 hover:text-white">{{ banned_handles.get(did, did) }}</a>
+                <button type="button" onclick="this.closest('div.flex').remove()" class="text-xs text-neutral-500 hover:text-red-400 shrink-0">unban</button>
                 <input type="hidden" name="banned_did" value="{{ did }}">
-                <span class="text-neutral-300">{{ banned_handles.get(did, did) }}</span>
-                <button type="button" onclick="this.parentElement.remove()" class="text-xs text-neutral-500 hover:text-red-400">remove</button>
             </div>
             {% endfor %}
         </div>
@@ -55,12 +55,42 @@
         </div>
     </div>
 
+    <div>
+        <label class="block text-neutral-400 mb-1">Hidden Posts</label>
+        <div id="hidden-list" class="space-y-2 mb-3">
+            {% for post in hidden_posts %}
+            <div class="flex items-center justify-between gap-3 px-3 py-2 -mx-3 rounded hover:bg-neutral-900" title="{{ post.uri }}">
+                <a href="https://pdsls.dev/{{ post.uri }}" target="_blank" class="truncate text-neutral-300 hover:text-white">{{ post.handle }} — {{ post.title or post.body }}</a>
+                <button type="button" onclick="event.preventDefault(); this.closest('div.flex').remove()" class="text-xs text-neutral-500 hover:text-red-400 shrink-0">unhide</button>
+                <input type="hidden" name="hidden_uri" value="{{ post.uri }}">
+            </div>
+            {% endfor %}
+        </div>
+        <div class="flex gap-2">
+            <input type="text" id="hide-uri-input" placeholder="at://did/collection/rkey" class="flex-1 bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600">
+            <button type="button" id="add-hidden" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-3 py-2 rounded text-xs">hide</button>
+        </div>
+    </div>
+
     <button type="submit" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded">
         save changes
     </button>
 </form>
 
 <script>
+    document.getElementById("add-hidden").addEventListener("click", function() {
+        const input = document.getElementById("hide-uri-input");
+        const uri = input.value.trim();
+        if (!uri || !uri.startsWith("at://")) { alert("Enter a valid AT-URI."); return; }
+
+        const list = document.getElementById("hidden-list");
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between gap-2 bg-neutral-900 border border-neutral-800 rounded px-3 py-2";
+        row.innerHTML = `<span class="text-neutral-500">${uri}</span><button type="button" onclick="this.closest('div.flex').querySelector('input').remove(); this.closest('div.flex').remove()" class="text-xs text-neutral-500 hover:text-neutral-300 shrink-0">unhide</button><input type="hidden" name="hidden_uri" value="${uri}">`;
+        list.appendChild(row);
+        input.value = "";
+    });
+
     document.getElementById("add-ban").addEventListener("click", async function() {
         const input = document.getElementById("ban-handle-input");
         const handle = input.value.trim();

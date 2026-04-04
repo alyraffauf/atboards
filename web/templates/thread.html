@@ -23,6 +23,10 @@
             <form method="post" action="/bbs/{{ handle }}/ban/{{ thread.author.did }}" class="inline" onsubmit="return confirm('Ban this user from your BBS?')">
                 <button type="submit" class="text-xs text-neutral-500 hover:text-red-400">ban</button>
             </form>
+            <form method="post" action="/bbs/{{ handle }}/hide" class="inline" onsubmit="return confirm('Hide this post?')">
+                <input type="hidden" name="uri" value="{{ thread.uri }}">
+                <button type="submit" class="text-xs text-neutral-500 hover:text-red-400">hide</button>
+            </form>
             {% endif %}
         </div>
     </div>
@@ -81,6 +85,10 @@
         if (userDid && userDid === sysopDid && userDid !== r.did) {
             banBtn = `<form method="post" action="/bbs/${handle}/ban/${r.did}" class="inline" onsubmit="return confirm('Ban this user from your BBS?')"><button type="submit" class="text-xs text-neutral-500 hover:text-red-400">ban</button></form>`;
         }
+        let hideBtn = '';
+        if (userDid && userDid === sysopDid) {
+            hideBtn = `<form method="post" action="/bbs/${handle}/hide" class="inline" onsubmit="return confirm('Hide this post?')"><input type="hidden" name="uri" value="${r.uri}"><button type="submit" class="text-xs text-neutral-500 hover:text-red-400">hide</button></form>`;
+        }
         return `<div class="border border-neutral-800/50 rounded p-4">
             <div class="flex items-baseline justify-between mb-2">
                 <span class="text-neutral-300">${escapeHtml(r.handle)}</span>
@@ -88,6 +96,7 @@
                     <span class="text-xs text-neutral-500">${formatDate(r.created_at)}</span>
                     ${deleteBtn}
                     ${banBtn}
+                    ${hideBtn}
                 </div>
             </div>
             <p class="text-neutral-400 whitespace-pre-wrap leading-relaxed">${escapeHtml(r.body)}</p>

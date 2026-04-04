@@ -75,7 +75,8 @@ async def resolve_bbs(client: httpx.AsyncClient, handle: str) -> BBS:
         description=sv["description"],
         intro=sv["intro"],
         boards=boards,
-        banned_dids=set(sv["bannedDids"]),
+        banned_dids=set(sv.get("bannedDids", [])),
+        hidden_posts=set(sv.get("hiddenPosts", [])),
         created_at=sv.get("createdAt", ""),
         updated_at=sv.get("updatedAt"),
     )

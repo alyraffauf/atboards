@@ -80,6 +80,7 @@ async def create_bbs():
             "intro": intro,
             "boards": board_slugs,
             "bannedDids": [],
+            "hiddenPosts": [],
             "createdAt": now,
         },
     })
@@ -103,13 +104,41 @@ async def edit_bbs():
             return redirect("/account/create")
 
         # Resolve banned DIDs to handles
-        from core.slingshot import resolve_identities_batch
+        from core.slingshot import resolve_identities_batch, get_record_by_uri
         banned_handles = {}
         if bbs.site.banned_dids:
             authors = await resolve_identities_batch(client, list(bbs.site.banned_dids))
             banned_handles = {did: authors[did].handle for did in authors}
 
-        return await render_template("sysop_edit.html", bbs=bbs, banned_handles=banned_handles)
+        # Hydrate hidden posts
+        hidden_posts = []
+        if bbs.site.hidden_posts:
+            # Resolve all DIDs from hidden post URIs in one batch
+            hidden_dids = list({uri.split("/")[2] for uri in bbs.site.hidden_posts if len(uri.split("/")) > 2})
+            hidden_authors = await resolve_identities_batch(client, hidden_dids)
+
+            for uri in bbs.site.hidden_posts:
+                parts = uri.split("/")
+                did = parts[2] if len(parts) > 2 else "?"
+                handle = hidden_authors[did].handle if did in hidden_authors else did
+
+                try:
+                    record = await get_record_by_uri(client, uri)
+                    hidden_posts.append({
+                        "uri": uri,
+                        "handle": handle,
+                        "title": record.value.get("title", ""),
+                        "body": record.value.get("body", "")[:100],
+                    })
+                except Exception:
+                    hidden_posts.append({
+                        "uri": uri,
+                        "handle": handle,
+                        "title": "",
+                        "body": parts[-1] if parts else uri,
+                    })
+
+        return await render_template("sysop_edit.html", bbs=bbs, banned_handles=banned_handles, hidden_posts=hidden_posts)
 
     form = await request.form
     name = form.get("name", "").strip()
@@ -119,6 +148,7 @@ async def edit_bbs():
     board_names = [s.strip() for s in form.getlist("board_name") if s.strip()]
     board_descs = form.getlist("board_desc")
     banned_dids = [d.strip() for d in form.getlist("banned_did") if d.strip()]
+    hidden_uris = [u.strip() for u in form.getlist("hidden_uri") if u.strip()]
 
     if not name:
         return redirect("/account/edit")
@@ -161,6 +191,7 @@ async def edit_bbs():
             "intro": intro,
             "boards": board_slugs,
             "bannedDids": banned_dids,
+            "hiddenPosts": hidden_uris,
             "createdAt": created_at,
             "updatedAt": now,
         },
@@ -233,6 +264,42 @@ async def ban_user(handle: str, did_to_ban: str):
 
     # Update site record
     site_value["bannedDids"] = banned
+    site_value["updatedAt"] = now_iso()
+    await _authed_pds_post(user, "com.atproto.repo.putRecord", {
+        "repo": user["did"],
+        "collection": "xyz.atboards.site",
+        "rkey": "self",
+        "record": site_value,
+    })
+
+    return redirect(request.referrer or f"/bbs/{handle}")
+
+
+@bp.route("/bbs/<handle>/hide", methods=["POST"])
+async def hide_post(handle: str):
+    user = await get_user()
+    if not user or user["handle"] != handle:
+        return redirect(request.referrer or f"/bbs/{handle}")
+
+    form = await request.form
+    post_uri = form.get("uri", "").strip()
+    if not post_uri:
+        return redirect(request.referrer or f"/bbs/{handle}")
+
+    client = current_app.http_client
+
+    from core.slingshot import get_record
+    try:
+        existing = await get_record(client, user["did"], "xyz.atboards.site", "self")
+        site_value = existing.value
+    except Exception:
+        return redirect(request.referrer or f"/bbs/{handle}")
+
+    hidden = site_value.get("hiddenPosts", [])
+    if post_uri not in hidden:
+        hidden.append(post_uri)
+
+    site_value["hiddenPosts"] = hidden
     site_value["updatedAt"] = now_iso()
     await _authed_pds_post(user, "com.atproto.repo.putRecord", {
         "repo": user["did"],

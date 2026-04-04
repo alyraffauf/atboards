@@ -6,7 +6,7 @@ Framework-agnostic. Used by both web and TUI.
 import httpx
 
 from core.constellation import get_replies, get_threads
-from core.filters import filter_banned
+from core.filters import filter_moderated
 from core.models import BBS, Board, Reply, Thread
 from core.slingshot import get_records_batch, resolve_identities_batch
 from core.util import now_iso
@@ -22,7 +22,7 @@ async def hydrate_threads(
     board_uri = f"at://{bbs.identity.did}/xyz.atboards.board/{board.slug}"
     backlinks = await get_threads(client, board_uri, cursor=cursor)
     records = await get_records_batch(client, backlinks.records)
-    records = filter_banned(records, bbs.site.banned_dids)
+    records = filter_moderated(records, bbs.site.banned_dids, bbs.site.hidden_posts)
 
     dids = [r.uri.split("/")[2] for r in records]
     authors = await resolve_identities_batch(client, dids)
@@ -53,7 +53,7 @@ async def hydrate_replies(
     """Fetch and hydrate replies for a thread."""
     backlinks = await get_replies(client, thread.uri, cursor=cursor)
     records = await get_records_batch(client, backlinks.records)
-    records = filter_banned(records, bbs.site.banned_dids)
+    records = filter_moderated(records, bbs.site.banned_dids, bbs.site.hidden_posts)
 
     dids = [r.uri.split("/")[2] for r in records]
     authors = await resolve_identities_batch(client, dids)
