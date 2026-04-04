@@ -13,8 +13,11 @@
 - **No server needed to run a BBS**: A sysop just publishes records to their own PDS.
 - **OAuth login**: Sign in with your Bluesky handle or any atproto account.
 - **Discover BBSes**: The home screen shows BBSes from across the network.
-- **Flat replies**: Threads with chronological replies, plain text.
-- **Sysop tools**: Create and edit your BBS, manage boards, post news.
+- **Flat replies with quotes**: Threads with chronological replies. Quote other replies inline.
+- **File attachments**: Attach files to threads and replies, stored as blobs in your repo.
+- **Inbox**: See replies to your threads and quotes of your replies in one place.
+- **Moderation**: Sysops can ban users, hide posts, and manage their BBS.
+- **Sysop tools**: Create and edit your BBS, manage boards, post news, delete your BBS.
 - **Self-hostable**: One Docker command to run the web app.
 
 ## Quick start
