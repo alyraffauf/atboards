@@ -24,7 +24,7 @@ class HomeScreen(Screen):
     def compose(self) -> ComposeResult:
         with Vertical(id="home-container"):
             yield Static("\n   [#d97706]@[/]boards\n", classes="title", id="hero-title")
-            yield Static("Bulletin boards on the atmosphere.", classes="subtitle", id="hero-sub1")
+            yield Static("Bulletin boards on the Atmosphere.", classes="subtitle", id="hero-sub1")
             yield Static("Run a BBS from your own account. No server required. Users own their posts, communities migrate freely.", classes="subtitle", id="hero-sub2")
             yield Static("")
             yield Static("Connect to a BBS", classes="title")
