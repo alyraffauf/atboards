@@ -108,6 +108,7 @@ class Thread:
     created_at: str
     author: MiniDoc
     updated_at: str | None = None
+    attachments: list[dict] | None = None
 
 
 @dataclass
@@ -120,6 +121,7 @@ class Reply:
     created_at: str
     author: MiniDoc
     updated_at: str | None = None
+    attachments: list[dict] | None = None
 
 
 @dataclass

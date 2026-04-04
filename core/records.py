@@ -36,6 +36,7 @@ async def hydrate_threads(
             created_at=r.value["createdAt"],
             author=authors[r.uri.split("/")[2]],
             updated_at=r.value.get("updatedAt"),
+            attachments=r.value.get("attachments"),
         )
         for r in records
         if r.uri.split("/")[2] in authors
@@ -66,6 +67,7 @@ async def hydrate_replies(
             created_at=r.value["createdAt"],
             author=authors[r.uri.split("/")[2]],
             updated_at=r.value.get("updatedAt"),
+            attachments=r.value.get("attachments"),
         )
         for r in records
         if r.uri.split("/")[2] in authors
@@ -98,25 +100,80 @@ async def _pds_post(
     return resp
 
 
+async def upload_blob(
+    client: httpx.AsyncClient,
+    session: dict,
+    data: bytes,
+    mime_type: str,
+    session_updater=None,
+) -> dict:
+    """Upload a blob to the user's PDS. Returns the blob ref."""
+    url = f"{session['pds_url']}/xrpc/com.atproto.repo.uploadBlob"
+
+    if "dpop_private_jwk" in session and session["dpop_private_jwk"]:
+        from core.auth.oauth import pds_dpop_jwt, is_use_dpop_nonce_error
+        from authlib.jose import JsonWebKey
+        import json
+
+        async def _noop(*a): pass
+        updater = session_updater or _noop
+
+        dpop_private_jwk = JsonWebKey.import_key(json.loads(session["dpop_private_jwk"]))
+        dpop_nonce = session.get("dpop_pds_nonce") or ""
+
+        for _ in range(2):
+            dpop_proof = pds_dpop_jwt("POST", url, dpop_nonce, session["access_token"], dpop_private_jwk)
+            resp = await client.post(
+                url,
+                headers={
+                    "Authorization": f"DPoP {session['access_token']}",
+                    "DPoP": dpop_proof,
+                    "Content-Type": mime_type,
+                },
+                content=data,
+            )
+            if is_use_dpop_nonce_error(resp):
+                dpop_nonce = resp.headers["DPoP-Nonce"]
+                await updater(session["did"], "dpop_pds_nonce", dpop_nonce)
+                continue
+            break
+    else:
+        resp = await client.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {session['access_token']}",
+                "Content-Type": mime_type,
+            },
+            content=data,
+        )
+
+    resp.raise_for_status()
+    return resp.json()["blob"]
+
+
 async def create_thread_record(
     client: httpx.AsyncClient,
     session: dict,
     board_uri: str,
     title: str,
     body: str,
+    attachments: list[dict] | None = None,
     session_updater=None,
 ) -> httpx.Response:
     """Create a thread record in the user's repo."""
+    record = {
+        "$type": "xyz.atboards.thread",
+        "board": board_uri,
+        "title": title,
+        "body": body,
+        "createdAt": now_iso(),
+    }
+    if attachments:
+        record["attachments"] = attachments
     return await _pds_post(client, session, "com.atproto.repo.createRecord", {
         "repo": session["did"],
         "collection": "xyz.atboards.thread",
-        "record": {
-            "$type": "xyz.atboards.thread",
-            "board": board_uri,
-            "title": title,
-            "body": body,
-            "createdAt": now_iso(),
-        },
+        "record": record,
     }, session_updater)
 
 
@@ -125,18 +182,22 @@ async def create_reply_record(
     session: dict,
     thread_uri: str,
     body: str,
+    attachments: list[dict] | None = None,
     session_updater=None,
 ) -> httpx.Response:
     """Create a reply record in the user's repo."""
+    record = {
+        "$type": "xyz.atboards.reply",
+        "subject": thread_uri,
+        "body": body,
+        "createdAt": now_iso(),
+    }
+    if attachments:
+        record["attachments"] = attachments
     return await _pds_post(client, session, "com.atproto.repo.createRecord", {
         "repo": session["did"],
         "collection": "xyz.atboards.reply",
-        "record": {
-            "$type": "xyz.atboards.reply",
-            "subject": thread_uri,
-            "body": body,
-            "createdAt": now_iso(),
-        },
+        "record": record,
     }, session_updater)
 
 
