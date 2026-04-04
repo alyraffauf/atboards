@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}atboards{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="bg-neutral-950 text-neutral-400 font-mono text-sm min-h-screen antialiased flex flex-col">
+<body class="bg-neutral-950 text-neutral-400 text-sm min-h-screen antialiased flex flex-col" style="font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
     <header class="border-b border-neutral-800">
         <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2 text-neutral-500 overflow-x-auto whitespace-nowrap">
