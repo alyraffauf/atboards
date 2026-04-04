@@ -15,6 +15,7 @@ class ThreadScreen(Screen):
         Binding("escape", "app.pop_screen", "back"),
         Binding("ctrl+e", "reply", "reply"),
         Binding("ctrl+d", "delete", "delete"),
+        Binding("ctrl+s", "save_attachment", "save attachments", show=False),
     ]
 
     def __init__(self, bbs: BBS, handle: str, thread: Thread) -> None:
@@ -41,8 +42,10 @@ class ThreadScreen(Screen):
                 title=self.thread.title,
                 body=self.thread.body,
                 author_did=self.thread.author.did,
+                author_pds=self.thread.author.pds,
                 record_uri=self.thread.uri,
                 collection="xyz.atboards.thread",
+                attachments=self.thread.attachments,
             )
         yield Footer()
 
@@ -73,8 +76,10 @@ class ThreadScreen(Screen):
                     date=r.created_at,
                     body=r.body,
                     author_did=r.author.did,
+                    author_pds=r.author.pds,
                     record_uri=r.uri,
                     collection="xyz.atboards.reply",
+                    attachments=r.attachments,
                 )
             )
 
@@ -113,8 +118,10 @@ class ThreadScreen(Screen):
                     date=r.created_at,
                     body=r.body,
                     author_did=r.author.did,
+                    author_pds=r.author.pds,
                     record_uri=r.uri,
                     collection="xyz.atboards.reply",
+                    attachments=r.attachments,
                 )
             )
 
@@ -165,3 +172,41 @@ class ThreadScreen(Screen):
             self.app.pop_screen()
         else:
             await post.remove()
+
+    def action_save_attachment(self) -> None:
+        focused = self.focused
+        if not isinstance(focused, Post) or not focused.attachments:
+            self.notify("No attachments on this post.", severity="warning")
+            return
+        self._do_save(focused)
+
+    @work(exclusive=True)
+    async def _do_save(self, post: Post) -> None:
+        import os
+        from pathlib import Path
+
+        downloads = Path.home() / "Downloads"
+        downloads.mkdir(exist_ok=True)
+
+        client = self.app.http_client
+        for att in post.attachments:
+            name = att.get("name", "file")
+            cid = att.get("file", {}).get("ref", {}).get("$link", "")
+            if not cid or not post.author_pds or not post.author_did:
+                continue
+
+            url = f"{post.author_pds}/xrpc/com.atproto.sync.getBlob?did={post.author_did}&cid={cid}"
+            try:
+                resp = await client.get(url)
+                resp.raise_for_status()
+                path = downloads / name
+                if path.exists():
+                    stem, suffix = path.stem, path.suffix
+                    i = 1
+                    while path.exists():
+                        path = downloads / f"{stem}_{i}{suffix}"
+                        i += 1
+                path.write_bytes(resp.content)
+                self.notify(f"Saved to {path}")
+            except Exception:
+                self.notify(f"Failed to download {name}.", severity="error")

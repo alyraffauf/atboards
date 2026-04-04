@@ -4,7 +4,30 @@ from textual.screen import Screen
 from textual.widgets import Footer, Input, Static, TextArea
 from textual import work
 
-from core.records import create_thread_record, create_reply_record
+import mimetypes
+from pathlib import Path
+
+from core.records import create_thread_record, create_reply_record, upload_blob
+
+
+async def _upload_file(screen, file_path: str, session: dict) -> list[dict] | None:
+    """Upload a file and return attachments list, or None on error."""
+    p = Path(file_path).expanduser()
+    if not p.exists():
+        screen.notify(f"File not found: {p}", severity="error")
+        return None
+    data = p.read_bytes()
+    mime = mimetypes.guess_type(str(p))[0] or "application/octet-stream"
+    async def _update_nonce(did, field, value):
+        if hasattr(screen.app, 'user_session') and screen.app.user_session:
+            screen.app.user_session[field] = value
+
+    try:
+        blob_ref = await upload_blob(screen.app.http_client, session, data, mime, session_updater=_update_nonce)
+        return [{"file": blob_ref, "name": p.name}]
+    except Exception as e:
+        screen.notify(f"Failed to upload file: {e}", severity="error")
+        return None
 
 
 class ComposeThreadScreen(Screen):
@@ -28,6 +51,7 @@ class ComposeThreadScreen(Screen):
             yield Static("new thread", classes="title")
             yield Input(placeholder="Thread title", id="thread-title")
             yield TextArea(id="thread-body", language=None)
+            yield Input(placeholder="attach file (path, optional)", id="thread-file")
             yield Static("ctrl+s to post", classes="subtitle")
         yield Footer()
 
@@ -55,9 +79,18 @@ class ComposeThreadScreen(Screen):
 
         board_uri = f"at://{self.bbs.identity.did}/xyz.atboards.board/{self.board.slug}"
 
+        # Handle file attachment
+        attachments = []
+        file_path = self.query_one("#thread-file", Input).value.strip()
+        if file_path:
+            attachments = await _upload_file(self, file_path, session)
+            if attachments is None:
+                return
+
         try:
             resp = await create_thread_record(
                 self.app.http_client, session, board_uri, title, body,
+                attachments=attachments or None,
             )
             resp.raise_for_status()
         except Exception as e:
@@ -87,6 +120,7 @@ class ComposeReplyScreen(Screen):
         with Vertical():
             yield Static(f"reply to: {self.thread.title}", classes="title")
             yield TextArea(id="reply-body", language=None)
+            yield Input(placeholder="attach file (path, optional)", id="reply-file")
             yield Static("ctrl+s to post", classes="subtitle")
         yield Footer()
 
@@ -111,9 +145,18 @@ class ComposeReplyScreen(Screen):
             self.notify("Reply body is required.", severity="error")
             return
 
+        # Handle file attachment
+        attachments = []
+        file_path = self.query_one("#reply-file", Input).value.strip()
+        if file_path:
+            attachments = await _upload_file(self, file_path, session)
+            if attachments is None:
+                return
+
         try:
             resp = await create_reply_record(
                 self.app.http_client, session, self.thread.uri, body,
+                attachments=attachments or None,
             )
             resp.raise_for_status()
         except Exception as e:
