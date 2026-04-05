@@ -8,7 +8,7 @@ import httpx
 from core import lexicon
 from core.constellation import get_replies, get_threads
 from core.filters import filter_moderated
-from core.models import BBS, Board, Reply, Thread
+from core.models import AtUri, BBS, Board, Reply, Thread
 from core.slingshot import get_records_batch, resolve_identities_batch
 from core.util import now_iso
 
@@ -20,12 +20,13 @@ async def hydrate_threads(
     cursor: str | None = None,
 ) -> tuple[list[Thread], str | None]:
     """Fetch and hydrate threads for a board."""
-    board_uri = f"at://{bbs.identity.did}/{lexicon.BOARD}/{board.slug}"
+    board_uri = str(AtUri(bbs.identity.did, lexicon.BOARD, board.slug))
     backlinks = await get_threads(client, board_uri, cursor=cursor)
     records = await get_records_batch(client, backlinks.records)
     records = filter_moderated(records, bbs.site.banned_dids, bbs.site.hidden_posts)
 
-    dids = [r.uri.split("/")[2] for r in records]
+    parsed = {r.uri: AtUri.parse(r.uri) for r in records}
+    dids = [p.did for p in parsed.values()]
     authors = await resolve_identities_batch(client, dids)
 
     threads = [
@@ -35,12 +36,12 @@ async def hydrate_threads(
             title=r.value["title"],
             body=r.value["body"],
             created_at=r.value["createdAt"],
-            author=authors[r.uri.split("/")[2]],
+            author=authors[parsed[r.uri].did],
             updated_at=r.value.get("updatedAt"),
             attachments=r.value.get("attachments"),
         )
         for r in records
-        if r.uri.split("/")[2] in authors
+        if parsed[r.uri].did in authors
     ]
     threads.sort(key=lambda t: t.created_at, reverse=True)
     return threads, backlinks.cursor
@@ -57,7 +58,8 @@ async def hydrate_replies(
     records = await get_records_batch(client, backlinks.records)
     records = filter_moderated(records, bbs.site.banned_dids, bbs.site.hidden_posts)
 
-    dids = [r.uri.split("/")[2] for r in records]
+    parsed = {r.uri: AtUri.parse(r.uri) for r in records}
+    dids = [p.did for p in parsed.values()]
     authors = await resolve_identities_batch(client, dids)
 
     replies = [
@@ -66,13 +68,13 @@ async def hydrate_replies(
             subject_uri=r.value["subject"],
             body=r.value["body"],
             created_at=r.value["createdAt"],
-            author=authors[r.uri.split("/")[2]],
+            author=authors[parsed[r.uri].did],
             updated_at=r.value.get("updatedAt"),
             attachments=r.value.get("attachments"),
             quote=r.value.get("quote"),
         )
         for r in records
-        if r.uri.split("/")[2] in authors
+        if parsed[r.uri].did in authors
     ]
     replies.sort(key=lambda t: t.created_at)
     return replies, backlinks.cursor
@@ -326,7 +328,7 @@ async def fetch_inbox(
         thread_uri = tr["uri"]
         thread_title = tr["value"].get("title", "")
         board_uri = tr["value"].get("board", "")
-        bbs_did = board_uri.split("/")[2] if len(board_uri.split("/")) > 2 else did
+        bbs_did = AtUri.parse(board_uri).did if board_uri else did
         try:
             bbs_authors = await resolve_identities_batch(client, [bbs_did])
             bbs_handle = bbs_authors[bbs_did].handle if bbs_did in bbs_authors else ""
@@ -336,15 +338,16 @@ async def fetch_inbox(
         try:
             backlinks = await get_replies(client, thread_uri, limit=50)
             records = await get_records_batch(client, backlinks.records)
-            records = [r for r in records if r.uri.split("/")[2] != did]
+            parsed = {r.uri: AtUri.parse(r.uri) for r in records}
+            records = [r for r in records if parsed[r.uri].did != did]
             if not records:
                 continue
 
-            dids = [r.uri.split("/")[2] for r in records]
+            dids = [parsed[r.uri].did for r in records]
             authors = await resolve_identities_batch(client, dids)
 
             for r in records:
-                author_did = r.uri.split("/")[2]
+                author_did = parsed[r.uri].did
                 if author_did not in authors:
                     continue
                 all_items.append(
@@ -386,15 +389,16 @@ async def fetch_inbox(
                 continue
 
             records = await get_records_batch(client, backlinks.records)
-            records = [r for r in records if r.uri.split("/")[2] != did]
+            parsed = {r.uri: AtUri.parse(r.uri) for r in records}
+            records = [r for r in records if parsed[r.uri].did != did]
             if not records:
                 continue
 
-            dids = [r.uri.split("/")[2] for r in records]
+            dids = [parsed[r.uri].did for r in records]
             authors = await resolve_identities_batch(client, dids)
 
             for r in records:
-                author_did = r.uri.split("/")[2]
+                author_did = parsed[r.uri].did
                 if author_did not in authors:
                     continue
                 all_items.append(

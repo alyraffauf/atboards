@@ -1,6 +1,35 @@
 from dataclasses import dataclass
 
 
+class AtUri:
+    """Parsed AT URI with did, collection, and rkey fields."""
+
+    __slots__ = ("did", "collection", "rkey")
+
+    def __init__(self, did: str, collection: str, rkey: str):
+        self.did = did
+        self.collection = collection
+        self.rkey = rkey
+
+    @classmethod
+    def parse(cls, uri: str) -> "AtUri":
+        parts = uri.split("/")
+        return cls(parts[2], parts[3], parts[4])
+
+    def __str__(self) -> str:
+        return f"at://{self.did}/{self.collection}/{self.rkey}"
+
+    def __eq__(self, other):
+        if isinstance(other, AtUri):
+            return str(self) == str(other)
+        if isinstance(other, str):
+            return str(self) == other
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(str(self))
+
+
 # errors
 
 

@@ -4,6 +4,7 @@ import httpx
 from quart import Blueprint, current_app, render_template, request
 
 from core.models import (
+    AtUri,
     BBSNotFoundError,
     NetworkError,
     NoBBSError,
@@ -180,7 +181,7 @@ async def api_threads(handle: str, slug: str):
             {
                 "uri": t.uri,
                 "did": t.author.did,
-                "rkey": t.uri.split("/")[-1],
+                "rkey": AtUri.parse(t.uri).rkey,
                 "handle": t.author.handle,
                 "title": t.title,
                 "body": t.body,
@@ -227,7 +228,7 @@ async def thread(handle: str, did: str, tid: str):
         attachments=thread_record.value.get("attachments"),
     )
 
-    board_slug = thread_obj.board_uri.split("/")[-1]
+    board_slug = AtUri.parse(thread_obj.board_uri).rkey
     current_board = next((b for b in bbs.site.boards if b.slug == board_slug), None)
 
     return await render_template(
@@ -262,7 +263,7 @@ async def api_replies(did: str, tid: str):
         return {"replies": [], "cursor": None}
 
     # Build a minimal Thread object for hydrate_replies
-    thread_uri = f"at://{did}/{lexicon.THREAD}/{tid}"
+    thread_uri = str(AtUri(did, lexicon.THREAD, tid))
     from core.models import MiniDoc
 
     dummy_thread = Thread(
@@ -286,7 +287,7 @@ async def api_replies(did: str, tid: str):
             {
                 "uri": r.uri,
                 "did": r.author.did,
-                "rkey": r.uri.split("/")[-1],
+                "rkey": AtUri.parse(r.uri).rkey,
                 "handle": r.author.handle,
                 "pds_url": r.author.pds or "",
                 "body": r.body,

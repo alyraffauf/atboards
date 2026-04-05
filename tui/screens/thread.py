@@ -6,7 +6,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer
 
 from core import lexicon
-from core.models import BBS, Thread
+from core.models import AtUri, BBS, Thread
 from tui.fetchers import delete_record, fetch_replies
 from tui.util import require_session
 from tui.widgets.post import Post
@@ -29,7 +29,7 @@ class ThreadScreen(Screen):
         self._replies_map: dict[str, object] = {}
 
     def compose(self) -> ComposeResult:
-        board_slug = self.thread.board_uri.split("/")[-1]
+        board_slug = AtUri.parse(self.thread.board_uri).rkey
         board_name = next(
             (b.name for b in self.bbs.site.boards if b.slug == board_slug), board_slug
         )

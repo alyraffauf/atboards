@@ -1,4 +1,5 @@
-from core.models import Record
+from core import lexicon
+from core.models import AtUri, Record
 
 
 def filter_moderated(
@@ -8,5 +9,5 @@ def filter_moderated(
     return [
         r
         for r in records
-        if r.uri.split("/")[2] not in banned_dids and r.uri not in hidden_posts
+        if AtUri.parse(r.uri).did not in banned_dids and r.uri not in hidden_posts
     ]

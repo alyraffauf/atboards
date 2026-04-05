@@ -4,6 +4,7 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Static
 
+from core.models import AtUri
 from tui.util import format_datetime
 
 
@@ -102,7 +103,7 @@ class Post(Widget, can_focus=True):
     @property
     def rkey(self) -> str | None:
         if self.record_uri:
-            return self.record_uri.split("/")[-1]
+            return AtUri.parse(self.record_uri).rkey
         return None
 
     def compose(self) -> ComposeResult:

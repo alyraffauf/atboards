@@ -8,6 +8,7 @@ import mimetypes
 from pathlib import Path
 
 from core import lexicon
+from core.models import AtUri
 from core.records import create_thread_record, create_reply_record, upload_blob
 from tui.util import require_session
 
@@ -84,7 +85,7 @@ class ComposeThreadScreen(Screen):
             self.notify("Title and body cannot be empty.", severity="error")
             return
 
-        board_uri = f"at://{self.bbs.identity.did}/{lexicon.BOARD}/{self.board.slug}"
+        board_uri = str(AtUri(self.bbs.identity.did, lexicon.BOARD, self.board.slug))
 
         # Handle file attachment
         attachments = []

@@ -3,6 +3,7 @@ import asyncio
 import httpx
 
 from core.models import (
+    AtUri,
     BBS,
     Board,
     News,
@@ -35,7 +36,7 @@ async def resolve_bbs(client: httpx.AsyncClient, handle: str) -> BBS:
         raise NetworkError("Could not reach the network.")
 
     sv = site_record.value
-    site_uri = f"at://{identity.did}/{lexicon.SITE}/self"
+    site_uri = str(AtUri(identity.did, lexicon.SITE, "self"))
 
     # Fetch boards and news backlinks concurrently
     board_slugs = sv["boards"]
@@ -69,7 +70,7 @@ async def resolve_bbs(client: httpx.AsyncClient, handle: str) -> BBS:
         news_records = await get_records_batch(client, sysop_news)
     news = [
         News(
-            tid=r.uri.split("/")[-1],
+            tid=AtUri.parse(r.uri).rkey,
             site_uri=r.value["site"],
             title=r.value["title"],
             body=r.value["body"],

@@ -3,6 +3,7 @@
 from quart import Blueprint, current_app, redirect, render_template, request
 
 from core import lexicon
+from core.models import AtUri
 from core.util import now_iso
 from web.helpers import get_user
 from web.routes_write import _authed_pds_post, authed_delete_record
@@ -72,7 +73,7 @@ async def delete_bbs():
     # Delete news records (via Constellation backlinks)
     from core.constellation import get_news
 
-    site_uri = f"at://{user['did']}/{lexicon.SITE}/self"
+    site_uri = str(AtUri(user["did"], lexicon.SITE, "self"))
     try:
         backlinks = await get_news(client, site_uri)
         for ref in backlinks.records:
@@ -184,17 +185,12 @@ async def moderate_bbs():
         hidden_posts = []
         if bbs.site.hidden_posts:
             hidden_dids = list(
-                {
-                    uri.split("/")[2]
-                    for uri in bbs.site.hidden_posts
-                    if len(uri.split("/")) > 2
-                }
+                {AtUri.parse(uri).did for uri in bbs.site.hidden_posts}
             )
             hidden_authors = await resolve_identities_batch(client, hidden_dids)
 
             for uri in bbs.site.hidden_posts:
-                parts = uri.split("/")
-                did = parts[2] if len(parts) > 2 else "?"
+                did = AtUri.parse(uri).did
                 handle = hidden_authors[did].handle if did in hidden_authors else did
 
                 try:
@@ -355,7 +351,7 @@ async def create_news(handle: str):
     if not title or not body:
         return redirect(f"/bbs/{handle}")
 
-    site_uri = f"at://{user['did']}/{lexicon.SITE}/self"
+    site_uri = str(AtUri(user["did"], lexicon.SITE, "self"))
     now = now_iso()
 
     await _authed_pds_post(

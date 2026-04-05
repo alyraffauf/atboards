@@ -66,11 +66,11 @@ class ActivityScreen(Screen):
         from core.resolver import resolve_bbs
         from core import lexicon
         from core.slingshot import get_record, resolve_identity
-        from core.models import Thread
+        from core.models import AtUri, Thread
 
-        parts = item["thread_uri"].split("/")
-        thread_did = parts[2]
-        thread_tid = parts[-1]
+        thread = AtUri.parse(item["thread_uri"])
+        thread_did = thread.did
+        thread_tid = thread.rkey
         handle = item.get("bbs_handle") or self.app.user_session.get("handle", "")
 
         client = self.app.http_client

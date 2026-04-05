@@ -3,6 +3,7 @@
 from quart import Blueprint, current_app, redirect, request
 
 from core import lexicon
+from core.models import AtUri
 from core.records import upload_blob
 from core.util import now_iso
 from web.helpers import get_user, session_updater
@@ -57,7 +58,7 @@ async def create_thread(handle: str, slug: str):
     if bbs.site.is_banned(user["did"]):
         return redirect(f"/bbs/{handle}/board/{slug}")
 
-    board_uri = f"at://{bbs.identity.did}/{lexicon.BOARD}/{slug}"
+    board_uri = str(AtUri(bbs.identity.did, lexicon.BOARD, slug))
 
     # Handle file attachments
     attachments = []
@@ -116,7 +117,7 @@ async def create_reply(handle: str, did: str, tid: str):
     if not body:
         return redirect(f"/bbs/{handle}/thread/{did}/{tid}")
 
-    thread_uri = f"at://{did}/{lexicon.THREAD}/{tid}"
+    thread_uri = str(AtUri(did, lexicon.THREAD, tid))
 
     # Handle file attachments
     client = current_app.http_client
