@@ -2,10 +2,10 @@ import os
 
 import httpx
 from platformdirs import user_data_dir
-from textual.app import App
+from textual.app import App, ComposeResult
+from textual.binding import Binding
 
 from core.auth.session import SessionStore
-from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Static
@@ -58,10 +58,10 @@ class AtbbsApp(App):
     TITLE = "@bbs"
     CSS_PATH = "app.tcss"
     BINDINGS = [
-        ("ctrl+q", "quit", "quit"),
-        ("ctrl+l", "login", "account"),
-        ("ctrl+r", "refresh", "refresh"),
-        ("ctrl+t", "inbox", "messages"),
+        Binding("ctrl+q", "quit", "quit"),
+        Binding("ctrl+l", "login", "account"),
+        Binding("ctrl+r", "refresh", "refresh", show=False),
+        Binding("ctrl+t", "inbox", "messages", show=False),
     ]
     SCREENS = {"home": HomeScreen}
 
