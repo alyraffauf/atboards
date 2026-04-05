@@ -35,6 +35,30 @@ class BreadcrumbLink(Static, can_focus=True):
         self.on_click()
 
 
+class BreadcrumbUser(Static, can_focus=True):
+    """Clickable user handle that opens the account screen."""
+
+    DEFAULT_CSS = """
+    BreadcrumbUser {
+        dock: right;
+        width: auto;
+        color: #8a8a8a;
+    }
+    BreadcrumbUser:hover {
+        color: #a3a3a3;
+    }
+    BreadcrumbUser:focus {
+        color: #e5e5e5;
+    }
+    """
+
+    def on_click(self) -> None:
+        self.app.action_login()
+
+    def key_enter(self) -> None:
+        self.app.action_login()
+
+
 class BreadcrumbSep(Static):
     DEFAULT_CSS = """
     BreadcrumbSep {
@@ -58,11 +82,6 @@ class Breadcrumb(Widget):
         background: #262626;
         layout: horizontal;
     }
-    Breadcrumb .breadcrumb-user {
-        dock: right;
-        width: auto;
-        color: #8a8a8a;
-    }
     """
 
     def __init__(self, *segments: tuple[str, int]) -> None:
@@ -74,8 +93,8 @@ class Breadcrumb(Widget):
         # Show logged-in user on the right
         session = getattr(self.app, "user_session", None)
         if session:
-            yield Static(
-                f" {session['handle']} ", classes="breadcrumb-user", markup=False
+            yield BreadcrumbUser(
+                f" {session['handle']} ", markup=False
             )
 
         for i, (label, pop_count) in enumerate(self._segments):
