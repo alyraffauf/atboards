@@ -310,23 +310,32 @@ async def fetch_inbox(
     max_items: int = 50,
 ) -> list[dict]:
     """Fetch inbox: replies to user's threads + quotes of user's replies."""
+    import asyncio
+
     from core.constellation import get_backlinks
 
     SCAN_LIMIT = 20  # how many threads/replies to scan
     BACKLINK_LIMIT = 25  # backlinks per record
+    MAX_CONCURRENT = 10  # concurrent API calls
 
-    all_items = []
+    sem = asyncio.Semaphore(MAX_CONCURRENT)
 
-    # 1. Replies to user's threads
-    try:
-        resp = await client.get(
-            f"{pds_url}/xrpc/com.atproto.repo.listRecords",
-            params={"repo": did, "collection": lexicon.THREAD, "limit": SCAN_LIMIT},
-        )
-        resp.raise_for_status()
-        thread_records = resp.json().get("records", [])
-    except Exception:
-        thread_records = []
+    # Fetch thread and reply lists concurrently
+    async def list_records(collection):
+        try:
+            resp = await client.get(
+                f"{pds_url}/xrpc/com.atproto.repo.listRecords",
+                params={"repo": did, "collection": collection, "limit": SCAN_LIMIT},
+            )
+            resp.raise_for_status()
+            return resp.json().get("records", [])
+        except Exception:
+            return []
+
+    thread_records, reply_records = await asyncio.gather(
+        list_records(lexicon.THREAD),
+        list_records(lexicon.REPLY),
+    )
 
     # Batch-resolve BBS handles for all threads at once
     bbs_dids = set()
@@ -339,98 +348,99 @@ async def fetch_inbox(
     except Exception:
         bbs_authors = {}
 
-    for tr in thread_records:
-        if len(all_items) >= max_items:
-            break
+    # 1. Fetch replies to user's threads (concurrent)
+    async def fetch_thread_replies(tr):
+        async with sem:
+            thread_uri = tr["uri"]
+            thread_title = tr["value"].get("title", "")
+            board_uri = tr["value"].get("board", "")
+            bbs_did = AtUri.parse(board_uri).did if board_uri else did
+            bbs_handle = bbs_authors[bbs_did].handle if bbs_did in bbs_authors else ""
 
-        thread_uri = tr["uri"]
-        thread_title = tr["value"].get("title", "")
-        board_uri = tr["value"].get("board", "")
-        bbs_did = AtUri.parse(board_uri).did if board_uri else did
-        bbs_handle = bbs_authors[bbs_did].handle if bbs_did in bbs_authors else ""
+            try:
+                backlinks = await get_replies(client, thread_uri, limit=BACKLINK_LIMIT)
+                records = await get_records_batch(client, backlinks.records)
+                parsed = {r.uri: AtUri.parse(r.uri) for r in records}
+                records = [r for r in records if parsed[r.uri].did != did]
+                if not records:
+                    return []
 
-        try:
-            backlinks = await get_replies(client, thread_uri, limit=BACKLINK_LIMIT)
-            records = await get_records_batch(client, backlinks.records)
-            parsed = {r.uri: AtUri.parse(r.uri) for r in records}
-            records = [r for r in records if parsed[r.uri].did != did]
-            if not records:
-                continue
+                dids = [parsed[r.uri].did for r in records]
+                authors = await resolve_identities_batch(client, dids)
 
-            dids = [parsed[r.uri].did for r in records]
-            authors = await resolve_identities_batch(client, dids)
+                items = []
+                for r in records:
+                    author_did = parsed[r.uri].did
+                    if author_did not in authors:
+                        continue
+                    items.append(
+                        {
+                            "type": "reply",
+                            "thread_title": thread_title,
+                            "thread_uri": thread_uri,
+                            "handle": authors[author_did].handle,
+                            "body": r.value.get("body", "")[:200],
+                            "created_at": r.value.get("createdAt", ""),
+                            "bbs_handle": bbs_handle,
+                        }
+                    )
+                return items
+            except Exception:
+                return []
 
-            for r in records:
-                author_did = parsed[r.uri].did
-                if author_did not in authors:
-                    continue
-                all_items.append(
-                    {
-                        "type": "reply",
-                        "thread_title": thread_title,
-                        "thread_uri": thread_uri,
-                        "handle": authors[author_did].handle,
-                        "body": r.value.get("body", "")[:200],
-                        "created_at": r.value.get("createdAt", ""),
-                        "bbs_handle": bbs_handle,
-                    }
+    # 2. Fetch quotes of user's replies (concurrent)
+    async def fetch_reply_quotes(rr):
+        async with sem:
+            reply_uri = rr["uri"]
+            thread_uri = rr["value"].get("subject", "")
+            try:
+                backlinks = await get_backlinks(
+                    client,
+                    subject=reply_uri,
+                    source=f"{lexicon.REPLY}:quote",
+                    limit=BACKLINK_LIMIT,
                 )
-        except Exception:
-            continue
+                if not backlinks.records:
+                    return []
 
-    # 2. Quotes of user's replies
-    try:
-        resp = await client.get(
-            f"{pds_url}/xrpc/com.atproto.repo.listRecords",
-            params={"repo": did, "collection": lexicon.REPLY, "limit": SCAN_LIMIT},
-        )
-        resp.raise_for_status()
-        reply_records = resp.json().get("records", [])
-    except Exception:
-        reply_records = []
+                records = await get_records_batch(client, backlinks.records)
+                parsed = {r.uri: AtUri.parse(r.uri) for r in records}
+                records = [r for r in records if parsed[r.uri].did != did]
+                if not records:
+                    return []
 
-    for rr in reply_records:
-        if len(all_items) >= max_items:
-            break
+                dids = [parsed[r.uri].did for r in records]
+                authors = await resolve_identities_batch(client, dids)
 
-        reply_uri = rr["uri"]
-        thread_uri = rr["value"].get("subject", "")
-        try:
-            backlinks = await get_backlinks(
-                client,
-                subject=reply_uri,
-                source=f"{lexicon.REPLY}:quote",
-                limit=BACKLINK_LIMIT,
-            )
-            if not backlinks.records:
-                continue
+                items = []
+                for r in records:
+                    author_did = parsed[r.uri].did
+                    if author_did not in authors:
+                        continue
+                    items.append(
+                        {
+                            "type": "quote",
+                            "thread_title": "",
+                            "thread_uri": thread_uri,
+                            "handle": authors[author_did].handle,
+                            "body": r.value.get("body", "")[:200],
+                            "created_at": r.value.get("createdAt", ""),
+                            "bbs_handle": "",
+                        }
+                    )
+                return items
+            except Exception:
+                return []
 
-            records = await get_records_batch(client, backlinks.records)
-            parsed = {r.uri: AtUri.parse(r.uri) for r in records}
-            records = [r for r in records if parsed[r.uri].did != did]
-            if not records:
-                continue
+    # Run all lookups concurrently
+    results = await asyncio.gather(
+        *[fetch_thread_replies(tr) for tr in thread_records],
+        *[fetch_reply_quotes(rr) for rr in reply_records],
+    )
 
-            dids = [parsed[r.uri].did for r in records]
-            authors = await resolve_identities_batch(client, dids)
-
-            for r in records:
-                author_did = parsed[r.uri].did
-                if author_did not in authors:
-                    continue
-                all_items.append(
-                    {
-                        "type": "quote",
-                        "thread_title": "",
-                        "thread_uri": thread_uri,
-                        "handle": authors[author_did].handle,
-                        "body": r.value.get("body", "")[:200],
-                        "created_at": r.value.get("createdAt", ""),
-                        "bbs_handle": "",
-                    }
-                )
-        except Exception:
-            continue
+    all_items = []
+    for items in results:
+        all_items.extend(items)
 
     # Deduplicate and prefer quotes if same record appears in both
     seen = {}
