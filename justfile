@@ -27,7 +27,7 @@ logs:
 
 # Set version in pyproject.toml
 version ver:
-    sed -i '' 's/^version = ".*"/version = "{{ ver }}"/' pyproject.toml
+    python -c "import re, pathlib; p=pathlib.Path('pyproject.toml'); p.write_text(re.sub(r'^version = \".*\"', 'version = \"{{ ver }}\"', p.read_text(), count=1, flags=re.M))"
     uv lock
 
 # Tag and push a release
