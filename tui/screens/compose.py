@@ -12,7 +12,7 @@ from core.records import create_thread_record, create_reply_record, upload_blob
 
 async def _upload_file(screen, file_path: str, session: dict) -> list[dict] | None:
     """Upload a file and return attachments list, or None on error."""
-    p = Path(file_path).expanduser()
+    p = Path(file_path).expanduser().resolve()
     if not p.exists():
         screen.notify(f"File not found: {p}", severity="error")
         return None
