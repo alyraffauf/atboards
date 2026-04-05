@@ -184,9 +184,7 @@ async def moderate_bbs():
 
         hidden_posts = []
         if bbs.site.hidden_posts:
-            hidden_dids = list(
-                {AtUri.parse(uri).did for uri in bbs.site.hidden_posts}
-            )
+            hidden_dids = list({AtUri.parse(uri).did for uri in bbs.site.hidden_posts})
             hidden_authors = await resolve_identities_batch(client, hidden_dids)
 
             for uri in bbs.site.hidden_posts:

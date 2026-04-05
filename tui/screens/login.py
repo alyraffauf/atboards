@@ -22,6 +22,7 @@ from tui.local_server import wait_for_callback
 
 
 from core.lexicon import OAUTH_SCOPE
+
 CALLBACK_PORT = 23847
 
 

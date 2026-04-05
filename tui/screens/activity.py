@@ -76,9 +76,7 @@ class ActivityScreen(Screen):
         client = self.app.http_client
         try:
             bbs = await resolve_bbs(client, handle)
-            rec = await get_record(
-                client, thread_did, lexicon.THREAD, thread_tid
-            )
+            rec = await get_record(client, thread_did, lexicon.THREAD, thread_tid)
             author = await resolve_identity(client, thread_did)
             thread = Thread(
                 uri=rec.uri,

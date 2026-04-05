@@ -27,9 +27,7 @@ async def resolve_bbs(client: httpx.AsyncClient, handle: str) -> BBS:
         raise NetworkError("Could not reach the network.")
 
     try:
-        site_record = await get_record(
-            client, identity.did, lexicon.SITE, "self"
-        )
+        site_record = await get_record(client, identity.did, lexicon.SITE, "self")
     except httpx.HTTPStatusError:
         raise NoBBSError(f"{handle} isn't running a BBS.")
     except httpx.TransportError:
@@ -41,8 +39,7 @@ async def resolve_bbs(client: httpx.AsyncClient, handle: str) -> BBS:
     # Fetch boards and news backlinks concurrently
     board_slugs = sv["boards"]
     board_tasks = [
-        get_record(client, identity.did, lexicon.BOARD, slug)
-        for slug in board_slugs
+        get_record(client, identity.did, lexicon.BOARD, slug) for slug in board_slugs
     ]
     news_task = get_news(client, site_uri)
 

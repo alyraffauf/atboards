@@ -22,7 +22,9 @@ def create_app(
     secrets = load_secrets(data_dir)
     app.secret_key = secrets["secret_key"]
     app.config["CLIENT_SECRET_JWK"] = secrets["client_secret_jwk"]
-    app.config["PUBLIC_URL"] = public_url or os.environ.get("PUBLIC_URL", "http://localhost:8000")
+    app.config["PUBLIC_URL"] = public_url or os.environ.get(
+        "PUBLIC_URL", "http://localhost:8000"
+    )
 
     # Session store
     db_path = os.path.join(data_dir, "atbbs.db")

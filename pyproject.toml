@@ -19,8 +19,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-atbbs = "tui.__main__:main"
+atbbs = "cli.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["core", "web", "tui"]
+packages = ["cli", "core", "web", "tui"]
 exclude = ["web/ts"]

@@ -344,7 +344,9 @@ async def fetch_inbox(
         if board_uri:
             bbs_dids.add(AtUri.parse(board_uri).did)
     try:
-        bbs_authors = await resolve_identities_batch(client, list(bbs_dids)) if bbs_dids else {}
+        bbs_authors = (
+            await resolve_identities_batch(client, list(bbs_dids)) if bbs_dids else {}
+        )
     except Exception:
         bbs_authors = {}
 
