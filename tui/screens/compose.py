@@ -38,7 +38,10 @@ async def _upload_file(screen, file_path: str, session: dict) -> list[dict] | No
 
 
 class ComposeThreadScreen(Screen):
-    BINDINGS = [("escape", "app.pop_screen", "back")]
+    BINDINGS = [
+        ("escape", "app.pop_screen", "back"),
+        ("ctrl+s", "post", "post"),
+    ]
 
     def __init__(self, bbs, handle: str, board) -> None:
         super().__init__()
@@ -60,13 +63,12 @@ class ComposeThreadScreen(Screen):
             yield Input(placeholder="Thread title", id="thread-title")
             yield TextArea(id="thread-body", language=None)
             yield Input(placeholder="attach file (path, optional)", id="thread-file")
-            yield Static("ctrl+s to post", classes="subtitle")
         yield Footer()
 
     def on_mount(self) -> None:
         self.query_one("#thread-title", Input).focus()
 
-    def key_ctrl_s(self) -> None:
+    def action_post(self) -> None:
         self.post_thread()
 
     @work(exclusive=True)
@@ -109,12 +111,17 @@ class ComposeThreadScreen(Screen):
 
 
 class ComposeReplyScreen(Screen):
-    BINDINGS = [("escape", "app.pop_screen", "back")]
+    BINDINGS = [
+        ("escape", "app.pop_screen", "back"),
+        ("ctrl+s", "post", "post"),
+        ("ctrl+g", "toggle_quote", "toggle quote"),
+    ]
 
     def __init__(self, bbs, handle: str, thread, quote=None) -> None:
         super().__init__()
         self.bbs = bbs
         self.handle = handle
+        self._original_quote = quote
         self.quote = quote  # Reply object or None
         self.thread = thread
 
@@ -134,28 +141,42 @@ class ComposeReplyScreen(Screen):
                     "..." if len(self.quote.body) > 60 else ""
                 )
                 yield Static(
-                    f"quoting {self.quote.author.handle}: {body_preview} [clear: ctrl+g]",
+                    f"quoting {self.quote.author.handle}: {body_preview}",
                     classes="subtitle",
                     id="quote-info",
                 )
             yield TextArea(id="reply-body", language=None)
             yield Input(placeholder="attach file (path, optional)", id="reply-file")
-            yield Static("ctrl+s to post", classes="subtitle")
         yield Footer()
 
     def on_mount(self) -> None:
         self.query_one("#reply-body", TextArea).focus()
 
-    def key_ctrl_g(self) -> None:
+    def action_toggle_quote(self) -> None:
+        if not self._original_quote:
+            return
         if self.quote:
             self.quote = None
             try:
                 self.query_one("#quote-info").remove()
             except Exception:
                 pass
-            self.notify("Quote cleared.")
+        else:
+            self.quote = self._original_quote
+            body_preview = self.quote.body[:60] + (
+                "..." if len(self.quote.body) > 60 else ""
+            )
+            scroll = self.query_one(Vertical)
+            scroll.mount(
+                Static(
+                    f"quoting {self.quote.author.handle}: {body_preview}",
+                    classes="subtitle",
+                    id="quote-info",
+                ),
+                before=self.query_one("#reply-body"),
+            )
 
-    def key_ctrl_s(self) -> None:
+    def action_post(self) -> None:
         self.post_reply()
 
     @work(exclusive=True)

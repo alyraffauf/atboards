@@ -100,7 +100,9 @@ class ActivityScreen(Screen):
         session = self.app.user_session
         if not session:
             try:
-                self.query_one("#activity-loading").update("Log in to see your messages.")
+                self.query_one("#activity-loading").update(
+                    "Log in to see your messages."
+                )
             except Exception:
                 pass
             return

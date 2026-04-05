@@ -35,7 +35,9 @@ class HomeScreen(Screen):
             yield Static("")
             yield Static("Dial a BBS", classes="title")
             yield Input(placeholder="handle.example.com", id="handle-input")
-            yield Static("OR TRY ONE OF THESE", id="discover-label", classes="section-label")
+            yield Static(
+                "OR TRY ONE OF THESE", id="discover-label", classes="section-label"
+            )
             yield ListView(id="discover-list")
         yield Footer()
 
