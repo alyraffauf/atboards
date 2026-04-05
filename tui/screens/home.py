@@ -91,7 +91,7 @@ class HomeScreen(Screen):
 
         # Check if banned
         session = self.app.user_session
-        if session and session.get("did") in bbs.site.banned_dids:
+        if session and bbs.site.is_banned(session.get("did")):
             self.notify("You have been banned from this BBS.", severity="error")
             return
 

@@ -9,7 +9,7 @@ def require_session(screen) -> dict | None:
     if not session:
         screen.notify("You must be logged in to do that.", severity="error")
         return None
-    if session["did"] in screen.bbs.site.banned_dids:
+    if screen.bbs.site.is_banned(session["did"]):
         screen.notify("You have been banned from this BBS.", severity="error")
         return None
     return session

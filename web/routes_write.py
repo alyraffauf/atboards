@@ -53,7 +53,7 @@ async def create_thread(handle: str, slug: str):
     except Exception:
         return redirect(f"/bbs/{handle}/board/{slug}")
 
-    if user["did"] in bbs.site.banned_dids:
+    if bbs.site.is_banned(user["did"]):
         return redirect(f"/bbs/{handle}/board/{slug}")
 
     board_uri = f"at://{bbs.identity.did}/xyz.atboards.board/{slug}"

@@ -96,6 +96,9 @@ class Site:
     created_at: str
     updated_at: str | None = None
 
+    def is_banned(self, did: str) -> bool:
+        return did in self.banned_dids
+
 
 @dataclass
 class Thread:

@@ -24,7 +24,7 @@ async def check_banned(bbs):
     """Return an error response if the current user is banned, or None."""
     from quart import g
 
-    if g.user and g.user.get("did") in bbs.site.banned_dids:
+    if g.user and bbs.site.is_banned(g.user.get("did")):
         return await render_template(
             "error.html", message="You have been banned from this BBS."
         ), 403
