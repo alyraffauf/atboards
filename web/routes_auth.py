@@ -29,7 +29,7 @@ def _compute_client_id() -> tuple[str, str]:
     public_url = current_app.config["PUBLIC_URL"]
     parsed = urlparse(public_url)
 
-    if parsed.hostname in ("localhost", "127.0.0.1"):
+    if parsed.hostname in ("localhost", "127.0.0.1", "0.0.0.0"):
         redirect_uri = f"http://127.0.0.1:{parsed.port}/oauth/callback"
         client_id = "http://localhost?" + urlencode(
             {"redirect_uri": redirect_uri, "scope": OAUTH_SCOPE}
