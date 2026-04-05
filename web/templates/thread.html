@@ -9,11 +9,14 @@
 <span class="text-neutral-400 truncate">{{ thread.title }}</span>
 {% endblock %}
 {% block content %}
-<article class="bg-neutral-900 border border-neutral-800 rounded p-4 mb-4">
+<article class="reply-card bg-neutral-900 border border-neutral-800 rounded p-4 mb-4">
     <div class="flex items-baseline justify-between mb-3">
-        <span class="text-neutral-200">{{ thread.author.handle }}</span>
-        <div class="flex items-center gap-3">
-            <time class="text-xs text-neutral-500 localtime" datetime="{{ thread.created_at }}">{{ thread.created_at | datetime }}</time>
+        <div class="flex items-baseline gap-2">
+            <span class="text-neutral-200">{{ thread.author.handle }}</span>
+            <span class="text-neutral-600">&middot;</span>
+            <time class="text-xs text-neutral-500 localtime" datetime="{{ thread.created_at }}" title="{{ thread.created_at | datetime }}">{{ thread.created_at | datetime }}</time>
+        </div>
+        <span class="reply-actions flex items-center gap-3">
             {% if g.user and g.user.did == thread.author.did %}
             <form method="post" action="/bbs/{{ handle }}/thread/{{ thread.author.did }}/{{ thread.uri.split('/')[-1] }}/delete" class="inline" onsubmit="return confirm('Delete this thread?')">
                 <button type="submit" class="text-xs text-neutral-500 hover:text-red-400">delete</button>
@@ -28,7 +31,7 @@
                 <button type="submit" class="text-xs text-neutral-500 hover:text-red-400">hide</button>
             </form>
             {% endif %}
-        </div>
+        </span>
     </div>
     <h1 class="text-base text-neutral-200 font-bold mb-3">{{ thread.title }}</h1>
     <p class="text-neutral-400 whitespace-pre-wrap leading-relaxed">{{ thread.body }}</p>
@@ -83,10 +86,21 @@
     let nextCursor = null;
     const allReplies = {};
 
-    function formatDate(iso) {
+    function formatFullDate(iso) {
         const d = new Date(iso);
         const pad = n => String(n).padStart(2, '0');
         return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function relativeDate(iso) {
+        const d = new Date(iso);
+        const now = Date.now();
+        const diff = Math.floor((now - d) / 1000);
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+        if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+        return formatFullDate(iso);
     }
 
     function escapeHtml(s) {
@@ -113,16 +127,22 @@
             const q = allReplies[r.quote];
             quoteBlock = `<div class="border-l-2 border-neutral-700 pl-3 mb-3 py-1 text-sm text-neutral-500"><span class="text-neutral-400">${escapeHtml(q.handle)}:</span> ${escapeHtml(q.body.substring(0, 200))}${q.body.length > 200 ? '...' : ''}</div>`;
         }
-        return `<div class="border border-neutral-800/50 rounded p-4">
+        let actions = [
+            userDid ? `<button type="button" onclick="document.getElementById('quote-uri').value='${r.uri}'; document.getElementById('quote-preview-text').textContent='quoting ${escapeHtml(r.handle)}'; document.getElementById('quote-preview').classList.remove('hidden'); document.getElementById('reply-body').focus();" class="text-xs text-neutral-500 hover:text-neutral-300">quote</button>` : '',
+            deleteBtn,
+            banBtn,
+            hideBtn,
+        ].filter(Boolean);
+        let actionsHtml = actions.length ? `<span class="reply-actions flex items-center gap-3">${actions.join(' ')}</span>` : '';
+
+        return `<div class="reply-card border border-neutral-800/50 rounded p-4">
             <div class="flex items-baseline justify-between mb-2">
-                <span class="text-neutral-300">${escapeHtml(r.handle)}</span>
-                <div class="flex items-center gap-3">
-                    <span class="text-xs text-neutral-500">${formatDate(r.created_at)}</span>
-                    ${userDid ? `<button type="button" onclick="document.getElementById('quote-uri').value='${r.uri}'; document.getElementById('quote-preview-text').textContent='quoting ${escapeHtml(r.handle)}'; document.getElementById('quote-preview').classList.remove('hidden'); document.getElementById('reply-body').focus();" class="text-xs text-neutral-500 hover:text-neutral-300">quote</button>` : ''}
-                    ${deleteBtn}
-                    ${banBtn}
-                    ${hideBtn}
+                <div class="flex items-baseline gap-2">
+                    <span class="text-neutral-300">${escapeHtml(r.handle)}</span>
+                    <span class="text-neutral-600">&middot;</span>
+                    <span class="text-xs text-neutral-500" title="${formatFullDate(r.created_at)}">${relativeDate(r.created_at)}</span>
                 </div>
+                ${actionsHtml}
             </div>
             ${quoteBlock}
             <p class="text-neutral-400 whitespace-pre-wrap leading-relaxed">${escapeHtml(r.body)}</p>

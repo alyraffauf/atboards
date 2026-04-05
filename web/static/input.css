@@ -4,3 +4,11 @@
 pre, code, kbd, samp {
     font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
+
+.reply-actions {
+    display: none;
+}
+
+.reply-card:hover .reply-actions {
+    display: inline;
+}

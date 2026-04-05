@@ -43,7 +43,16 @@
 document.querySelectorAll('.localtime').forEach(el => {
     const d = new Date(el.getAttribute('datetime'));
     const pad = n => String(n).padStart(2, '0');
-    el.textContent = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const full = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const diff = Math.floor((Date.now() - d) / 1000);
+    let rel;
+    if (diff < 60) rel = 'just now';
+    else if (diff < 3600) rel = `${Math.floor(diff / 60)}m ago`;
+    else if (diff < 86400) rel = `${Math.floor(diff / 3600)}h ago`;
+    else if (diff < 604800) rel = `${Math.floor(diff / 86400)}d ago`;
+    else rel = full;
+    el.textContent = rel;
+    el.setAttribute('title', full);
 });
 </script>
 </body>
