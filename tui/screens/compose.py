@@ -9,6 +9,7 @@ from pathlib import Path
 
 from core import lexicon
 from core.models import AtUri
+from core.models import AuthError
 from core.records import create_thread_record, create_reply_record, upload_blob
 from tui.util import require_session
 
@@ -105,6 +106,9 @@ class ComposeThreadScreen(Screen):
                 attachments=attachments or None,
             )
             resp.raise_for_status()
+        except AuthError:
+            self.notify("Session expired. Please log in again.", severity="error")
+            return
         except Exception as e:
             self.notify(f"Failed to post thread: {e}", severity="error")
             return
@@ -210,6 +214,9 @@ class ComposeReplyScreen(Screen):
                 quote=self.quote.uri if self.quote else None,
             )
             resp.raise_for_status()
+        except AuthError:
+            self.notify("Session expired. Please log in again.", severity="error")
+            return
         except Exception as e:
             self.notify(f"Failed to post reply: {e}", severity="error")
             return

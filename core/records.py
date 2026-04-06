@@ -10,7 +10,7 @@ import httpx
 from core import lexicon
 from core.constellation import get_replies, get_threads
 from core.filters import filter_moderated
-from core.models import AtUri, BBS, Board, Reply, Thread
+from core.models import AtUri, AuthError, BBS, Board, Reply, Thread
 from core.slingshot import get_records_batch, resolve_identities_batch
 from core.util import now_iso
 
@@ -197,6 +197,8 @@ async def _pds_post(
                 resp = await pds_request(
                     client, "POST", url, session, updater, body=body
                 )
+            else:
+                raise AuthError("Session expired. Please log in again.")
 
         return resp
 
@@ -246,6 +248,8 @@ async def upload_blob(
                     content=data,
                     content_type=mime_type,
                 )
+            else:
+                raise AuthError("Session expired. Please log in again.")
     else:
         resp = await client.post(
             url,

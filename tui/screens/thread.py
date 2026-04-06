@@ -6,7 +6,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Static
 
 from core import lexicon
-from core.models import AtUri, BBS, Thread
+from core.models import AtUri, AuthError, BBS, Thread
 from tui.fetchers import delete_record, fetch_replies
 from tui.util import require_session
 from tui.widgets.post import Post
@@ -198,6 +198,9 @@ class ThreadScreen(Screen):
                 post.collection,
                 post.rkey,
             )
+        except AuthError:
+            self.notify("Session expired. Please log in again.", severity="error")
+            return
         except Exception:
             self.notify("Failed to delete.", severity="error")
             return

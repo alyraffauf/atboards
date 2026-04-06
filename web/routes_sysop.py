@@ -3,12 +3,17 @@
 from quart import Blueprint, current_app, redirect, render_template, request
 
 from core import lexicon
-from core.models import AtUri
+from core.models import AtUri, AuthError
 from core.util import now_iso
 from web.helpers import get_user
 from web.routes_write import _authed_pds_post, authed_delete_record
 
 bp = Blueprint("sysop", __name__)
+
+
+@bp.errorhandler(AuthError)
+async def handle_auth_error(e):
+    return redirect("/login")
 
 
 async def _has_bbs(user: dict) -> bool:

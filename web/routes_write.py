@@ -3,12 +3,17 @@
 from quart import Blueprint, current_app, redirect, request
 
 from core import lexicon
-from core.models import AtUri
+from core.models import AtUri, AuthError
 from core.records import upload_blob
 from core.util import now_iso
 from web.helpers import get_user, session_updater
 
 bp = Blueprint("write", __name__)
+
+
+@bp.errorhandler(AuthError)
+async def handle_auth_error(e):
+    return redirect("/login")
 
 
 async def _authed_pds_post(user: dict, endpoint: str, body: dict):

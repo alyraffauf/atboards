@@ -45,6 +45,10 @@ class NetworkError(Exception):
     """Slingshot or Constellation is unreachable."""
 
 
+class AuthError(Exception):
+    """Session expired and token refresh failed."""
+
+
 # microcosm response types
 
 
