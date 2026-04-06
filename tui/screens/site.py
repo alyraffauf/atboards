@@ -68,7 +68,7 @@ class SiteScreen(Screen):
             self.app.pop_screen()
             self.app.push_screen(SiteScreen(bbs, self.handle))
         except Exception:
-            pass
+            self.notify("Could not refresh.", severity="error")
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         if event.list_view.id == "board-list":
