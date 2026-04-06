@@ -37,9 +37,7 @@ def create_app(
 
     @app.before_serving
     async def startup():
-        app.http_client = httpx.AsyncClient(
-            timeout=httpx.Timeout(10, connect=30)
-        )
+        app.http_client = httpx.AsyncClient(timeout=httpx.Timeout(10, connect=30))
 
     @app.after_serving
     async def shutdown():

@@ -412,7 +412,6 @@ async def create_ban_record(
     )
 
 
-
 async def create_hidden_record(
     client: httpx.AsyncClient,
     session: dict,
@@ -435,7 +434,6 @@ async def create_hidden_record(
         },
         session_updater,
     )
-
 
 
 async def put_board_record(

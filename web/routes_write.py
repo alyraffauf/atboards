@@ -94,11 +94,13 @@ async def create_reply(handle: str, did: str, tid: str):
 
     if request.headers.get("Accept") == "application/json":
         data = resp.json()
-        return jsonify({
-            "uri": data["uri"],
-            "cid": data["cid"],
-            "attachments": attachments or [],
-        })
+        return jsonify(
+            {
+                "uri": data["uri"],
+                "cid": data["cid"],
+                "attachments": attachments or [],
+            }
+        )
 
     return redirect(f"/bbs/{handle}/thread/{did}/{tid}")
 

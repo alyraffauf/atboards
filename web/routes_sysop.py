@@ -223,9 +223,7 @@ async def moderate_bbs():
     banned_handles = {}
     if bbs.site.banned_dids:
         try:
-            authors = await resolve_identities_batch(
-                client, list(bbs.site.banned_dids)
-            )
+            authors = await resolve_identities_batch(client, list(bbs.site.banned_dids))
             banned_handles = {did: authors[did].handle for did in authors}
         except Exception:
             banned_handles = {did: did for did in bbs.site.banned_dids}
@@ -238,9 +236,7 @@ async def moderate_bbs():
     hidden_posts = []
     if bbs.site.hidden_posts:
         try:
-            hidden_dids = list(
-                {AtUri.parse(uri).did for uri in bbs.site.hidden_posts}
-            )
+            hidden_dids = list({AtUri.parse(uri).did for uri in bbs.site.hidden_posts})
             hidden_authors = await resolve_identities_batch(client, hidden_dids)
         except Exception:
             hidden_authors = {}

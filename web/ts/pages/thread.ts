@@ -259,8 +259,7 @@ export function initThread() {
       }
 
       if (container.children.length === 0 && !userDid) {
-        container.innerHTML =
-          '<p class="text-neutral-500">No replies yet.</p>';
+        container.innerHTML = '<p class="text-neutral-500">No replies yet.</p>';
       }
     } catch {
       if (loading) loading.textContent = "Could not fetch replies.";
@@ -379,9 +378,8 @@ export function initThread() {
         }
 
         // Reset form
-        (
-          replyForm.querySelector("#reply-body") as HTMLTextAreaElement
-        ).value = "";
+        (replyForm.querySelector("#reply-body") as HTMLTextAreaElement).value =
+          "";
         (replyForm.querySelector("#quote-uri") as HTMLInputElement).value = "";
         replyForm.querySelector("#quote-preview")?.classList.add("hidden");
         const fileInput = replyForm.querySelector(

@@ -3,16 +3,16 @@ import random
 import httpx
 from quart import Blueprint, current_app, render_template, request
 
+from core import lexicon
 from core.models import (
     AtUri,
     BBSNotFoundError,
     NetworkError,
     NoBBSError,
 )
-from core import lexicon
 from core.records import hydrate_replies, hydrate_threads, thread_from_record
 from core.resolver import resolve_bbs
-from core.slingshot import get_record, resolve_identity, resolve_identities_batch
+from core.slingshot import get_record, resolve_identities_batch, resolve_identity
 
 bp = Blueprint("main", __name__)
 
@@ -40,27 +40,6 @@ async def home():
 @bp.route("/login")
 async def login_page():
     return await render_template("login.html")
-
-
-@bp.route("/api/inbox")
-async def api_inbox():
-    from quart import g
-
-    if not g.user:
-        return {"inbox": [], "cursor": None}
-
-    from core.records import fetch_inbox
-
-    client = current_app.http_client
-    cursor = request.args.get("cursor")
-    offset = int(cursor) if cursor else 0
-    limit = 20
-
-    all_items = await fetch_inbox(client, g.user["did"], g.user["pds_url"])
-    page = all_items[offset : offset + limit]
-    next_cursor = str(offset + limit) if offset + limit < len(all_items) else None
-
-    return {"inbox": page, "cursor": next_cursor}
 
 
 @bp.route("/api/resolve/<handle>")
