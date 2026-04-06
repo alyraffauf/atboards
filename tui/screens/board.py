@@ -5,7 +5,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, ListItem, ListView, Static
 
 from core.models import BBS, Board
-from tui.fetchers import fetch_threads
+from core.records import hydrate_threads as fetch_threads
 from tui.util import require_session
 from tui.util import format_datetime
 

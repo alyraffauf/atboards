@@ -7,7 +7,7 @@ from textual.widgets import Footer, Static
 
 from core import lexicon
 from core.models import AtUri, AuthError, BBS, Thread
-from tui.fetchers import delete_record, fetch_replies
+from core.records import delete_record, hydrate_replies as fetch_replies
 from tui.util import require_session
 from tui.widgets.post import Post
 
