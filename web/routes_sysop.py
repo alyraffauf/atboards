@@ -4,9 +4,9 @@ from quart import Blueprint, current_app, redirect, render_template, request
 
 from core import lexicon
 from core.models import AtUri, AuthError
+from core.records import _pds_post, delete_record
 from core.util import now_iso
-from web.helpers import get_user
-from web.routes_write import _authed_pds_post, authed_delete_record
+from web.helpers import get_user, session_updater
 
 bp = Blueprint("sysop", __name__)
 
@@ -14,6 +14,13 @@ bp = Blueprint("sysop", __name__)
 @bp.errorhandler(AuthError)
 async def handle_auth_error(e):
     return redirect("/login")
+
+
+async def _authed_pds_post(user: dict, endpoint: str, body: dict):
+    """Make an authenticated POST to the user's PDS."""
+    return await _pds_post(
+        current_app.http_client, user, endpoint, body, session_updater
+    )
 
 
 async def _has_bbs(user: dict) -> bool:
@@ -76,7 +83,9 @@ async def delete_bbs():
     failed = []
     for slug in board_slugs:
         try:
-            await authed_delete_record(user, lexicon.BOARD, slug)
+            await delete_record(
+                    current_app.http_client, user, lexicon.BOARD, slug, session_updater
+                )
         except Exception:
             failed.append(f"board/{slug}")
 
@@ -89,7 +98,13 @@ async def delete_bbs():
         for ref in backlinks.records:
             if ref.did == user["did"]:
                 try:
-                    await authed_delete_record(user, lexicon.NEWS, ref.rkey)
+                    await delete_record(
+                        current_app.http_client,
+                        user,
+                        lexicon.NEWS,
+                        ref.rkey,
+                        session_updater,
+                    )
                 except Exception:
                     failed.append(f"news/{ref.rkey}")
     except Exception:
@@ -102,7 +117,9 @@ async def delete_bbs():
 
     # Delete site record
     try:
-        await authed_delete_record(user, lexicon.SITE, "self")
+        await delete_record(
+            current_app.http_client, user, lexicon.SITE, "self", session_updater
+        )
     except Exception:
         return await error("Could not delete BBS.")
 
@@ -418,7 +435,9 @@ async def delete_news(handle: str, tid: str):
         return redirect(f"/bbs/{handle}")
 
     try:
-        await authed_delete_record(user, lexicon.NEWS, tid)
+        await delete_record(
+            current_app.http_client, user, lexicon.NEWS, tid, session_updater
+        )
     except Exception:
         return await error("Could not delete news.")
 

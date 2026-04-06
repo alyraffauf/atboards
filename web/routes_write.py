@@ -4,8 +4,7 @@ from quart import Blueprint, current_app, redirect, request
 
 from core import lexicon
 from core.models import AtUri, AuthError
-from core.records import upload_blob
-from core.util import now_iso
+from core.records import create_reply_record, create_thread_record, delete_record, upload_blob
 from web.helpers import get_user, session_updater
 
 bp = Blueprint("write", __name__)
@@ -14,30 +13,6 @@ bp = Blueprint("write", __name__)
 @bp.errorhandler(AuthError)
 async def handle_auth_error(e):
     return redirect("/login")
-
-
-async def _authed_pds_post(user: dict, endpoint: str, body: dict):
-    """Make an authenticated POST to the user's PDS."""
-    from core.records import _pds_post
-
-    return await _pds_post(
-        current_app.http_client, user, endpoint, body, session_updater
-    )
-
-
-async def authed_delete_record(user: dict, collection: str, rkey: str):
-    """Delete a record from the user's repo."""
-    resp = await _authed_pds_post(
-        user,
-        "com.atproto.repo.deleteRecord",
-        {
-            "repo": user["did"],
-            "collection": collection,
-            "rkey": rkey,
-        },
-    )
-    resp.raise_for_status()
-    return resp
 
 
 @bp.route("/bbs/<handle>/board/<slug>/new-thread", methods=["POST"])
@@ -90,24 +65,14 @@ async def create_thread(handle: str, slug: str):
                     message=f"Failed to upload {f.filename}.",
                 ), 400
 
-    record = {
-        "$type": lexicon.THREAD,
-        "board": board_uri,
-        "title": title,
-        "body": body,
-        "createdAt": now_iso(),
-    }
-    if attachments:
-        record["attachments"] = attachments
-
-    resp = await _authed_pds_post(
+    resp = await create_thread_record(
+        current_app.http_client,
         user,
-        "com.atproto.repo.createRecord",
-        {
-            "repo": user["did"],
-            "collection": lexicon.THREAD,
-            "record": record,
-        },
+        board_uri,
+        title,
+        body,
+        attachments=attachments or None,
+        session_updater=session_updater,
     )
     resp.raise_for_status()
 
@@ -150,25 +115,14 @@ async def create_reply(handle: str, did: str, tid: str):
                     message=f"Failed to upload {f.filename}.",
                 ), 400
 
-    record = {
-        "$type": lexicon.REPLY,
-        "subject": thread_uri,
-        "body": body,
-        "createdAt": now_iso(),
-    }
-    if attachments:
-        record["attachments"] = attachments
-    if quote:
-        record["quote"] = quote
-
-    resp = await _authed_pds_post(
+    resp = await create_reply_record(
+        current_app.http_client,
         user,
-        "com.atproto.repo.createRecord",
-        {
-            "repo": user["did"],
-            "collection": lexicon.REPLY,
-            "record": record,
-        },
+        thread_uri,
+        body,
+        attachments=attachments or None,
+        quote=quote,
+        session_updater=session_updater,
     )
     resp.raise_for_status()
 
@@ -181,7 +135,9 @@ async def delete_thread(handle: str, did: str, tid: str):
     if not user or user["did"] != did:
         return redirect(f"/bbs/{handle}/thread/{did}/{tid}")
 
-    await authed_delete_record(user, lexicon.THREAD, tid)
+    await delete_record(
+        current_app.http_client, user, lexicon.THREAD, tid, session_updater
+    )
     return redirect(f"/bbs/{handle}")
 
 
@@ -191,5 +147,7 @@ async def delete_reply(handle: str, did: str, tid: str, reply_tid: str):
     if not user:
         return redirect(f"/bbs/{handle}/thread/{did}/{tid}")
 
-    await authed_delete_record(user, lexicon.REPLY, reply_tid)
+    await delete_record(
+        current_app.http_client, user, lexicon.REPLY, reply_tid, session_updater
+    )
     return redirect(f"/bbs/{handle}/thread/{did}/{tid}")
