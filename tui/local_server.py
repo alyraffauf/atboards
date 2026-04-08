@@ -29,7 +29,14 @@ async def wait_for_callback(port: int = 23847) -> dict:
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "127.0.0.1", port)
-    await site.start()
+    try:
+        await site.start()
+    except OSError as e:
+        await runner.cleanup()
+        raise RuntimeError(
+            f"Could not bind OAuth callback server on 127.0.0.1:{port} "
+            f"({e}). Is another atbbs login in progress?"
+        ) from e
 
     try:
         await event.wait()

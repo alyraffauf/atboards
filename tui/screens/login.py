@@ -119,6 +119,9 @@ class LoginScreen(Screen):
 
         try:
             callback = await wait_for_callback(port=CALLBACK_PORT)
+        except RuntimeError as e:
+            self.notify(str(e), severity="error")
+            return
         except Exception:
             self.notify("Failed to receive callback.", severity="error")
             return
