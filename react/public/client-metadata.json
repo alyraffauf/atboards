@@ -1,0 +1,12 @@
+{
+  "client_id": "https://REPLACE_WITH_YOUR_DOMAIN/client-metadata.json",
+  "client_name": "atbbs",
+  "client_uri": "https://REPLACE_WITH_YOUR_DOMAIN",
+  "redirect_uris": ["https://REPLACE_WITH_YOUR_DOMAIN/oauth/callback"],
+  "scope": "atproto transition:generic",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none",
+  "application_type": "web",
+  "dpop_bound_access_tokens": true
+}
