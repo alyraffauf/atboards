@@ -5,7 +5,7 @@ import asyncio
 from aiohttp import web
 
 
-async def wait_for_callback(port: int = 23847) -> dict:
+async def wait_for_callback(port: int = 23847, timeout: float = 90.0) -> dict:
     """Start a local server and wait for the OAuth callback.
 
     Returns dict with 'code', 'state', and 'iss' from the callback query params.
@@ -39,7 +39,12 @@ async def wait_for_callback(port: int = 23847) -> dict:
         ) from e
 
     try:
-        await event.wait()
+        try:
+            await asyncio.wait_for(event.wait(), timeout=timeout)
+        except asyncio.TimeoutError:
+            raise RuntimeError(
+                f"Timed out waiting for OAuth callback after {int(timeout)}s."
+            ) from None
     finally:
         await runner.cleanup()
 
