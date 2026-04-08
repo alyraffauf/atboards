@@ -5,7 +5,7 @@ from textual.widget import Widget
 from textual.widgets import Static
 
 from core.models import AtUri
-from tui.util import format_datetime
+from core.util import format_datetime_local as format_datetime
 
 
 class AttachmentLink(Static, can_focus=True):

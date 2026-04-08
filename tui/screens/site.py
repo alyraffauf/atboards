@@ -8,7 +8,7 @@ from core.models import BBS
 from core.resolver import resolve_bbs
 from tui.screens.board import BoardScreen
 from tui.screens.news import NewsScreen
-from tui.util import format_datetime
+from core.util import format_datetime_local as format_datetime
 from tui.widgets.breadcrumb import Breadcrumb
 
 

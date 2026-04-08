@@ -8,8 +8,8 @@ from core.models import BBS, Board
 from core.records import hydrate_threads as fetch_threads
 from tui.screens.compose import ComposeThreadScreen
 from tui.screens.thread import ThreadScreen
+from core.util import format_datetime_local as format_datetime
 from tui.util import require_session
-from tui.util import format_datetime
 from tui.widgets.breadcrumb import Breadcrumb
 
 

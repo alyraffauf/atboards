@@ -1,6 +1,4 @@
-"""TUI utilities — delegates to core."""
-
-from core.util import format_datetime_local as format_datetime
+"""TUI utilities."""
 
 
 def require_session(screen) -> dict | None:
