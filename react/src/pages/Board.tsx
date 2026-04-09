@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import {
   Link,
   useLoaderData,
+  useNavigate,
   useRevalidator,
   useRouteLoaderData,
 } from "react-router-dom";
@@ -33,6 +34,7 @@ export default function BoardPage() {
   const { handle, board } = loaded;
   const { user, agent } = useAuth();
   const revalidator = useRevalidator();
+  const navigate = useNavigate();
 
   // Threads beyond the loader's first page are appended client-side.
   const [extraThreads, setExtraThreads] = useState<ThreadItem[]>([]);
@@ -98,14 +100,14 @@ export default function BoardPage() {
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
-    if (!agent) {
+    if (!agent || !user) {
       alert("Not signed in.");
       return;
     }
     try {
       const boardUri = makeAtUri(bbs.identity.did, BOARD, board.slug);
       const attachments = await uploadAttachments(agent, files);
-      await createThread(
+      const resp = await createThread(
         agent,
         boardUri,
         title.trim(),
@@ -115,7 +117,13 @@ export default function BoardPage() {
       setTitle("");
       setBody("");
       setFiles(null);
-      revalidator.revalidate();
+      // Trigger a board revalidation in the background so the new thread
+      // appears in the list once Constellation indexes it.
+      setTimeout(() => revalidator.revalidate(), 1500);
+      // Navigate the user straight into their freshly created thread —
+      // Slingshot has the record immediately even if Constellation lags.
+      const { did, rkey } = parseAtUri(resp.data.uri);
+      navigate(`/bbs/${handle}/thread/${did}/${rkey}`);
     } catch (err: any) {
       console.error("createThread failed:", err);
       alert(`Failed to post: ${err?.message ?? err}`);
