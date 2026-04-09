@@ -1,16 +1,15 @@
+import mimetypes
+from pathlib import Path
+
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
 from textual.widgets import Footer, Input, Static, TextArea
-from textual import work
-
-import mimetypes
-from pathlib import Path
 
 from core import lexicon
-from core.models import AtUri
-from core.models import AuthError
-from core.records import create_news_record, create_thread_record, create_reply_record, upload_blob
+from core.models import AtUri, AuthError, BBS, Board, Reply, Thread
+from core.records import create_news_record, create_reply_record, create_thread_record, upload_blob
 from tui.util import require_session
 from tui.widgets.breadcrumb import Breadcrumb
 
@@ -47,7 +46,7 @@ class ComposeThreadScreen(Screen):
         ("ctrl+s", "post", "post"),
     ]
 
-    def __init__(self, bbs, handle: str, board) -> None:
+    def __init__(self, bbs: BBS, handle: str, board: Board) -> None:
         super().__init__()
         self.bbs = bbs
         self.handle = handle
@@ -122,7 +121,7 @@ class ComposeReplyScreen(Screen):
         ("ctrl+g", "toggle_quote", "toggle quote"),
     ]
 
-    def __init__(self, bbs, handle: str, thread, quote=None) -> None:
+    def __init__(self, bbs: BBS, handle: str, thread: Thread, quote: Reply | None = None) -> None:
         super().__init__()
         self.bbs = bbs
         self.handle = handle
@@ -225,7 +224,7 @@ class ComposeNewsScreen(Screen):
         ("ctrl+s", "post", "post"),
     ]
 
-    def __init__(self, bbs, handle: str) -> None:
+    def __init__(self, bbs: BBS, handle: str) -> None:
         super().__init__()
         self.bbs = bbs
         self.handle = handle

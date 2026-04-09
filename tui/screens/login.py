@@ -2,13 +2,12 @@ import json
 import webbrowser
 from urllib.parse import quote, urlencode
 
+from authlib.jose import JsonWebKey
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
 from textual.widgets import Footer, Input, Static
-from textual import work
-
-from authlib.jose import JsonWebKey
 
 from core.auth.config import load_secrets
 from core.auth.oauth import (
@@ -17,11 +16,9 @@ from core.auth.oauth import (
     resolve_pds_authserver,
     send_par_request,
 )
+from core.lexicon import OAUTH_SCOPE
 from core.slingshot import resolve_identity
 from tui.local_server import wait_for_callback
-
-
-from core.lexicon import OAUTH_SCOPE
 from tui.paths import DATA_DIR
 from tui.widgets.breadcrumb import Breadcrumb
 

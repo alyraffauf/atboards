@@ -1,17 +1,17 @@
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.screen import Screen
 from textual.widgets import Footer, ListItem, ListView, Static
-from textual import work
 
 from core.models import BBS
 from core.resolver import resolve_bbs
+from core.util import format_datetime_local as format_datetime
 from tui.screens.board import BoardScreen
 from tui.screens.compose import ComposeNewsScreen
 from tui.screens.news import NewsScreen
 from tui.screens.sysop import SysopScreen
 from tui.util import require_session
-from core.util import format_datetime_local as format_datetime
 from tui.widgets.breadcrumb import Breadcrumb
 
 

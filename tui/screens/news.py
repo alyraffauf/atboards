@@ -7,6 +7,7 @@ from textual.widgets import Footer
 from core import lexicon
 from core.models import AuthError, BBS, News
 from core.records import delete_record
+from tui.util import make_session_updater
 from tui.widgets.breadcrumb import Breadcrumb
 from tui.widgets.post import Post
 
@@ -48,11 +49,7 @@ class NewsScreen(Screen):
     @work
     async def _do_delete(self) -> None:
         session = self.app.user_session
-        store = self.app.session_store
-
-        async def updater(d, field, value):
-            store.update_session_field(d, field, value)
-
+        updater = make_session_updater(self.app.session_store)
         try:
             await delete_record(
                 self.app.http_client,

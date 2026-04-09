@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from platformdirs import user_downloads_dir
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -6,11 +9,11 @@ from textual.screen import Screen
 from textual.widgets import Footer, Static
 
 from core import lexicon
-from core.models import BBS, AtUri, AuthError, Thread
+from core.models import BBS, AtUri, AuthError, Reply, Thread
 from core.records import create_ban_record, create_hidden_record, delete_record
 from core.records import hydrate_replies as fetch_replies
 from tui.screens.compose import ComposeReplyScreen
-from tui.util import require_session
+from tui.util import make_session_updater, require_session
 from tui.widgets.breadcrumb import Breadcrumb
 from tui.widgets.post import Post
 
@@ -34,7 +37,7 @@ class ThreadScreen(Screen):
         self.thread = thread
         self._page: int = 1
         self._total_pages: int = 1
-        self._replies_map: dict[str, object] = {}
+        self._replies_map: dict[str, Reply] = {}
 
     def compose(self) -> ComposeResult:
         board_slug = AtUri.parse(self.thread.board_uri).rkey
@@ -148,11 +151,7 @@ class ThreadScreen(Screen):
     @work
     async def _do_ban(self, did: str) -> None:
         session = self.app.user_session
-        store = self.app.session_store
-
-        async def updater(d, field, value):
-            store.update_session_field(d, field, value)
-
+        updater = make_session_updater(self.app.session_store)
         try:
             await create_ban_record(self.app.http_client, session, did, updater)
             self.notify(f"Banned {did}.")
@@ -172,11 +171,7 @@ class ThreadScreen(Screen):
     @work
     async def _do_hide(self, post: Post) -> None:
         session = self.app.user_session
-        store = self.app.session_store
-
-        async def updater(d, field, value):
-            store.update_session_field(d, field, value)
-
+        updater = make_session_updater(self.app.session_store)
         try:
             await create_hidden_record(
                 self.app.http_client, session, post.record_uri, updater
@@ -265,10 +260,6 @@ class ThreadScreen(Screen):
 
     @work(exclusive=True)
     async def _do_save(self, post: Post) -> None:
-        from pathlib import Path
-
-        from platformdirs import user_downloads_dir
-
         downloads = Path(user_downloads_dir())
         downloads.mkdir(parents=True, exist_ok=True)
 

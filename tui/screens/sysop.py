@@ -14,9 +14,10 @@ from core.records import (
     put_board_record,
     put_site_record,
 )
+from core.constellation import get_news
 from core.slingshot import resolve_identities_batch, resolve_identity
 from core.util import now_iso
-from tui.util import require_session
+from tui.util import make_session_updater, require_session
 from tui.widgets.breadcrumb import Breadcrumb
 
 
@@ -131,10 +132,7 @@ class SysopEditScreen(Screen):
         if not session:
             return
 
-        store = self.app.session_store
-
-        async def updater(d, field, value):
-            store.update_session_field(d, field, value)
+        updater = make_session_updater(self.app.session_store)
 
         name = self.query_one("#edit-name", Input).value.strip()
         description = self.query_one("#edit-desc", Input).value.strip()
@@ -241,7 +239,9 @@ class SysopModerateScreen(Screen):
                 client, session["pds_url"], session["did"], lexicon.BAN
             )
             self._ban_rkeys = {
-                r["value"]["did"]: r["uri"].split("/")[-1] for r in ban_records
+                r["value"]["did"]: AtUri.parse(r["uri"]).rkey
+                for r in ban_records
+                if r.get("value", {}).get("did")
             }
         except Exception:
             self._ban_rkeys = {}
@@ -271,7 +271,9 @@ class SysopModerateScreen(Screen):
                 client, session["pds_url"], session["did"], lexicon.HIDE
             )
             self._hide_rkeys = {
-                r["value"]["uri"]: r["uri"].split("/")[-1] for r in hide_records
+                r["value"]["uri"]: AtUri.parse(r["uri"]).rkey
+                for r in hide_records
+                if r.get("value", {}).get("uri")
             }
         except Exception:
             self._hide_rkeys = {}
@@ -301,10 +303,7 @@ class SysopModerateScreen(Screen):
     @work
     async def _do_remove(self, key: str, item) -> None:
         session = self.app.user_session
-        store = self.app.session_store
-
-        async def updater(d, field, value):
-            store.update_session_field(d, field, value)
+        updater = make_session_updater(self.app.session_store)
 
         kind, _, value = key.partition(":")
         try:
@@ -378,10 +377,7 @@ class SysopModerateScreen(Screen):
     @work
     async def _do_add_hide(self, uri: str) -> None:
         session = self.app.user_session
-        store = self.app.session_store
-
-        async def updater(d, field, value):
-            store.update_session_field(d, field, value)
+        updater = make_session_updater(self.app.session_store)
 
         if uri in self._hide_rkeys:
             self.notify("Already hidden.", severity="warning")
@@ -451,7 +447,6 @@ class SysopDeleteScreen(Screen):
                 failed.append(f"board/{board.slug}")
 
         # Delete news
-        from core.constellation import get_news
 
         site_uri = str(AtUri(session["did"], lexicon.SITE, "self"))
         try:
@@ -474,7 +469,7 @@ class SysopDeleteScreen(Screen):
                     client, session["pds_url"], session["did"], collection
                 )
                 for r in records:
-                    rkey = r["uri"].split("/")[-1]
+                    rkey = AtUri.parse(r["uri"]).rkey
                     try:
                         await delete_record(
                             client, session, collection, rkey, updater

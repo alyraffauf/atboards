@@ -1,9 +1,13 @@
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.screen import Screen
 from textual.widgets import Footer, Static
-from textual import work
 
+from core.models import AtUri, Thread
+from core.records import fetch_inbox
+from core.resolver import resolve_bbs
+from core.slingshot import get_record, resolve_identity
 from tui.screens.thread import ThreadScreen
 from tui.widgets.breadcrumb import Breadcrumb
 from tui.widgets.post import Post
@@ -61,13 +65,9 @@ class ActivityScreen(Screen):
 
     @work(exclusive=True)
     async def _navigate(self, item: dict) -> None:
-        from core.resolver import resolve_bbs
-        from core.slingshot import get_record, resolve_identity
-        from core.models import Thread
-
-        parts = item["thread_uri"].split("/")
-        thread_did = parts[2]
-        thread_tid = parts[-1]
+        parsed = AtUri.parse(item["thread_uri"])
+        thread_did = parsed.did
+        thread_tid = parsed.rkey
         handle = item.get("bbs_handle") or self.app.user_session.get("handle", "")
 
         client = self.app.http_client
@@ -98,8 +98,6 @@ class ActivityScreen(Screen):
             for w in self.query("#activity-loading"):
                 w.update("Log in to see your inbox.")
             return
-
-        from core.records import fetch_inbox
 
         client = self.app.http_client
 
