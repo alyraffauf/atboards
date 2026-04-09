@@ -7,13 +7,18 @@ from textual import work
 from core.models import BBS
 from core.resolver import resolve_bbs
 from tui.screens.board import BoardScreen
+from tui.screens.compose import ComposeNewsScreen
 from tui.screens.news import NewsScreen
+from tui.util import require_session
 from core.util import format_datetime_local as format_datetime
 from tui.widgets.breadcrumb import Breadcrumb
 
 
 class SiteScreen(Screen):
-    BINDINGS = [("escape", "app.pop_screen", "back")]
+    BINDINGS = [
+        ("escape", "app.pop_screen", "back"),
+        ("ctrl+n", "new_news", "news"),
+    ]
 
     def __init__(self, bbs: BBS, handle: str) -> None:
         super().__init__()
@@ -70,6 +75,15 @@ class SiteScreen(Screen):
             self.app.push_screen(SiteScreen(bbs, self.handle))
         except Exception:
             self.notify("Could not refresh.", severity="error")
+
+    def action_new_news(self) -> None:
+        session = require_session(self)
+        if not session:
+            return
+        if session["did"] != self.bbs.identity.did:
+            self.notify("Only the sysop can post news.", severity="error")
+            return
+        self.app.push_screen(ComposeNewsScreen(self.bbs, self.handle))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         if event.list_view.id == "board-list":

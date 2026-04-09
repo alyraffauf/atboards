@@ -10,7 +10,7 @@ from pathlib import Path
 from core import lexicon
 from core.models import AtUri
 from core.models import AuthError
-from core.records import create_thread_record, create_reply_record, upload_blob
+from core.records import create_news_record, create_thread_record, create_reply_record, upload_blob
 from tui.util import require_session
 from tui.widgets.breadcrumb import Breadcrumb
 
@@ -214,6 +214,68 @@ class ComposeReplyScreen(Screen):
             return
         except Exception as e:
             self.notify(f"Failed to post reply: {e}", severity="error")
+            return
+
+        self.app.pop_screen()
+
+
+class ComposeNewsScreen(Screen):
+    BINDINGS = [
+        ("escape", "app.pop_screen", "back"),
+        ("ctrl+s", "post", "post"),
+    ]
+
+    def __init__(self, bbs, handle: str) -> None:
+        super().__init__()
+        self.bbs = bbs
+        self.handle = handle
+
+    def compose(self) -> ComposeResult:
+        yield Breadcrumb(
+            ("@bbs", 2),
+            (self.bbs.site.name, 1),
+            ("news", 0),
+        )
+        with Vertical():
+            yield Static("news", classes="title")
+            yield Input(placeholder="Title", id="news-title")
+            yield TextArea(id="news-body", language=None)
+        yield Footer()
+
+    def on_mount(self) -> None:
+        self.query_one("#news-title", Input).focus()
+
+    def action_post(self) -> None:
+        self.post_news()
+
+    @work(exclusive=True)
+    async def post_news(self) -> None:
+        session = require_session(self)
+        if not session:
+            return
+
+        title = self.query_one("#news-title", Input).value.strip()
+        body = self.query_one("#news-body", TextArea).text.strip()
+        if not title or not body:
+            self.notify("Title and body cannot be empty.", severity="error")
+            return
+
+        site_uri = str(AtUri(self.bbs.identity.did, lexicon.SITE, "self"))
+
+        try:
+            resp = await create_news_record(
+                self.app.http_client,
+                session,
+                site_uri,
+                title,
+                body,
+            )
+            resp.raise_for_status()
+        except AuthError:
+            self.notify("Session expired. Please log in again.", severity="error")
+            return
+        except Exception as e:
+            self.notify(f"Failed to post news: {e}", severity="error")
             return
 
         self.app.pop_screen()

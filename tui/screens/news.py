@@ -1,15 +1,21 @@
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.screen import Screen
 from textual.widgets import Footer
 
-from core.models import BBS, News
+from core import lexicon
+from core.models import AuthError, BBS, News
+from core.records import delete_record
 from tui.widgets.breadcrumb import Breadcrumb
 from tui.widgets.post import Post
 
 
 class NewsScreen(Screen):
-    BINDINGS = [("escape", "app.pop_screen", "back")]
+    BINDINGS = [
+        ("escape", "app.pop_screen", "back"),
+        ("ctrl+d", "delete", "delete"),
+    ]
 
     def __init__(self, bbs: BBS, handle: str, news: News) -> None:
         super().__init__()
@@ -31,3 +37,33 @@ class NewsScreen(Screen):
                 body=self.news.body,
             )
         yield Footer()
+
+    def action_delete(self) -> None:
+        session = self.app.user_session
+        if not session or session["did"] != self.bbs.identity.did:
+            self.notify("Only the sysop can delete news.", severity="error")
+            return
+        self._do_delete()
+
+    @work
+    async def _do_delete(self) -> None:
+        session = self.app.user_session
+        store = self.app.session_store
+
+        async def updater(d, field, value):
+            store.update_session_field(d, field, value)
+
+        try:
+            await delete_record(
+                self.app.http_client,
+                session,
+                lexicon.NEWS,
+                self.news.tid,
+                updater,
+            )
+            self.app.pop_screen()
+            self.notify("News post deleted.")
+        except AuthError:
+            self.notify("Session expired. Please log in again.", severity="error")
+        except Exception:
+            self.notify("Could not delete news post.", severity="error")
