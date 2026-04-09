@@ -25,3 +25,4 @@ secrets.json
 
 # Seed scripts
 seeds/
+.DS_Store
