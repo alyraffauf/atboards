@@ -34,9 +34,19 @@ interface LoaderData {
   allRefs: { did: string; collection: string; rkey: string }[];
 }
 
-export default function ThreadPage() {
-  const { bbs } = useRouteLoaderData("bbs") as BBSLoaderData;
+/**
+ * Outer wrapper: re-keys the inner page on thread URI so navigating between
+ * threads gives us a fresh component instance (and fresh hook state). Without
+ * this, react-router reuses the same Thread component on param change and
+ * state from the previous thread (page index, optimistic adds) bleeds in.
+ */
+export default function ThreadRoute() {
   const loaded = useLoaderData() as LoaderData;
+  return <ThreadPage key={loaded.thread.uri} loaded={loaded} />;
+}
+
+function ThreadPage({ loaded }: { loaded: LoaderData }) {
+  const { bbs } = useRouteLoaderData("bbs") as BBSLoaderData;
   const { handle, thread } = loaded;
   const { user, agent } = useAuth();
   const revalidator = useRevalidator();
@@ -98,6 +108,10 @@ export default function ThreadPage() {
       setBody("");
       setFiles(null);
       setQuote(null);
+      // Give Constellation a moment to index the new reply, then refresh
+      // the loader so allRefs catches up and the optimistic entry can
+      // gracefully retire.
+      setTimeout(() => revalidator.revalidate(), 1500);
     } catch {
       alert("Failed to post reply.");
     } finally {

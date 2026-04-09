@@ -68,7 +68,9 @@ export function useThreadReplies(loaded: ThreadLoaderShape) {
   >({});
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
 
-  // Layer the overlays on top of the loader's refs.
+  // Layer the overlays on top of the loader's refs. Prune-effect below
+  // guarantees pendingAdds never contains a uri that allRefs already has,
+  // so concatenation is safe (no dupes).
   const loadedKey = allRefs.map((r) => r.rkey).join("|");
   const refs = useMemo(() => {
     const base = allRefs.filter((r) => !pendingDeletes.has(refToUri(r)));
@@ -76,6 +78,26 @@ export function useThreadReplies(loaded: ThreadLoaderShape) {
     return [...base, ...adds];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedKey, pendingAdds, pendingDeletes]);
+
+  // Once the loader has caught up (allRefs contains an optimistic uri), drop
+  // it from pendingAdds. Done in its own effect rather than inside hydrate
+  // so the merge logic is purely a display concern.
+  useEffect(() => {
+    setPendingAdds((prev) => {
+      const knownUris = new Set(allRefs.map(refToUri));
+      let changed = false;
+      const next: typeof prev = {};
+      for (const [uri, pending] of Object.entries(prev)) {
+        if (knownUris.has(uri)) {
+          changed = true;
+          continue;
+        }
+        next[uri] = pending;
+      }
+      return changed ? next : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadedKey]);
 
   const totalPages = Math.max(1, Math.ceil(refs.length / REPLIES_PER_PAGE));
 
@@ -153,21 +175,16 @@ export function useThreadReplies(loaded: ThreadLoaderShape) {
           };
         });
 
-      // Merge in pending optimistic adds whose refs land in this page.
+      // For any optimistic add whose ref lands in this page, display it if
+      // upstream hasn't returned the record yet. Pruning pendingAdds is the
+      // loader-watch effect's job — we only handle display here.
       const haveUris = new Set(items.map((i) => i.uri));
       const sliceUris = new Set(slice.map(refToUri));
-      const stillPending: typeof pendingAdds = {};
       for (const [uri, pending] of Object.entries(pendingAdds)) {
-        if (haveUris.has(uri)) continue; // upstream caught up — drop it
+        if (haveUris.has(uri)) continue;
         if (sliceUris.has(uri)) items.push(pending.item);
-        else stillPending[uri] = pending;
       }
       items.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-      if (
-        Object.keys(stillPending).length !== Object.keys(pendingAdds).length
-      ) {
-        setPendingAdds(stillPending);
-      }
 
       setReplies(items);
       setLoading(false);
