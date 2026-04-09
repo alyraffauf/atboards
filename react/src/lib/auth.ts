@@ -175,7 +175,7 @@ async function login(handle: string): Promise<void> {
 
   const url = await createAuthorizationUrl({
     target: { type: "account", identifier: handle as `${string}.${string}` },
-    scope: "atproto transition:generic",
+    scope: import.meta.env.VITE_OAUTH_SCOPE,
   });
 
   // Per atcute docs: small pause so localStorage flushes before navigation.

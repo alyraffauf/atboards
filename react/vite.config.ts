@@ -5,7 +5,16 @@ import tailwindcss from "@tailwindcss/vite";
 const SERVER_HOST = "127.0.0.1";
 const SERVER_PORT = 5173;
 
-const SCOPE = "atproto transition:generic";
+const SCOPE = [
+  "atproto",
+  "repo:xyz.atboards.site",
+  "repo:xyz.atboards.board",
+  "repo:xyz.atboards.news",
+  "repo:xyz.atboards.thread",
+  "repo:xyz.atboards.reply",
+  "repo:xyz.atboards.ban",
+  "repo:xyz.atboards.hide",
+].join(" ");
 
 interface ClientMetadata {
   client_id: string;
