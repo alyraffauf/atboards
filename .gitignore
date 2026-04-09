@@ -1,28 +1,22 @@
-# Python-generated files
+# Python
 __pycache__/
 *.py[oc]
 build/
 dist/
 wheels/
 *.egg-info
-
-# Virtual environments
 .venv
-
-# Tailwind binary
-tailwindcss
 
 # Node
 node_modules/
 
-# Build artifacts
-web/static/app.js
-web/static/style.css
+# React build output
+web/dist/
+web/tsconfig.tsbuildinfo
 
 # Auth secrets and database
 secrets.json
 *.db
 
-# Seed scripts
-seeds/
+# OS
 .DS_Store

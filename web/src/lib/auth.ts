@@ -15,7 +15,7 @@ import type { ActorResolver, ResolvedActor } from "@atcute/identity-resolver";
 import type { ActorIdentifier } from "@atcute/lexicons/syntax";
 import { resolveIdentity } from "./atproto";
 
-// --- OAuth setup (runs once when this module loads) ---
+// --- OAuth setup (deferred until config is available) ---
 
 /** Resolves handles via Slingshot so login attempts don't leak to Bluesky. */
 class SlingshotActorResolver implements ActorResolver {
@@ -30,13 +30,33 @@ class SlingshotActorResolver implements ActorResolver {
   }
 }
 
-configureOAuth({
-  metadata: {
-    client_id: import.meta.env.VITE_OAUTH_CLIENT_ID,
-    redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT_URI,
-  },
-  identityResolver: new SlingshotActorResolver(),
-});
+let oauthConfigured = false;
+let oauthScope = "";
+
+async function initOAuth(): Promise<void> {
+  if (oauthConfigured) return;
+
+  let clientId: string;
+  let redirectUri: string;
+
+  if (import.meta.env.DEV) {
+    clientId = import.meta.env.VITE_OAUTH_CLIENT_ID;
+    redirectUri = import.meta.env.VITE_OAUTH_REDIRECT_URI;
+    oauthScope = import.meta.env.VITE_OAUTH_SCOPE;
+  } else {
+    const resp = await fetch("/config.json");
+    const config = await resp.json();
+    clientId = config.client_id;
+    redirectUri = config.redirect_uri;
+    oauthScope = config.scope;
+  }
+
+  configureOAuth({
+    metadata: { client_id: clientId, redirect_uri: redirectUri },
+    identityResolver: new SlingshotActorResolver(),
+  });
+  oauthConfigured = true;
+}
 
 // --- Types ---
 
@@ -115,6 +135,7 @@ function setSignedOut() {
 
 async function restoreSession(): Promise<void> {
   try {
+    await initOAuth();
     const did = localStorage.getItem(CURRENT_DID_KEY);
     if (!did) {
       setSignedOut();
@@ -157,9 +178,10 @@ async function login(handle: string): Promise<void> {
     // non-fatal
   }
 
+  await initOAuth();
   const url = await createAuthorizationUrl({
     target: { type: "account", identifier: handle as `${string}.${string}` },
-    scope: import.meta.env.VITE_OAUTH_SCOPE,
+    scope: oauthScope,
   });
 
   // Small pause so the browser flushes sessionStorage before navigating.
@@ -184,6 +206,8 @@ export function takePostLoginRedirect(): string | null {
 export function completeAuthCallback(): Promise<void> {
   if (callbackPromise) return callbackPromise;
   callbackPromise = (async () => {
+    await initOAuth();
+
     const fromQuery = new URLSearchParams(location.search);
     const fromHash = new URLSearchParams(location.hash.slice(1));
     const params =

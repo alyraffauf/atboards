@@ -5,11 +5,7 @@ description = "Decentralized bulletin boards on atproto."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "aiohttp>=3.13.5",
-    "authlib>=1.6.9",
     "httpx>=0.28.1",
-    "hypercorn>=0.18.0",
-    "quart>=0.20.0",
     "rich-click>=1.9.7",
     "textual>=8.2.2",
 ]
@@ -22,8 +18,7 @@ build-backend = "hatchling.build"
 atbbs = "cli.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "core", "web", "tui"]
-exclude = ["web/ts"]
+packages = ["cli", "core", "tui"]
 
 [dependency-groups]
 dev = []

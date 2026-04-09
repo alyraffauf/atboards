@@ -1,13 +1,9 @@
 services:
   atbbs:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_PUBLIC_URL: ${PUBLIC_URL:-http://127.0.0.1:8080}
     ports:
-      - "8000:8000"
-    volumes:
-      - atbbs-data:/data
-    environment:
-      - PUBLIC_URL=http://127.0.0.1:8000
+      - "8080:80"
     restart: unless-stopped
-
-volumes:
-  atbbs-data:
