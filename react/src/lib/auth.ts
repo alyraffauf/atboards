@@ -131,30 +131,25 @@ async function adoptUserAgent(agent: OAuthUserAgent): Promise<void> {
  * await this before inspecting auth state.
  */
 export function ensureAuthReady(): Promise<void> {
-  if (!initPromise) {
-    initPromise = (async () => {
-      try {
-        const did = localStorage.getItem(CURRENT_DID_KEY);
-        if (!did) {
-          status = "signedOut";
-          return;
-        }
-        const session = await getSession(did as Did, { allowStale: true });
-        await adoptUserAgent(new OAuthUserAgent(session));
-      } catch (e) {
-        console.warn("Could not resume OAuth session:", e);
-        try {
-          localStorage.removeItem(CURRENT_DID_KEY);
-        } catch {
-          // ignore
-        }
-        status = "signedOut";
-      } finally {
-        notify();
-      }
-    })();
-  }
+  if (!initPromise) initPromise = restoreSession();
   return initPromise;
+}
+
+async function restoreSession(): Promise<void> {
+  try {
+    const did = localStorage.getItem(CURRENT_DID_KEY);
+    if (!did) {
+      status = "signedOut";
+      return;
+    }
+    const session = await getSession(did as Did, { allowStale: true });
+    await adoptUserAgent(new OAuthUserAgent(session));
+  } catch (e) {
+    console.warn("Could not resume OAuth session:", e);
+    status = "signedOut";
+  } finally {
+    notify();
+  }
 }
 
 // Kick off init at module load so loaders see something to await.
@@ -253,22 +248,23 @@ async function logout(): Promise<void> {
 
 // --- React hook ---
 
-const snapshot: AuthSnapshot = {
+// Cached snapshot — useSyncExternalStore relies on Object.is to detect change,
+// so we must return a NEW object reference whenever any field changes
+// (mutating in place would silently break re-renders).
+let cachedSnapshot: AuthSnapshot = {
   status,
   user: currentUser,
   agent: currentAgent,
 };
 function getSnapshot(): AuthSnapshot {
   if (
-    snapshot.status !== status ||
-    snapshot.user !== currentUser ||
-    snapshot.agent !== currentAgent
+    cachedSnapshot.status !== status ||
+    cachedSnapshot.user !== currentUser ||
+    cachedSnapshot.agent !== currentAgent
   ) {
-    snapshot.status = status;
-    snapshot.user = currentUser;
-    snapshot.agent = currentAgent;
+    cachedSnapshot = { status, user: currentUser, agent: currentAgent };
   }
-  return snapshot;
+  return cachedSnapshot;
 }
 
 export function useAuth(): UseAuthResult {
