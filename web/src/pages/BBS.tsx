@@ -119,9 +119,10 @@ export default function BBSPage() {
 
         {bbs.news.length ? (
           bbs.news.map((item, i) => (
-            <div
+            <Link
               key={item.tid}
-              className={`reply-card bg-neutral-900 border border-neutral-800 rounded p-4 ${i < bbs.news.length - 1 ? "mb-2" : ""}`}
+              to={`/bbs/${handle}/news/${item.tid}`}
+              className={`reply-card block bg-neutral-900 border border-neutral-800 rounded p-4 hover:border-neutral-700 ${i < bbs.news.length - 1 ? "mb-2" : ""}`}
             >
               <div className="flex items-baseline justify-between mb-2">
                 <div className="flex items-baseline gap-2">
@@ -133,7 +134,10 @@ export default function BBSPage() {
                   <span className="reply-actions">
                     <button
                       type="button"
-                      onClick={() => removeNews(item.tid)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeNews(item.tid);
+                      }}
                       className="text-xs text-neutral-500 hover:text-red-400"
                     >
                       delete
@@ -141,8 +145,11 @@ export default function BBSPage() {
                   </span>
                 )}
               </div>
-              <PostBody>{item.body}</PostBody>
-            </div>
+              <div className="line-clamp-3 text-neutral-400">
+                {item.body.substring(0, 200) +
+                  (item.body.length > 200 ? "..." : "")}
+              </div>
+            </Link>
           ))
         ) : (
           <p className="text-neutral-500">No news yet.</p>

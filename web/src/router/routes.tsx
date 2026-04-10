@@ -17,6 +17,7 @@ import Account from "../pages/Account";
 import SysopCreate from "../pages/SysopCreate";
 import SysopEdit from "../pages/SysopEdit";
 import SysopModerate from "../pages/SysopModerate";
+import News from "../pages/News";
 import NotFound from "../pages/NotFound";
 
 import {
@@ -83,6 +84,10 @@ const routes: RouteObject[] = [
             loader: threadLoader,
             element: <Thread />,
             errorElement: <ErrorPage />,
+          },
+          {
+            path: "news/:tid",
+            element: <News />,
           },
         ],
       },
