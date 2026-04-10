@@ -288,7 +288,7 @@ function ThreadHeader({
           )}
         </span>
       </div>
-      <h1 className="text-base text-neutral-200 font-bold mb-3">
+      <h1 className="text-lg text-neutral-200 font-bold mb-3">
         {thread.title}
       </h1>
       <PostBody>{thread.body}</PostBody>
