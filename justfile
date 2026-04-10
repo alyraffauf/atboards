@@ -14,7 +14,7 @@ lex:
     cd web && npm run lex
 
 build:
-    cd web && VITE_PUBLIC_URL=${PUBLIC_URL} npm run build
+    cd web && VITE_PUBLIC_URL=${PUBLIC_URL:-} npm run build
 
 docker:
     docker build -t atbbs .
@@ -34,7 +34,7 @@ version ver:
     uv lock
 
 # Tag and push a release
-release ver: (version ver) build
+release ver: (version ver)
     git add -A
     git commit -m "v{{ ver }}"
     git tag "v{{ ver }}"
