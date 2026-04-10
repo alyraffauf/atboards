@@ -36,11 +36,14 @@ class ThreadScreen(Screen):
         Binding("ctrl+b", "ban", "ban user", show=False),
     ]
 
-    def __init__(self, bbs: BBS, handle: str, thread: Thread) -> None:
+    def __init__(
+        self, bbs: BBS, handle: str, thread: Thread, focus_reply: str | None = None
+    ) -> None:
         super().__init__()
         self.bbs = bbs
         self.handle = handle
         self.thread = thread
+        self._focus_reply = focus_reply
         self._page: int = 1
         self._total_pages: int = 1
         self._replies_map: dict[str, Reply] = {}
@@ -76,7 +79,8 @@ class ThreadScreen(Screen):
         posts = list(self.query(Post))
         if posts:
             posts[0].focus()
-        self.load_replies()
+        self.load_replies(focus_reply=self._focus_reply)
+        self._focus_reply = None
 
     def _update_page_status(self) -> None:
         text = (
@@ -91,7 +95,7 @@ class ThreadScreen(Screen):
                 post.remove()
 
     @work(exclusive=True)
-    async def load_replies(self, page: int = 1) -> None:
+    async def load_replies(self, page: int = 1, focus_reply: str | None = None) -> None:
         client = self.app.http_client
         try:
             result = await fetch_replies(
@@ -99,6 +103,7 @@ class ThreadScreen(Screen):
                 self.bbs,
                 self.thread.uri,
                 page=page,
+                focus_reply=focus_reply,
             )
         except Exception:
             self.notify("Could not fetch replies.", severity="error")

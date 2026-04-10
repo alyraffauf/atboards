@@ -87,7 +87,9 @@ class ActivityScreen(Screen):
                 updated_at=rec.value.get("updatedAt"),
                 attachments=rec.value.get("attachments"),
             )
-            self.app.push_screen(ThreadScreen(bbs, handle, thread))
+            self.app.push_screen(
+                ThreadScreen(bbs, handle, thread, focus_reply=item.get("reply_uri"))
+            )
         except Exception:
             self.notify("Could not open thread.", severity="error")
 
