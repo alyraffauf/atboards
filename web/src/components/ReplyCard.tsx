@@ -89,8 +89,10 @@ export default function ReplyCard({
       {quoted && (
         <div className="border-l-2 border-neutral-700 pl-3 mb-3 py-1 text-sm text-neutral-500">
           <span className="text-neutral-400">{quoted.handle}:</span>{" "}
-          {quoted.body.substring(0, 200)}
-          {quoted.body.length > 200 ? "..." : ""}
+          <PostBody>
+            {quoted.body.substring(0, 200) +
+              (quoted.body.length > 200 ? "..." : "")}
+          </PostBody>
         </div>
       )}
 
