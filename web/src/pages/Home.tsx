@@ -55,8 +55,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto px-4">
-      <div className="py-16 text-center">
+    <div className="max-w-2xl mx-auto px-4 h-full flex flex-col justify-center overflow-hidden">
+      <div className="text-center pb-4">
         <img
           src="/hero.svg"
           alt="@bbs"
@@ -79,7 +79,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="border-t border-neutral-800 py-8">
+      <div className="border-t border-neutral-800 py-4">
         <h2 className="text-neutral-300 mb-4">Dial a BBS</h2>
         <form onSubmit={onSubmit} className="flex gap-2 mb-6">
           <input
@@ -120,7 +120,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="border-t border-neutral-800 py-8">
+      <div className="border-t border-neutral-800 py-4">
         <h2 className="text-neutral-300 mb-4">Better yet, use your terminal</h2>
         <div className="flex gap-4 border-b border-neutral-800 mb-4">
           {(["pip", "uv", "brew"] as const).map((t) => (
@@ -135,24 +135,24 @@ export default function Home() {
         </div>
         {tab === "pip" && (
           <pre className="bg-neutral-900 border border-neutral-800 rounded px-4 py-3 text-neutral-400 text-xs">
-            <span className="text-neutral-500">$</span> pip install atbbs
+            <span className="text-neutral-500 select-none">$ </span>pip install atbbs
             {"\n"}
-            <span className="text-neutral-500">$</span> atbbs
+            <span className="text-neutral-500 select-none">$ </span>atbbs
           </pre>
         )}
         {tab === "uv" && (
           <pre className="bg-neutral-900 border border-neutral-800 rounded px-4 py-3 text-neutral-400 text-xs">
-            <span className="text-neutral-500">$</span> uv tool install atbbs
+            <span className="text-neutral-500 select-none">$ </span>uv tool install atbbs
             {"\n"}
-            <span className="text-neutral-500">$</span> atbbs
+            <span className="text-neutral-500 select-none">$ </span>atbbs
           </pre>
         )}
         {tab === "brew" && (
           <pre className="bg-neutral-900 border border-neutral-800 rounded px-4 py-3 text-neutral-400 text-xs">
-            <span className="text-neutral-500">$</span> brew install
+            <span className="text-neutral-500 select-none">$ </span>brew install
             alyraffauf/tap/atbbs
             {"\n"}
-            <span className="text-neutral-500">$</span> atbbs
+            <span className="text-neutral-500 select-none">$ </span>atbbs
           </pre>
         )}
       </div>
