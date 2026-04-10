@@ -9,7 +9,7 @@ PLACEHOLDERS = [
     "handle.northsky.social",
     "handle.selfhosted.social",
     "handle.tngl.sh",
-    "handle.witchcraft.systems",
+    "handle.pds.witchcraft.systems",
     "handle.your-domain.com",
 ]
 
