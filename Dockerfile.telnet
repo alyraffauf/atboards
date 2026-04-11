@@ -1,0 +1,8 @@
+FROM python:3.14-slim
+WORKDIR /app
+COPY pyproject.toml .
+RUN pip install --no-cache-dir httpx
+COPY core/ core/
+COPY telnet/ telnet/
+EXPOSE 2323
+CMD ["python", "-m", "telnet.server"]

@@ -6,3 +6,11 @@ services:
     environment:
       PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL in .env or shell (e.g. https://atbbs.app)}
     restart: unless-stopped
+
+  telnet:
+    build:
+      context: .
+      dockerfile: Dockerfile.telnet
+    ports:
+      - "2323:2323"
+    restart: unless-stopped

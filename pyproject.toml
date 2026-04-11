@@ -21,7 +21,7 @@ build-backend = "hatchling.build"
 atbbs = "cli.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "core", "tui"]
+packages = ["cli", "core", "telnet", "tui"]
 
 [dependency-groups]
 dev = []

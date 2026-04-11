@@ -27,3 +27,11 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ github.repository }}:latest
+
+      - name: Build and push telnet
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.telnet
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/atbbs-telnet:latest
