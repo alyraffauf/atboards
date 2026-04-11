@@ -18,5 +18,8 @@ web/tsconfig.tsbuildinfo
 secrets.json
 *.db
 
+# Seeds
+seeds/
+
 # OS
 .DS_Store
