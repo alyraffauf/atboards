@@ -11,6 +11,12 @@ import {
 } from "./atproto";
 import { SITE, BOARD, NEWS, BAN, HIDE } from "./lexicon";
 import { makeAtUri, parseAtUri } from "./util";
+import { is } from "@atcute/lexicons/validations";
+import { mainSchema as siteSchema } from "../lexicons/types/xyz/atboards/site";
+import { mainSchema as boardSchema } from "../lexicons/types/xyz/atboards/board";
+import { mainSchema as newsSchema } from "../lexicons/types/xyz/atboards/news";
+import { mainSchema as banSchema } from "../lexicons/types/xyz/atboards/ban";
+import { mainSchema as hideSchema } from "../lexicons/types/xyz/atboards/hide";
 import type {
   XyzAtboardsSite,
   XyzAtboardsBoard,
@@ -74,6 +80,9 @@ export async function resolveBBS(handle: string): Promise<BBS> {
     throw new NoBBSError(`${handle} isn't running a BBS.`);
   }
 
+  if (!is(siteSchema, siteRecord.value)) {
+    throw new NoBBSError(`${handle} has an invalid site record.`);
+  }
   const sv = siteRecord.value as unknown as XyzAtboardsSite.Main;
   const siteUri = makeAtUri(identity.did, SITE, "self");
   const boardSlugs: string[] = sv.boards ?? [];
@@ -91,6 +100,7 @@ export async function resolveBBS(handle: string): Promise<BBS> {
   const boards: Board[] = [];
   boardResults.forEach((r, i) => {
     if (r.status !== "fulfilled") return;
+    if (!is(boardSchema, r.value.value)) return;
     const v = r.value.value as unknown as XyzAtboardsBoard.Main;
     boards.push({
       slug: boardSlugs[i],
@@ -108,7 +118,7 @@ export async function resolveBBS(handle: string): Promise<BBS> {
       (r) => r.did === identity.did,
     );
     const newsRecords = await getRecordsBatch(sysopRefs);
-    news = newsRecords.map((r) => {
+    news = newsRecords.filter((r) => is(newsSchema, r.value)).map((r) => {
       const v = r.value as unknown as XyzAtboardsNews.Main;
       return {
         tid: parseAtUri(r.uri).rkey,
@@ -122,10 +132,14 @@ export async function resolveBBS(handle: string): Promise<BBS> {
   }
 
   const bannedDids = new Set(
-    banRecords.map((r) => (r.value as unknown as XyzAtboardsBan.Main).did),
+    banRecords
+      .filter((r) => is(banSchema, r.value))
+      .map((r) => (r.value as unknown as XyzAtboardsBan.Main).did),
   );
   const hiddenPosts = new Set(
-    hideRecords.map((r) => (r.value as unknown as XyzAtboardsHide.Main).uri),
+    hideRecords
+      .filter((r) => is(hideSchema, r.value))
+      .map((r) => (r.value as unknown as XyzAtboardsHide.Main).uri),
   );
 
   return {

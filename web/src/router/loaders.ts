@@ -17,6 +17,11 @@ import {
 } from "../lib/atproto";
 import { SITE, THREAD, REPLY, BAN, HIDE, BOARD } from "../lib/lexicon";
 import { makeAtUri, parseAtUri } from "../lib/util";
+import { is } from "@atcute/lexicons/validations";
+import { mainSchema as threadSchema } from "../lexicons/types/xyz/atboards/thread";
+import { mainSchema as replySchema } from "../lexicons/types/xyz/atboards/reply";
+import { mainSchema as banSchema } from "../lexicons/types/xyz/atboards/ban";
+import { mainSchema as hideSchema } from "../lexicons/types/xyz/atboards/hide";
 import type {
   XyzAtboardsThread,
   XyzAtboardsReply,
@@ -66,7 +71,7 @@ export async function hydrateThreadPage(
   const records = await getRecordsBatch(backlinks.records);
   const filtered = records.filter((r) => {
     const { did } = parseAtUri(r.uri);
-    return !bbs.site.bannedDids.has(did) && !bbs.site.hiddenPosts.has(r.uri);
+    return !bbs.site.bannedDids.has(did) && !bbs.site.hiddenPosts.has(r.uri) && is(threadSchema, r.value);
   });
   const authors = await resolveIdentitiesBatch(
     filtered.map((r) => parseAtUri(r.uri).did),
@@ -126,6 +131,9 @@ export async function threadLoader({ params }: LoaderFunctionArgs) {
     getRecord(did, THREAD, tid),
     resolveIdentity(did),
   ]);
+  if (!is(threadSchema, tr.value)) {
+    throw new Response("Invalid thread record", { status: 404 });
+  }
   const tv = tr.value as unknown as XyzAtboardsThread.Main;
   const boardSlug = parseAtUri(tv.board).rkey;
   const thread: ThreadObj = {
@@ -195,10 +203,12 @@ export async function accountLoader() {
 
 async function fetchInbox(did: string, pdsUrl: string): Promise<InboxItem[]> {
   const SCAN_LIMIT = 50;
-  const [threads, replies] = await Promise.all([
+  const [allThreads, allReplies] = await Promise.all([
     listRecords(pdsUrl, did, THREAD, SCAN_LIMIT),
     listRecords(pdsUrl, did, REPLY, SCAN_LIMIT),
   ]);
+  const threads = allThreads.filter((r) => is(threadSchema, r.value));
+  const replies = allReplies.filter((r) => is(replySchema, r.value));
 
   const results = await Promise.all([
     ...threads.map(async (tr) => {
@@ -289,6 +299,7 @@ export async function sysopModerateLoader() {
   const banRecs = await listRecords(user.pdsUrl, user.did, BAN);
   const banRkeys: Record<string, string> = {};
   for (const r of banRecs) {
+    if (!is(banSchema, r.value)) continue;
     const v = r.value as unknown as XyzAtboardsBan.Main;
     banRkeys[v.did] = parseAtUri(r.uri).rkey;
   }
@@ -307,6 +318,7 @@ export async function sysopModerateLoader() {
   const hideRecs = await listRecords(user.pdsUrl, user.did, HIDE);
   const hideRkeys: Record<string, string> = {};
   for (const r of hideRecs) {
+    if (!is(hideSchema, r.value)) continue;
     const v = r.value as unknown as XyzAtboardsHide.Main;
     hideRkeys[v.uri] = parseAtUri(r.uri).rkey;
   }

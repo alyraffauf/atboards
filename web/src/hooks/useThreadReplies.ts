@@ -6,6 +6,8 @@ import { useSearchParams } from "react-router-dom";
 import { getRecordsBatch, resolveIdentitiesBatch } from "../lib/atproto";
 import { parseAtUri } from "../lib/util";
 import type { BBS } from "../lib/bbs";
+import { is } from "@atcute/lexicons/validations";
+import { mainSchema as replySchema } from "../lexicons/types/xyz/atboards/reply";
 import type { XyzAtboardsReply } from "../lexicons";
 import type { Reply } from "../components/ReplyCard";
 
@@ -172,11 +174,11 @@ export function useThreadReplies(loaded: ThreadLoaderData) {
       // Fetch records from Slingshot.
       const records = await getRecordsBatch(slice);
 
-      // Drop moderated content.
+      // Drop moderated and invalid content.
       const visible = records.filter((r) => {
         const { did } = parseAtUri(r.uri);
         return (
-          !bbs.site.bannedDids.has(did) && !bbs.site.hiddenPosts.has(r.uri)
+          !bbs.site.bannedDids.has(did) && !bbs.site.hiddenPosts.has(r.uri) && is(replySchema, r.value)
         );
       });
 
@@ -235,6 +237,7 @@ export function useThreadReplies(loaded: ThreadLoaderData) {
         for (const r of quoteRecords) {
           const { did, rkey } = parseAtUri(r.uri);
           if (!(did in quoteAuthors)) continue;
+          if (!is(replySchema, r.value)) continue;
           const v = r.value as unknown as XyzAtboardsReply.Main;
           newCache[r.uri] = {
             uri: r.uri,
