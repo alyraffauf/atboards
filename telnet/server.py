@@ -48,6 +48,33 @@ def wrap(text: str) -> str:
     return "\r\n".join(out)
 
 
+def strip_iac(data: bytes) -> bytes:
+    """Strip telnet IAC command sequences from raw bytes."""
+    out = bytearray()
+    i = 0
+    while i < len(data):
+        if data[i] == 0xFF and i + 1 < len(data):
+            cmd = data[i + 1]
+            if cmd == 0xFF:
+                out.append(0xFF)
+                i += 2
+            elif cmd in (0xFB, 0xFC, 0xFD, 0xFE):
+                i += 3  # WILL/WONT/DO/DONT + option
+            elif cmd == 0xFA:
+                i += 2  # sub-negotiation: skip until IAC SE
+                while i < len(data):
+                    if data[i] == 0xFF and i + 1 < len(data) and data[i + 1] == 0xF0:
+                        i += 2
+                        break
+                    i += 1
+            else:
+                i += 2
+        else:
+            out.append(data[i])
+            i += 1
+    return bytes(out)
+
+
 async def write(writer: asyncio.StreamWriter, text: str):
     writer.write(wrap(text).encode())
     await writer.drain()
@@ -65,7 +92,7 @@ async def prompt(
         return ""
     if not data:
         return ""
-    text = data.decode(errors="ignore").strip()
+    text = strip_iac(data).decode(errors="ignore").strip()
     return re.sub(r"[^\x20-\x7e]", "", text)
 
 
