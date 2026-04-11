@@ -1,6 +1,5 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import {
-  Link,
   useLoaderData,
   useNavigate,
   useRevalidator,
@@ -12,6 +11,7 @@ import { useTitle } from "../hooks/useTitle";
 import { makeAtUri, parseAtUri, relativeDate } from "../lib/util";
 import { BOARD } from "../lib/lexicon";
 import { createThread, uploadAttachments } from "../lib/writes";
+import ThreadLink from "../components/ThreadLink";
 import ComposeForm from "../components/ComposeForm";
 import {
   hydrateThreadPage,
@@ -130,18 +130,13 @@ export default function BoardPage() {
       <div>
         {threads.length ? (
           threads.map((t) => (
-            <Link
+            <ThreadLink
               key={t.uri}
               to={`/bbs/${handle}/thread/${t.did}/${t.rkey}`}
-              className="flex items-baseline justify-between gap-4 px-3 py-2.5 -mx-3 rounded hover:bg-neutral-900 group"
-            >
-              <span className="text-neutral-300 group-hover:text-white truncate">
-                {t.title}
-              </span>
-              <span className="shrink-0 text-xs text-neutral-500">
-                {t.handle} · {relativeDate(t.createdAt)}
-              </span>
-            </Link>
+              title={t.title}
+              meta={`${t.handle} · ${relativeDate(t.createdAt)}`}
+              preview={t.body.substring(0, 120)}
+            />
           ))
         ) : (
           <p className="text-neutral-500">No threads yet.</p>
