@@ -86,12 +86,12 @@ export default function Home() {
 
       <div className="border-t border-neutral-800 py-4">
         <h2 className="text-neutral-300 mb-4">Dial a BBS</h2>
-        <form onSubmit={onSubmit} className="flex gap-2 mb-6">
+        <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2 mb-6">
           <HandleInput
             value={handle}
             onChange={setHandle}
             required
-            className="flex-1"
+            className="sm:flex-1"
           />
           <button
             type="submit"
