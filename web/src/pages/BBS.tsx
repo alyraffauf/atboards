@@ -7,6 +7,7 @@ import { NEWS, SITE } from "../lib/lexicon";
 import { makeAtUri } from "../lib/util";
 import { useTitle } from "../hooks/useTitle";
 import Localtime from "../components/Localtime";
+import ListLink from "../components/ListLink";
 import type { BBSLoaderData } from "../router/loaders";
 import PostBody from "../components/PostBody";
 
@@ -66,16 +67,12 @@ export default function BBSPage() {
         </h2>
         <div className="space-y-1">
           {bbs.site.boards.map((b) => (
-            <Link
+            <ListLink
               key={b.slug}
               to={`/bbs/${handle}/board/${b.slug}`}
-              className="flex items-baseline gap-3 px-3 py-2 -mx-3 rounded hover:bg-neutral-900 group"
-            >
-              <span className="text-neutral-200 group-hover:text-white">
-                {b.name}
-              </span>
-              <span className="text-neutral-500">{b.description}</span>
-            </Link>
+              name={b.name}
+              description={b.description}
+            />
           ))}
         </div>
       </section>

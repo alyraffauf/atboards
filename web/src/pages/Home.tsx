@@ -1,6 +1,7 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import HandleInput from "../components/HandleInput";
+import ListLink from "../components/ListLink";
 import { resolveIdentitiesBatch } from "../lib/atproto";
 import { SITE } from "../lib/lexicon";
 import { useTitle } from "../hooks/useTitle";
@@ -114,18 +115,12 @@ export default function Home() {
             </p>
             <div className="space-y-1">
               {discovered.slice(0, 5).map((d) => (
-                <Link
+                <ListLink
                   key={d.handle}
                   to={`/bbs/${encodeURIComponent(d.handle)}`}
-                  className="flex items-baseline gap-3 px-3 py-2 -mx-3 rounded hover:bg-neutral-900 group"
-                >
-                  <span className="text-neutral-200 group-hover:text-white wrap-break-word">
-                    {d.name}
-                  </span>
-                  <span className="text-neutral-500 hidden sm:inline">
-                    {d.desc}
-                  </span>
-                </Link>
+                  name={d.name}
+                  description={d.desc}
+                />
               ))}
             </div>
           </div>
