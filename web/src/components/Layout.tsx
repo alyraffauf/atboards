@@ -33,16 +33,16 @@ export default function Layout() {
       <header className="border-b border-neutral-800">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Desktop: logo + breadcrumbs inline */}
-          <div className="hidden sm:flex items-center gap-2 text-neutral-500 overflow-x-auto whitespace-nowrap">
+          <div className="hidden md:flex items-center gap-2 text-neutral-500 min-w-0 whitespace-nowrap">
             <Logo />
             <HeaderBreadcrumbs />
           </div>
-          {/* Mobile: logo only */}
-          <div className="sm:hidden">
+          {/* Mobile/tablet: logo only */}
+          <div className="md:hidden">
             <Logo />
           </div>
           {/* Desktop: inline links */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 shrink-0 ml-4">
             {user ? (
               <>
                 <Link
@@ -120,7 +120,7 @@ function MobileMenu({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="sm:hidden relative">
+    <div className="md:hidden relative">
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -130,7 +130,7 @@ function MobileMenu({
         {open ? "✕" : "☰"}
       </button>
       {open && (
-        <div className="fixed inset-0 top-[49px] bg-neutral-950/95 z-50 flex flex-col items-center pt-12 gap-6 text-lg">
+        <div className="z-50 fixed inset-0 top-[49px] bg-neutral-950/95 flex flex-col items-center pt-12 gap-6 text-lg sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:bg-neutral-900 sm:border sm:border-neutral-800 sm:rounded sm:py-2 sm:px-4 sm:gap-2 sm:text-sm sm:pt-0 sm:min-w-40">
           {user ? (
             <>
               <Link
@@ -192,7 +192,7 @@ function Navigation() {
   return (
     <Link
       to={parent.to}
-      className="sm:hidden inline-block mb-6 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-xs"
+      className="md:hidden inline-block mb-6 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-xs"
     >
       ← {parent.label}
     </Link>
