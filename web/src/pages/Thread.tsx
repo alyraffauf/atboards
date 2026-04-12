@@ -102,10 +102,6 @@ function ThreadPage({ loaded }: { loaded: LoaderData }) {
       setBody("");
       setFiles(null);
       setQuote(null);
-      // Give Constellation a moment to index the new reply, then refresh
-      // the loader so allRefs catches up and the optimistic entry can
-      // gracefully retire.
-      setTimeout(() => revalidator.revalidate(), 1500);
     } catch {
       alert("Failed to post reply.");
     } finally {

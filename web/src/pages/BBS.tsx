@@ -1,5 +1,5 @@
 import { useState, type SyntheticEvent } from "react";
-import { Link, useRevalidator, useRouteLoaderData } from "react-router-dom";
+import { Link, useRouteLoaderData } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { createNews, deleteRecord } from "../lib/writes";
@@ -15,7 +15,6 @@ import PostBody from "../components/PostBody";
 export default function BBSPage() {
   const { handle, bbs } = useRouteLoaderData("bbs") as BBSLoaderData;
   const { user, agent } = useAuth();
-  const revalidator = useRevalidator();
   const [newsTitle, setNewsTitle] = useState("");
   const [newsBody, setNewsBody] = useState("");
   const [pendingNews, setPendingNews] = useState<News[]>([]);
@@ -49,7 +48,6 @@ export default function BBSPage() {
     ]);
     setNewsTitle("");
     setNewsBody("");
-    setTimeout(() => revalidator.revalidate(), 1500);
   }
 
   async function removeNews(tid: string) {
@@ -58,7 +56,6 @@ export default function BBSPage() {
     await deleteRecord(agent, NEWS, tid);
     setPendingNews((prev) => prev.filter((n) => n.tid !== tid));
     setDeletedTids((prev) => new Set(prev).add(tid));
-    setTimeout(() => revalidator.revalidate(), 1500);
   }
 
   // Merge pending news with loader data, deduplicating by tid and filtering deletes.
