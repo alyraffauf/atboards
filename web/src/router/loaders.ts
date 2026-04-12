@@ -205,6 +205,33 @@ export async function accountLoader() {
   return { user, hasBBS, bbsName, items: itemsPromise };
 }
 
+async function fetchBacklinkItems(
+  sourceUri: string,
+  backlinkSource: string,
+  excludeDid: string,
+  type: InboxItem["type"],
+  threadTitle: string,
+  threadUri: string,
+): Promise<InboxItem[]> {
+  try {
+    const { records } = await fetchAndHydrate(sourceUri, backlinkSource, {
+      limit: 50,
+      excludeDid,
+    });
+    return records.map((r) => ({
+      type,
+      threadTitle,
+      threadUri,
+      replyUri: r.uri,
+      handle: r.handle,
+      body: ((r.value.body as string) ?? "").substring(0, 200),
+      createdAt: (r.value.createdAt as string) ?? "",
+    }));
+  } catch {
+    return [];
+  }
+}
+
 async function fetchInbox(did: string, pdsUrl: string): Promise<InboxItem[]> {
   const SCAN_LIMIT = 50;
   const [allThreads, allReplies] = await Promise.all([
@@ -215,48 +242,21 @@ async function fetchInbox(did: string, pdsUrl: string): Promise<InboxItem[]> {
   const replies = allReplies.filter((r) => is(replySchema, r.value));
 
   const results = await Promise.all([
-    ...threads.map(async (tr) => {
+    ...threads.map((tr) => {
       const v = tr.value as unknown as XyzAtboardsThread.Main;
-      try {
-        const { records } = await fetchAndHydrate(tr.uri, `${REPLY}:subject`, {
-          limit: 50,
-          excludeDid: did,
-        });
-        return records.map<InboxItem>((r) => ({
-          type: "reply",
-          threadTitle: v.title ?? "",
-          threadUri: tr.uri,
-          replyUri: r.uri,
-          handle: r.handle,
-          body: ((r.value.body as string) ?? "").substring(0, 200),
-          createdAt: (r.value.createdAt as string) ?? "",
-        }));
-      } catch {
-        return [];
-      }
+      return fetchBacklinkItems(
+        tr.uri, `${REPLY}:subject`, did, "reply", v.title ?? "", tr.uri,
+      );
     }),
-    ...replies.map(async (rr) => {
+    ...replies.map((rr) => {
       const v = rr.value as unknown as XyzAtboardsReply.Main;
-      try {
-        const { records } = await fetchAndHydrate(rr.uri, `${REPLY}:quote`, {
-          limit: 50,
-          excludeDid: did,
-        });
-        return records.map<InboxItem>((r) => ({
-          type: "quote",
-          threadTitle: "",
-          threadUri: v.subject ?? "",
-          replyUri: r.uri,
-          handle: r.handle,
-          body: ((r.value.body as string) ?? "").substring(0, 200),
-          createdAt: (r.value.createdAt as string) ?? "",
-        }));
-      } catch {
-        return [];
-      }
+      return fetchBacklinkItems(
+        rr.uri, `${REPLY}:quote`, did, "quote", "", v.subject ?? "",
+      );
     }),
   ]);
 
+  // Deduplicate — prefer "quote" type when the same reply appears as both.
   const seen = new Map<string, InboxItem>();
   for (const item of results.flat()) {
     const key = item.handle + item.body + item.createdAt;
@@ -290,45 +290,23 @@ export interface HiddenInfo {
   body: string;
 }
 
-export async function sysopModerateLoader() {
-  const user = await requireAuth();
-
-  let bbs: BBS;
-  try {
-    bbs = await resolveBBS(user.handle);
-  } catch {
-    throw redirect("/account/create");
+/** Build a map from a record field value to its rkey, for deletion. */
+function buildRkeyMap<T>(
+  records: { uri: string; value: Record<string, unknown> }[],
+  schema: Parameters<typeof is>[0],
+  getKey: (v: T) => string,
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const r of records) {
+    if (!is(schema, r.value)) continue;
+    map[getKey(r.value as unknown as T)] = parseAtUri(r.uri).rkey;
   }
+  return map;
+}
 
-  const banRecs = await listRecords(user.pdsUrl, user.did, BAN);
-  const banRkeys: Record<string, string> = {};
-  for (const r of banRecs) {
-    if (!is(banSchema, r.value)) continue;
-    const v = r.value as unknown as XyzAtboardsBan.Main;
-    banRkeys[v.did] = parseAtUri(r.uri).rkey;
-  }
-
-  let bannedHandles: Record<string, string> = {};
-  if (bbs.site.bannedDids.size) {
-    try {
-      const authors = await resolveIdentitiesBatch([...bbs.site.bannedDids]);
-      for (const did of bbs.site.bannedDids)
-        bannedHandles[did] = authors[did]?.handle ?? did;
-    } catch {
-      for (const did of bbs.site.bannedDids) bannedHandles[did] = did;
-    }
-  }
-
-  const hideRecs = await listRecords(user.pdsUrl, user.did, HIDE);
-  const hideRkeys: Record<string, string> = {};
-  for (const r of hideRecs) {
-    if (!is(hideSchema, r.value)) continue;
-    const v = r.value as unknown as XyzAtboardsHide.Main;
-    hideRkeys[v.uri] = parseAtUri(r.uri).rkey;
-  }
-
+async function hydrateHiddenPosts(uris: Set<string>): Promise<HiddenInfo[]> {
   const hidden: HiddenInfo[] = [];
-  for (const uri of bbs.site.hiddenPosts) {
+  for (const uri of uris) {
     const did = parseAtUri(uri).did;
     let handle = did;
     try {
@@ -347,6 +325,43 @@ export async function sysopModerateLoader() {
       hidden.push({ uri, handle, title: "", body: uri });
     }
   }
+  return hidden;
+}
+
+export async function sysopModerateLoader() {
+  const user = await requireAuth();
+
+  let bbs: BBS;
+  try {
+    bbs = await resolveBBS(user.handle);
+  } catch {
+    throw redirect("/account/create");
+  }
+
+  const [banRecs, hideRecs] = await Promise.all([
+    listRecords(user.pdsUrl, user.did, BAN),
+    listRecords(user.pdsUrl, user.did, HIDE),
+  ]);
+
+  const banRkeys = buildRkeyMap<XyzAtboardsBan.Main>(
+    banRecs, banSchema, (v) => v.did,
+  );
+  const hideRkeys = buildRkeyMap<XyzAtboardsHide.Main>(
+    hideRecs, hideSchema, (v) => v.uri,
+  );
+
+  let bannedHandles: Record<string, string> = {};
+  if (bbs.site.bannedDids.size) {
+    try {
+      const authors = await resolveIdentitiesBatch([...bbs.site.bannedDids]);
+      for (const did of bbs.site.bannedDids)
+        bannedHandles[did] = authors[did]?.handle ?? did;
+    } catch {
+      for (const did of bbs.site.bannedDids) bannedHandles[did] = did;
+    }
+  }
+
+  const hidden = await hydrateHiddenPosts(bbs.site.hiddenPosts);
 
   return { user, bbs, banRkeys, bannedHandles, hideRkeys, hidden };
 }
