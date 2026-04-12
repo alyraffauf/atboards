@@ -6,6 +6,7 @@ import {
   useNavigation,
 } from "react-router-dom";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useBreadcrumbState, type Crumb } from "../hooks/useBreadcrumb";
 
@@ -40,7 +41,8 @@ export default function Layout() {
           <div className="sm:hidden">
             <Logo />
           </div>
-          <div className="flex items-center gap-3">
+          {/* Desktop: inline links */}
+          <div className="hidden sm:flex items-center gap-3">
             {user ? (
               <>
                 <Link
@@ -67,6 +69,8 @@ export default function Layout() {
               </Link>
             )}
           </div>
+          {/* Mobile: hamburger menu */}
+          <MobileMenu user={user} loc={loc} onLogout={onLogout} />
         </div>
       </header>
       <main className="max-w-2xl mx-auto px-4 py-8 flex-1 w-full">
@@ -100,6 +104,65 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function MobileMenu({
+  user,
+  loc,
+  onLogout,
+}: {
+  user: ReturnType<typeof useAuth>["user"];
+  loc: ReturnType<typeof useLocation>;
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="sm:hidden relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="text-neutral-400 hover:text-neutral-300 text-lg px-1"
+        aria-label="Menu"
+      >
+        {open ? "✕" : "☰"}
+      </button>
+      {open && (
+        <div className="fixed inset-0 top-[49px] bg-neutral-950/95 z-50 flex flex-col items-center pt-12 gap-6 text-lg">
+          {user ? (
+            <>
+              <Link
+                to="/account"
+                onClick={() => setOpen(false)}
+                className="text-neutral-300 hover:text-neutral-200"
+              >
+                {user.handle}
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onLogout();
+                }}
+                className="text-neutral-500 hover:text-neutral-300"
+              >
+                log out
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              state={{ from: loc.pathname }}
+              onClick={() => setOpen(false)}
+              className="text-neutral-300 hover:text-neutral-200"
+            >
+              log in
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }
