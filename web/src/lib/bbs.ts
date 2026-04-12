@@ -62,7 +62,24 @@ export interface BBS {
   news: News[];
 }
 
+const CACHE_TTL = 5000; // 5 seconds — long enough for parent+child loaders
+let cache: { key: string; bbs: BBS; expires: number } | null = null;
+
+export function invalidateBBSCache() {
+  cache = null;
+}
+
 export async function resolveBBS(handle: string): Promise<BBS> {
+  const now = Date.now();
+  if (cache && cache.key === handle && cache.expires > now) {
+    return cache.bbs;
+  }
+  const bbs = await _resolveBBS(handle);
+  cache = { key: handle, bbs, expires: now + CACHE_TTL };
+  return bbs;
+}
+
+async function _resolveBBS(handle: string): Promise<BBS> {
   let identity: MiniDoc;
   try {
     identity = await resolveIdentity(handle);
