@@ -66,7 +66,9 @@ export default function BBSPage() {
   // Merge pending news with loader data, deduplicating by tid and filtering deletes.
   const loaderTids = new Set(bbs.news.map((n) => n.tid));
   const allNews = [
-    ...pendingNews.filter((n) => !loaderTids.has(n.tid) && !deletedTids.has(n.tid)),
+    ...pendingNews.filter(
+      (n) => !loaderTids.has(n.tid) && !deletedTids.has(n.tid),
+    ),
     ...bbs.news.filter((n) => !deletedTids.has(n.tid)),
   ];
   const visibleNews = showAllNews ? allNews : allNews.slice(0, 3);

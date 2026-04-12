@@ -226,4 +226,3 @@ function buildBreadcrumb(
     { label: thread.title },
   ];
 }
-

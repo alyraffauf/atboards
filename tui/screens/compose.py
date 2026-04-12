@@ -66,7 +66,11 @@ class ComposeThreadScreen(Screen):
         )
         with Vertical():
             yield Static("new thread", classes="title")
-            yield Input(placeholder="Thread title", id="thread-title", max_length=limits.THREAD_TITLE)
+            yield Input(
+                placeholder="Thread title",
+                id="thread-title",
+                max_length=limits.THREAD_TITLE,
+            )
             yield TextArea(id="thread-body", language=None)
             yield Input(placeholder="attach file (path, optional)", id="thread-file")
         yield Footer()
@@ -89,7 +93,9 @@ class ComposeThreadScreen(Screen):
             self.notify("Title and body cannot be empty.", severity="error")
             return
         if len(body) > limits.THREAD_BODY:
-            self.notify(f"Body too long ({len(body)}/{limits.THREAD_BODY}).", severity="error")
+            self.notify(
+                f"Body too long ({len(body)}/{limits.THREAD_BODY}).", severity="error"
+            )
             return
 
         board_uri = str(AtUri(self.bbs.identity.did, lexicon.BOARD, self.board.slug))
@@ -200,7 +206,9 @@ class ComposeReplyScreen(Screen):
             self.notify("Message body cannot be empty.", severity="error")
             return
         if len(body) > limits.REPLY_BODY:
-            self.notify(f"Body too long ({len(body)}/{limits.REPLY_BODY}).", severity="error")
+            self.notify(
+                f"Body too long ({len(body)}/{limits.REPLY_BODY}).", severity="error"
+            )
             return
 
         # Handle file attachment
@@ -250,7 +258,9 @@ class ComposeNewsScreen(Screen):
         )
         with Vertical():
             yield Static("news", classes="title")
-            yield Input(placeholder="Title", id="news-title", max_length=limits.NEWS_TITLE)
+            yield Input(
+                placeholder="Title", id="news-title", max_length=limits.NEWS_TITLE
+            )
             yield TextArea(id="news-body", language=None)
             yield Input(placeholder="attach file (path, optional)", id="news-file")
         yield Footer()
@@ -273,7 +283,9 @@ class ComposeNewsScreen(Screen):
             self.notify("Title and body cannot be empty.", severity="error")
             return
         if len(body) > limits.NEWS_BODY:
-            self.notify(f"Body too long ({len(body)}/{limits.NEWS_BODY}).", severity="error")
+            self.notify(
+                f"Body too long ({len(body)}/{limits.NEWS_BODY}).", severity="error"
+            )
             return
 
         site_uri = str(AtUri(self.bbs.identity.did, lexicon.SITE, "self"))

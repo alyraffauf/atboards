@@ -178,7 +178,9 @@ export function useThreadReplies(loaded: ThreadLoaderData) {
       const visible = records.filter((r) => {
         const { did } = parseAtUri(r.uri);
         return (
-          !bbs.site.bannedDids.has(did) && !bbs.site.hiddenPosts.has(r.uri) && is(replySchema, r.value)
+          !bbs.site.bannedDids.has(did) &&
+          !bbs.site.hiddenPosts.has(r.uri) &&
+          is(replySchema, r.value)
         );
       });
 

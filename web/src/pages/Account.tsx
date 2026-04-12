@@ -37,7 +37,9 @@ export default function Account() {
       const failed: string[] = [];
       const existing = await getRecord(user.did, SITE, "self");
       const sv = existing.value as Record<string, unknown>;
-      const slugs: string[] = (Array.isArray(sv.boards) ? sv.boards : []) as string[];
+      const slugs: string[] = (
+        Array.isArray(sv.boards) ? sv.boards : []
+      ) as string[];
       for (const s of slugs) {
         try {
           await deleteRecord(agent, BOARD, s);
@@ -64,7 +66,9 @@ export default function Account() {
         }
       }
       if (failed.length) {
-        alert(`Could not delete: ${failed.join(", ")}. Site record was not deleted.`);
+        alert(
+          `Could not delete: ${failed.join(", ")}. Site record was not deleted.`,
+        );
         return;
       }
       await deleteRecord(agent, SITE, "self");

@@ -141,17 +141,19 @@ async function _resolveBBS(handle: string): Promise<BBS> {
       (r) => r.did === identity.did,
     );
     const newsRecords = await getRecordsBatch(sysopRefs);
-    news = newsRecords.filter((r) => is(newsSchema, r.value)).map((r) => {
-      const v = r.value as unknown as XyzAtboardsNews.Main;
-      return {
-        tid: parseAtUri(r.uri).rkey,
-        siteUri: v.site,
-        title: v.title,
-        body: v.body,
-        createdAt: v.createdAt,
-        attachments: v.attachments as NewsAttachment[] | undefined,
-      };
-    });
+    news = newsRecords
+      .filter((r) => is(newsSchema, r.value))
+      .map((r) => {
+        const v = r.value as unknown as XyzAtboardsNews.Main;
+        return {
+          tid: parseAtUri(r.uri).rkey,
+          siteUri: v.site,
+          title: v.title,
+          body: v.body,
+          createdAt: v.createdAt,
+          attachments: v.attachments as NewsAttachment[] | undefined,
+        };
+      });
     news.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 

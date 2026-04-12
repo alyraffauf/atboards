@@ -71,7 +71,11 @@ export async function hydrateThreadPage(
   const records = await getRecordsBatch(backlinks.records);
   const filtered = records.filter((r) => {
     const { did } = parseAtUri(r.uri);
-    return !bbs.site.bannedDids.has(did) && !bbs.site.hiddenPosts.has(r.uri) && is(threadSchema, r.value);
+    return (
+      !bbs.site.bannedDids.has(did) &&
+      !bbs.site.hiddenPosts.has(r.uri) &&
+      is(threadSchema, r.value)
+    );
   });
   const authors = await resolveIdentitiesBatch(
     filtered.map((r) => parseAtUri(r.uri).did),

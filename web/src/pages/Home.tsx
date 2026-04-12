@@ -72,7 +72,10 @@ export default function Home() {
     <div className="max-w-2xl mx-auto px-4 h-full flex flex-col justify-center overflow-hidden">
       <div className="text-center pb-4">
         <picture>
-          <source srcSet="/hero-dark.svg" media="(prefers-color-scheme: dark)" />
+          <source
+            srcSet="/hero-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          />
           <img
             src="/hero.svg"
             alt="@bbs"
