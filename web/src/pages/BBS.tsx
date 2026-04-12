@@ -119,6 +119,12 @@ export default function BBSPage() {
               <textarea
                 value={newsBody}
                 onChange={(e) => setNewsBody(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
                 placeholder="Announcement body..."
                 required
                 rows={3}

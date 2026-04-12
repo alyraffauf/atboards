@@ -74,6 +74,12 @@ export default function ComposeForm({
       <Textarea
         value={body}
         onChange={(e) => onBodyChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            e.currentTarget.form?.requestSubmit();
+          }
+        }}
         placeholder={bodyPlaceholder}
         required
         rows={bodyRows}
