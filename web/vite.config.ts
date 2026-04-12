@@ -7,6 +7,7 @@ const SERVER_PORT = 5173;
 
 const SCOPE = [
   "atproto",
+  "transition:generic",
   "repo:xyz.atboards.site",
   "repo:xyz.atboards.board",
   "repo:xyz.atboards.news",
