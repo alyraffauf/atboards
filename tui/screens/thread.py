@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 
 from platformdirs import user_downloads_dir
@@ -118,22 +119,29 @@ class ThreadScreen(Screen):
         for r in result.replies:
             self._replies_map[r.uri] = r
 
-        # Fetch any quoted replies not already known
+        # Fetch any quoted replies not already known (in parallel)
         missing = [
             r.quote
             for r in result.replies
             if r.quote and r.quote not in self._replies_map
         ]
-        for uri in missing:
-            try:
-                parsed = AtUri.parse(uri)
-                rec = await get_record(
-                    client, parsed.did, parsed.collection, parsed.rkey
-                )
-                author = await resolve_identity(client, parsed.did)
-                self._replies_map[uri] = reply_from_record(rec, author)
-            except Exception:
-                pass
+
+        async def fetch_quote(uri: str):
+            parsed = AtUri.parse(uri)
+            rec, author = await asyncio.gather(
+                get_record(client, parsed.did, parsed.collection, parsed.rkey),
+                resolve_identity(client, parsed.did),
+            )
+            return uri, reply_from_record(rec, author)
+
+        if missing:
+            results = await asyncio.gather(
+                *[fetch_quote(uri) for uri in missing],
+                return_exceptions=True,
+            )
+            for r in results:
+                if isinstance(r, tuple):
+                    self._replies_map[r[0]] = r[1]
 
         for r in result.replies:
             quote_text = None

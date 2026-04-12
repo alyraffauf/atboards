@@ -1,3 +1,5 @@
+import asyncio
+
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
@@ -72,11 +74,11 @@ class ActivityScreen(Screen):
 
         client = self.app.http_client
         try:
-            bbs = await resolve_bbs(client, handle)
-            rec = await get_record(
-                client, thread_did, "xyz.atboards.thread", thread_tid
+            bbs, rec, author = await asyncio.gather(
+                resolve_bbs(client, handle),
+                get_record(client, thread_did, "xyz.atboards.thread", thread_tid),
+                resolve_identity(client, thread_did),
             )
-            author = await resolve_identity(client, thread_did)
             thread = Thread(
                 uri=rec.uri,
                 board_uri=rec.value["board"],

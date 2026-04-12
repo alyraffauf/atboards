@@ -1,3 +1,5 @@
+import asyncio
+
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
@@ -277,48 +279,46 @@ class SysopModerateScreen(Screen):
         client = self.app.http_client
         session = self.app.user_session
 
-        # Fetch ban records
-        try:
-            ban_records = await list_pds_records(
-                client, session["pds_url"], session["did"], lexicon.BAN
-            )
+        # Fetch ban and hide records in parallel
+        ban_result, hide_result = await asyncio.gather(
+            list_pds_records(client, session["pds_url"], session["did"], lexicon.BAN),
+            list_pds_records(client, session["pds_url"], session["did"], lexicon.HIDE),
+            return_exceptions=True,
+        )
+
+        if isinstance(ban_result, BaseException):
+            self._ban_rkeys = {}
+        else:
             self._ban_rkeys = {
                 r["value"]["did"]: AtUri.parse(r["uri"]).rkey
-                for r in ban_records
+                for r in ban_result
                 if r.get("value", {}).get("did")
             }
-        except Exception:
-            self._ban_rkeys = {}
+
+        if isinstance(hide_result, BaseException):
+            self._hide_rkeys = {}
+        else:
+            self._hide_rkeys = {
+                r["value"]["uri"]: AtUri.parse(r["uri"]).rkey
+                for r in hide_result
+                if r.get("value", {}).get("uri")
+            }
 
         # Resolve banned handles
         banned_dids = list(self._ban_rkeys.keys())
+        banned_handles: dict[str, str] = {}
         if banned_dids:
             try:
                 authors = await resolve_identities_batch(client, banned_dids)
                 banned_handles = {did: authors[did].handle for did in authors}
             except Exception:
-                banned_handles = {}
-        else:
-            banned_handles = {}
+                pass
 
         ban_list = self.query_one("#ban-list", ListView)
         ban_list.clear()
         for did in banned_dids:
             label = banned_handles.get(did, did)
             await ban_list.append(ListItem(Static(f"  {label}"), name=f"ban:{did}"))
-
-        # Fetch hide records
-        try:
-            hide_records = await list_pds_records(
-                client, session["pds_url"], session["did"], lexicon.HIDE
-            )
-            self._hide_rkeys = {
-                r["value"]["uri"]: AtUri.parse(r["uri"]).rkey
-                for r in hide_records
-                if r.get("value", {}).get("uri")
-            }
-        except Exception:
-            self._hide_rkeys = {}
 
         hide_list = self.query_one("#hide-list", ListView)
         hide_list.clear()
