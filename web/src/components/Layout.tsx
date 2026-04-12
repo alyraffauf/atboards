@@ -33,12 +33,15 @@ export default function Layout() {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-neutral-500 overflow-x-auto whitespace-nowrap">
             <Link to="/" className="shrink-0 hover:opacity-80">
-              <img
-                src="/hero.svg"
-                alt="@bbs"
-                style={{ height: "1.25rem", imageRendering: "pixelated" }}
-                className="inline-block"
-              />
+              <picture>
+                <source srcSet="/hero-dark.svg" media="(prefers-color-scheme: dark)" />
+                <img
+                  src="/hero.svg"
+                  alt="@bbs"
+                  style={{ height: "1.25rem", imageRendering: "pixelated" }}
+                  className="inline-block"
+                />
+              </picture>
             </Link>
             <Breadcrumbs />
           </div>

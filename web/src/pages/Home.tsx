@@ -63,12 +63,15 @@ export default function Home() {
   return (
     <div className="max-w-2xl mx-auto px-4 h-full flex flex-col justify-center overflow-hidden">
       <div className="text-center pb-4">
-        <img
-          src="/hero.svg"
-          alt="@bbs"
-          className="mx-auto mb-4"
-          style={{ width: 276, imageRendering: "pixelated" }}
-        />
+        <picture>
+          <source srcSet="/hero-dark.svg" media="(prefers-color-scheme: dark)" />
+          <img
+            src="/hero.svg"
+            alt="@bbs"
+            className="mx-auto mb-4"
+            style={{ width: 276, imageRendering: "pixelated" }}
+          />
+        </picture>
         <h1 className="text-lg text-neutral-400 mb-3">
           Bulletin boards on the{" "}
           <a
