@@ -8,4 +8,4 @@ REPLY = "xyz.atboards.reply"
 BAN = "xyz.atboards.ban"
 HIDE = "xyz.atboards.hide"
 
-OAUTH_SCOPE = f"atproto transition:generic repo:{SITE} repo:{BOARD} repo:{NEWS} repo:{THREAD} repo:{REPLY} repo:{BAN} repo:{HIDE}"
+OAUTH_SCOPE = f"atproto blob:*/* repo:{SITE} repo:{BOARD} repo:{NEWS} repo:{THREAD} repo:{REPLY} repo:{BAN} repo:{HIDE}"
