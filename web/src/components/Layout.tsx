@@ -31,21 +31,16 @@ export default function Layout() {
       )}
       <header className="border-b border-neutral-800">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-neutral-500 overflow-x-auto whitespace-nowrap">
-            <Link to="/" className="shrink-0 hover:opacity-80">
-              <picture>
-                <source srcSet="/hero-dark.svg" media="(prefers-color-scheme: dark)" />
-                <img
-                  src="/hero.svg"
-                  alt="@bbs"
-                  style={{ height: "1.25rem", imageRendering: "pixelated" }}
-                  className="inline-block"
-                />
-              </picture>
-            </Link>
-            <Breadcrumbs />
+          {/* Desktop: logo + breadcrumbs inline */}
+          <div className="hidden sm:flex items-center gap-2 text-neutral-500 overflow-x-auto whitespace-nowrap">
+            <Logo />
+            <HeaderBreadcrumbs />
           </div>
-          <div className="shrink-0 ml-4 flex items-center gap-3">
+          {/* Mobile: logo only */}
+          <div className="sm:hidden">
+            <Logo />
+          </div>
+          <div className="flex items-center gap-3">
             {user ? (
               <>
                 <Link
@@ -75,6 +70,7 @@ export default function Layout() {
         </div>
       </header>
       <main className="max-w-2xl mx-auto px-4 py-8 flex-1 w-full">
+        <Navigation />
         <Outlet />
       </main>
       <footer className="border-t border-neutral-800 mt-auto">
@@ -108,9 +104,42 @@ export default function Layout() {
   );
 }
 
-function Breadcrumbs() {
+function Logo() {
+  return (
+    <Link to="/" className="shrink-0 hover:opacity-80">
+      <picture>
+        <source srcSet="/hero-dark.svg" media="(prefers-color-scheme: dark)" />
+        <img
+          src="/hero.svg"
+          alt="@bbs"
+          style={{ height: "1.25rem", imageRendering: "pixelated" }}
+          className="inline-block"
+        />
+      </picture>
+    </Link>
+  );
+}
+
+function Navigation() {
+  const { crumbs } = useBreadcrumbState();
+  if (crumbs.length <= 1) return null;
+  const parent = crumbs[crumbs.length - 2];
+  if (!parent?.to) return null;
+
+  return (
+    <Link
+      to={parent.to}
+      className="sm:hidden inline-block mb-6 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-xs"
+    >
+      ← {parent.label}
+    </Link>
+  );
+}
+
+function HeaderBreadcrumbs() {
   const { crumbs } = useBreadcrumbState();
   if (!crumbs.length) return null;
+
   const out: ReactNode[] = [];
   crumbs.forEach((c: Crumb, i: number) => {
     out.push(<span key={`s${i}`}>/</span>);
@@ -133,5 +162,6 @@ function Breadcrumbs() {
       );
     }
   });
+
   return <>{out}</>;
 }
