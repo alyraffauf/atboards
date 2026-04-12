@@ -10,12 +10,7 @@ import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { useTitle } from "../hooks/useTitle";
 import { useThreadReplies } from "../hooks/useThreadReplies";
 import { THREAD, REPLY } from "../lib/lexicon";
-import {
-  formatFullDate,
-  makeAtUri,
-  parseAtUri,
-  relativeDate,
-} from "../lib/util";
+import { makeAtUri, parseAtUri } from "../lib/util";
 import {
   createBan,
   createHide,
@@ -27,8 +22,7 @@ import type { BBSLoaderData, ThreadObj } from "../router/loaders";
 import PageNav from "../components/PageNav";
 import ReplyCard, { type Reply } from "../components/ReplyCard";
 import ComposeForm from "../components/ComposeForm";
-import AttachmentLink from "../components/AttachmentLink";
-import PostBody from "../components/PostBody";
+import ThreadHeader from "../components/ThreadHeader";
 
 interface LoaderData {
   handle: string;
@@ -235,80 +229,3 @@ function buildBreadcrumb(
   ];
 }
 
-function ThreadHeader({
-  thread,
-  userDid,
-  sysopDid,
-  onDeleteThread,
-  onBanAuthor,
-  onHideThread,
-}: {
-  thread: ThreadObj;
-  userDid?: string;
-  sysopDid: string;
-  onDeleteThread: () => void;
-  onBanAuthor: () => void;
-  onHideThread: () => void;
-}) {
-  const isAuthor = userDid && userDid === thread.did;
-  const isSysop = userDid && userDid === sysopDid;
-  return (
-    <article className="reply-card bg-neutral-900 border border-neutral-800 rounded p-4 mb-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <div className="flex items-baseline gap-2">
-          <span className="text-neutral-200">{thread.authorHandle}</span>
-          <span className="text-neutral-600">·</span>
-          <time
-            className="text-xs text-neutral-500"
-            title={formatFullDate(thread.createdAt)}
-          >
-            {relativeDate(thread.createdAt)}
-          </time>
-        </div>
-        <span className="reply-actions flex items-center gap-3">
-          {isAuthor && (
-            <button
-              onClick={onDeleteThread}
-              className="text-xs text-neutral-500 hover:text-red-400"
-            >
-              delete
-            </button>
-          )}
-          {isSysop && !isAuthor && (
-            <button
-              onClick={onBanAuthor}
-              className="text-xs text-neutral-500 hover:text-red-400"
-            >
-              ban
-            </button>
-          )}
-          {isSysop && (
-            <button
-              onClick={onHideThread}
-              className="text-xs text-neutral-500 hover:text-red-400"
-            >
-              hide
-            </button>
-          )}
-        </span>
-      </div>
-      <h1 className="text-lg text-neutral-200 font-bold mb-3">
-        {thread.title}
-      </h1>
-      <PostBody>{thread.body}</PostBody>
-      {thread.attachments && thread.attachments.length > 0 && (
-        <div className="mt-3 space-y-1">
-          {thread.attachments.map((a, i) => (
-            <AttachmentLink
-              key={i}
-              pds={thread.authorPds}
-              did={thread.did}
-              cid={a.file.ref.$link}
-              name={a.name}
-            />
-          ))}
-        </div>
-      )}
-    </article>
-  );
-}
