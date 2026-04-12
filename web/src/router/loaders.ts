@@ -130,10 +130,12 @@ export async function threadLoader({ params }: LoaderFunctionArgs) {
   const did = params.did!;
   const tid = params.tid!;
 
-  const bbs = await resolveBBS(handle);
-  const [tr, author] = await Promise.all([
+  const threadUri = makeAtUri(did, THREAD, tid);
+  const [bbs, tr, author, allRefs] = await Promise.all([
+    resolveBBS(handle),
     getRecord(did, THREAD, tid),
     resolveIdentity(did),
+    collectAllReplyRefs(threadUri),
   ]);
   if (!is(threadSchema, tr.value)) {
     throw new Response("Invalid thread record", { status: 404 });
@@ -152,9 +154,6 @@ export async function threadLoader({ params }: LoaderFunctionArgs) {
     boardSlug,
     attachments: tv.attachments as ThreadObj["attachments"],
   };
-
-  const threadUri = makeAtUri(did, THREAD, tid);
-  const allRefs = await collectAllReplyRefs(threadUri);
 
   return { handle, bbs, thread, allRefs };
 }
