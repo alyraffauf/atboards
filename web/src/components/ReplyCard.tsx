@@ -1,4 +1,5 @@
 import { formatFullDate, parseAtUri, relativeDate } from "../lib/util";
+import AttachmentLink from "./AttachmentLink";
 import PostBody from "./PostBody.tsx";
 
 export interface Reply {
@@ -108,15 +109,13 @@ export default function ReplyCard({
       <PostBody>{reply.body}</PostBody>
 
       {reply.attachments.map((attachment, i) => (
-        <a
+        <AttachmentLink
           key={i}
-          href={`${reply.pds}/xrpc/com.atproto.sync.getBlob?did=${reply.did}&cid=${attachment.file.ref.$link}`}
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs text-neutral-500 hover:text-neutral-300 block mt-1"
-        >
-          [{attachment.name}]
-        </a>
+          pds={reply.pds}
+          did={reply.did}
+          cid={attachment.file.ref.$link}
+          name={attachment.name}
+        />
       ))}
     </div>
   );

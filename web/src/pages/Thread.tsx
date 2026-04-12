@@ -27,6 +27,7 @@ import type { BBSLoaderData, ThreadObj } from "../router/loaders";
 import PageNav from "../components/PageNav";
 import ReplyCard, { type Reply } from "../components/ReplyCard";
 import ComposeForm from "../components/ComposeForm";
+import AttachmentLink from "../components/AttachmentLink";
 import PostBody from "../components/PostBody";
 
 interface LoaderData {
@@ -298,15 +299,13 @@ function ThreadHeader({
       {thread.attachments && thread.attachments.length > 0 && (
         <div className="mt-3 space-y-1">
           {thread.attachments.map((a, i) => (
-            <a
+            <AttachmentLink
               key={i}
-              href={`${thread.authorPds}/xrpc/com.atproto.sync.getBlob?did=${thread.did}&cid=${a.file.ref.$link}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-neutral-500 hover:text-neutral-300 block"
-            >
-              [{a.name}]
-            </a>
+              pds={thread.authorPds}
+              did={thread.did}
+              cid={a.file.ref.$link}
+              name={a.name}
+            />
           ))}
         </div>
       )}
