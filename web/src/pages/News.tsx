@@ -5,10 +5,7 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { NEWS } from "../lib/lexicon";
 import { deleteRecord } from "../lib/writes";
 import type { BBSLoaderData } from "../router/loaders";
-import AttachmentLink from "../components/AttachmentLink";
-import PostActions from "../components/PostActions";
-import PostBody from "../components/PostBody";
-import PostMeta from "../components/PostMeta";
+import NewsCard from "../components/NewsCard";
 
 export default function NewsPage() {
   const { handle, tid } = useParams();
@@ -16,7 +13,7 @@ export default function NewsPage() {
   const { user, agent } = useAuth();
   const navigate = useNavigate();
 
-  const item = bbs.news.find((n) => n.tid === tid);
+  const item = bbs.news.find((news) => news.tid === tid);
 
   useBreadcrumb(
     [
@@ -43,30 +40,13 @@ export default function NewsPage() {
   }
 
   return (
-    <article className="bg-neutral-900 border border-neutral-800 rounded p-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <PostMeta handle={handle ?? ""} createdAt={item.createdAt} />
-        <PostActions
-          isAuthor={isSysop}
-          isSysop={false}
-          onDelete={onDelete}
-        />
-      </div>
-      <h1 className="text-lg text-neutral-200 font-bold mb-3">{item.title}</h1>
-      <PostBody>{item.body}</PostBody>
-      {item.attachments && item.attachments.length > 0 && (
-        <div className="mt-3 space-y-1">
-          {item.attachments.map((attachment, index) => (
-            <AttachmentLink
-              key={index}
-              pds={bbs.identity.pds ?? ""}
-              did={bbs.identity.did}
-              cid={attachment.file.ref.$link}
-              name={attachment.name}
-            />
-          ))}
-        </div>
-      )}
-    </article>
+    <NewsCard
+      news={item}
+      handle={handle ?? ""}
+      pds={bbs.identity.pds ?? ""}
+      did={bbs.identity.did}
+      isSysop={isSysop}
+      onDelete={onDelete}
+    />
   );
 }
