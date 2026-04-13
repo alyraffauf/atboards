@@ -35,9 +35,9 @@ interface ListRecordsResponse {
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`${r.status} ${url}`);
-  return r.json() as Promise<T>;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`${resp.status} ${url}`);
+  return resp.json() as Promise<T>;
 }
 
 export async function resolveIdentity(identifier: string): Promise<MiniDoc> {

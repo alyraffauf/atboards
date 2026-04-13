@@ -50,6 +50,16 @@ function currentDid(): Did {
 
 // --- Generic record CRUD ---
 
+function assertOk(
+  resp: { ok: boolean; data: unknown },
+  label: string,
+): asserts resp is { ok: true; data: unknown } {
+  if (!resp.ok) {
+    const message = (resp.data as { message?: string })?.message;
+    throw new Error(message ?? `${label} failed`);
+  }
+}
+
 async function createRecord<V extends object>(
   rpc: Client,
   collection: string,
@@ -64,10 +74,7 @@ async function createRecord<V extends object>(
       record: { $type: collection, ...value },
     },
   });
-  if (!resp.ok) {
-    const message = (resp.data as { message?: string })?.message;
-    throw new Error(message ?? "createRecord failed");
-  }
+  assertOk(resp, "createRecord");
   return resp;
 }
 
@@ -85,10 +92,7 @@ async function putRecord<V extends object>(
       record: { $type: collection, ...value },
     },
   });
-  if (!resp.ok) {
-    const message = (resp.data as { message?: string })?.message;
-    throw new Error(message ?? "putRecord failed");
-  }
+  assertOk(resp, "putRecord");
   return resp;
 }
 
@@ -104,10 +108,7 @@ export async function deleteRecord(
       rkey,
     },
   });
-  if (!resp.ok) {
-    const message = (resp.data as { message?: string })?.message;
-    throw new Error(message ?? "deleteRecord failed");
-  }
+  assertOk(resp, "deleteRecord");
   return resp;
 }
 
