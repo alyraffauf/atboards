@@ -1,16 +1,15 @@
-import { useAuth } from "../lib/auth";
-import { deleteRecord } from "../lib/writes";
-import { PIN } from "../lib/lexicon";
+import { useState } from "react";
 import ListLink from "./nav/ListLink";
 import type { PinnedBBS } from "../router/loaders";
 
+const PAGE_SIZE = 5;
+
 interface PinnedListProps {
   pins: PinnedBBS[];
-  onUnpin: (did: string) => void;
 }
 
-export default function PinnedList({ pins, onUnpin }: PinnedListProps) {
-  const { agent } = useAuth();
+export default function PinnedList({ pins }: PinnedListProps) {
+  const [shown, setShown] = useState(PAGE_SIZE);
 
   if (pins.length === 0)
     return (
@@ -19,30 +18,23 @@ export default function PinnedList({ pins, onUnpin }: PinnedListProps) {
       </p>
     );
 
-  async function handleUnpin(entry: PinnedBBS) {
-    if (!agent) return;
-    await deleteRecord(agent, PIN, entry.rkey);
-    onUnpin(entry.did);
-  }
-
   return (
     <div className="space-y-1">
-      {pins.map((entry) => (
-        <div key={entry.did} className="flex items-center group">
-          <div className="flex-1 min-w-0">
-            <ListLink
-              to={`/bbs/${entry.handle}`}
-              name={entry.handle}
-            />
-          </div>
-          <button
-            onClick={() => handleUnpin(entry)}
-            className="text-xs text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 ml-2 shrink-0"
-          >
-            unpin
-          </button>
-        </div>
+      {pins.slice(0, shown).map((entry) => (
+        <ListLink
+          key={entry.did}
+          to={`/bbs/${entry.handle}`}
+          name={entry.name}
+        />
       ))}
+      {shown < pins.length && (
+        <button
+          onClick={() => setShown((prev) => prev + PAGE_SIZE)}
+          className="text-xs text-neutral-500 hover:text-neutral-300 mt-2"
+        >
+          show more
+        </button>
+      )}
     </div>
   );
 }

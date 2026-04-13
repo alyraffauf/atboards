@@ -28,7 +28,7 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-3 shrink-0 ml-4">
           {user ? (
             <>
-              <Link to="/account" className={linkStyle}>{user.handle}</Link>
+              <Link to="/" className={linkStyle}>{user.handle}</Link>
               <button type="button" onClick={onLogout} className={linkStyle}>log out</button>
             </>
           ) : (

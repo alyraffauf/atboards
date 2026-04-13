@@ -37,7 +37,7 @@ export default function MobileMenu({ user, onLogout }: MobileMenuProps) {
         <div className={panelStyle}>
           {user ? (
             <>
-              <Link to="/account" onClick={close} className="text-neutral-300 hover:text-neutral-200">
+              <Link to="/" onClick={close} className="text-neutral-300 hover:text-neutral-200">
                 {user.handle}
               </Link>
               <button type="button" onClick={() => { close(); onLogout(); }} className="text-neutral-500 hover:text-neutral-300">

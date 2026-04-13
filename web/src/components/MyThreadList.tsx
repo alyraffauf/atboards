@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { parseAtUri } from "../lib/util";
-import PostMeta from "./post/PostMeta";
+import { parseAtUri, formatFullDate, relativeDate } from "../lib/util";
 import type { MyThread } from "../router/loaders";
 
 const PAGE_SIZE = 10;
@@ -27,8 +26,19 @@ export default function MyThreadList({ threads }: MyThreadListProps) {
             to={url}
             className="block border border-neutral-800/50 rounded p-4 mb-2 hover:bg-neutral-800"
           >
-            <PostMeta handle={thread.bbsHandle} createdAt={thread.createdAt} />
-            <p className="text-neutral-200 mt-1">{thread.title}</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-neutral-200">{thread.title}</span>
+              <span className="text-neutral-600">·</span>
+              <time
+                className="text-xs text-neutral-500"
+                title={formatFullDate(thread.createdAt)}
+              >
+                {relativeDate(thread.createdAt)}
+              </time>
+            </div>
+            <p className="text-xs text-neutral-500 mt-1">
+              on {thread.bbsHandle}
+            </p>
             <p className="text-neutral-500 text-sm line-clamp-2 mt-1">
               {thread.body.substring(0, 200)}
             </p>
