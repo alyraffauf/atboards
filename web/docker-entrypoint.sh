@@ -6,7 +6,7 @@ set -e
 # Strip trailing slash.
 PUBLIC_URL="${PUBLIC_URL%/}"
 
-SCOPE="atproto repo:xyz.atboards.site repo:xyz.atboards.board repo:xyz.atboards.news repo:xyz.atboards.thread repo:xyz.atboards.reply repo:xyz.atboards.ban repo:xyz.atboards.hide"
+SCOPE="atproto repo:xyz.atbbs.site repo:xyz.atbbs.board repo:xyz.atbbs.news repo:xyz.atbbs.thread repo:xyz.atbbs.reply repo:xyz.atbbs.ban repo:xyz.atbbs.hide"
 
 # Runtime config read by the SPA at startup.
 cat > /usr/share/nginx/html/config.json <<EOF

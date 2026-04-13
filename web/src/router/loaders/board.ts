@@ -9,8 +9,8 @@ import {
 import { THREAD, BOARD } from "../../lib/lexicon";
 import { makeAtUri, parseAtUri } from "../../lib/util";
 import { is } from "@atcute/lexicons/validations";
-import { mainSchema as threadSchema } from "../../lexicons/types/xyz/atboards/thread";
-import type { XyzAtboardsThread } from "../../lexicons";
+import { mainSchema as threadSchema } from "../../lexicons/types/xyz/atbbs/thread";
+import type { XyzAtbbsThread } from "../../lexicons";
 
 export interface ThreadItem {
   uri: string;
@@ -45,7 +45,7 @@ export async function hydrateThreadPage(
     .filter((record) => parseAtUri(record.uri).did in authors)
     .map((record: ATRecord) => {
       const { did, rkey } = parseAtUri(record.uri);
-      const value = record.value as unknown as XyzAtboardsThread.Main;
+      const value = record.value as unknown as XyzAtbbsThread.Main;
       return {
         uri: record.uri,
         did,

@@ -3,9 +3,9 @@
 import { fetchAndHydrate, listRecords } from "./atproto";
 import { THREAD, REPLY } from "./lexicon";
 import { is } from "@atcute/lexicons/validations";
-import { mainSchema as threadSchema } from "../lexicons/types/xyz/atboards/thread";
-import { mainSchema as replySchema } from "../lexicons/types/xyz/atboards/reply";
-import type { XyzAtboardsThread, XyzAtboardsReply } from "../lexicons";
+import { mainSchema as threadSchema } from "../lexicons/types/xyz/atbbs/thread";
+import { mainSchema as replySchema } from "../lexicons/types/xyz/atbbs/reply";
+import type { XyzAtbbsThread, XyzAtbbsReply } from "../lexicons";
 
 export interface InboxItem {
   type: "reply" | "quote";
@@ -58,7 +58,7 @@ export async function fetchInbox(
 
   const results = await Promise.all([
     ...threads.map((thread) => {
-      const value = thread.value as unknown as XyzAtboardsThread.Main;
+      const value = thread.value as unknown as XyzAtbbsThread.Main;
       return fetchBacklinkItems(
         thread.uri,
         `${REPLY}:subject`,
@@ -69,7 +69,7 @@ export async function fetchInbox(
       );
     }),
     ...replies.map((reply) => {
-      const value = reply.value as unknown as XyzAtboardsReply.Main;
+      const value = reply.value as unknown as XyzAtbbsReply.Main;
       return fetchBacklinkItems(
         reply.uri,
         `${REPLY}:quote`,

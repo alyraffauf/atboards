@@ -13,17 +13,17 @@ import {
 import { SITE, BOARD, NEWS, BAN, HIDE } from "./lexicon";
 import { makeAtUri, parseAtUri } from "./util";
 import { is } from "@atcute/lexicons/validations";
-import { mainSchema as siteSchema } from "../lexicons/types/xyz/atboards/site";
-import { mainSchema as boardSchema } from "../lexicons/types/xyz/atboards/board";
-import { mainSchema as newsSchema } from "../lexicons/types/xyz/atboards/news";
-import { mainSchema as banSchema } from "../lexicons/types/xyz/atboards/ban";
-import { mainSchema as hideSchema } from "../lexicons/types/xyz/atboards/hide";
+import { mainSchema as siteSchema } from "../lexicons/types/xyz/atbbs/site";
+import { mainSchema as boardSchema } from "../lexicons/types/xyz/atbbs/board";
+import { mainSchema as newsSchema } from "../lexicons/types/xyz/atbbs/news";
+import { mainSchema as banSchema } from "../lexicons/types/xyz/atbbs/ban";
+import { mainSchema as hideSchema } from "../lexicons/types/xyz/atbbs/hide";
 import type {
-  XyzAtboardsSite,
-  XyzAtboardsBoard,
-  XyzAtboardsNews,
-  XyzAtboardsBan,
-  XyzAtboardsHide,
+  XyzAtbbsSite,
+  XyzAtbbsBoard,
+  XyzAtbbsNews,
+  XyzAtbbsBan,
+  XyzAtbbsHide,
 } from "../lexicons";
 
 export class BBSNotFoundError extends Error {}
@@ -104,7 +104,7 @@ async function _resolveBBS(handle: string): Promise<BBS> {
   if (!is(siteSchema, siteRecord.value)) {
     throw new NoBBSError(`${handle} has an invalid site record.`);
   }
-  const siteValue = siteRecord.value as unknown as XyzAtboardsSite.Main;
+  const siteValue = siteRecord.value as unknown as XyzAtbbsSite.Main;
   const siteUri = makeAtUri(identity.did, SITE, "self");
   const boardSlugs: string[] = siteValue.boards ?? [];
 
@@ -122,7 +122,7 @@ async function _resolveBBS(handle: string): Promise<BBS> {
   boardResults.forEach((result, index) => {
     if (result.status !== "fulfilled") return;
     if (!is(boardSchema, result.value.value)) return;
-    const board = result.value.value as unknown as XyzAtboardsBoard.Main;
+    const board = result.value.value as unknown as XyzAtbbsBoard.Main;
     boards.push({
       slug: boardSlugs[index],
       name: board.name,
@@ -142,7 +142,7 @@ async function _resolveBBS(handle: string): Promise<BBS> {
     news = newsRecords
       .filter((record) => is(newsSchema, record.value))
       .map((record) => {
-        const value = record.value as unknown as XyzAtboardsNews.Main;
+        const value = record.value as unknown as XyzAtbbsNews.Main;
         return {
           tid: parseAtUri(record.uri).rkey,
           siteUri: value.site,
@@ -158,12 +158,12 @@ async function _resolveBBS(handle: string): Promise<BBS> {
   const bannedDids = new Set(
     banRecords
       .filter((record) => is(banSchema, record.value))
-      .map((record) => (record.value as unknown as XyzAtboardsBan.Main).did),
+      .map((record) => (record.value as unknown as XyzAtbbsBan.Main).did),
   );
   const hiddenPosts = new Set(
     hideRecords
       .filter((record) => is(hideSchema, record.value))
-      .map((record) => (record.value as unknown as XyzAtboardsHide.Main).uri),
+      .map((record) => (record.value as unknown as XyzAtbbsHide.Main).uri),
   );
 
   return {

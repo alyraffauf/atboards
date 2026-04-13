@@ -1,7 +1,7 @@
-export const SITE = "xyz.atboards.site";
-export const BOARD = "xyz.atboards.board";
-export const NEWS = "xyz.atboards.news";
-export const THREAD = "xyz.atboards.thread";
-export const REPLY = "xyz.atboards.reply";
-export const BAN = "xyz.atboards.ban";
-export const HIDE = "xyz.atboards.hide";
+export const SITE = "xyz.atbbs.site";
+export const BOARD = "xyz.atbbs.board";
+export const NEWS = "xyz.atbbs.news";
+export const THREAD = "xyz.atbbs.thread";
+export const REPLY = "xyz.atbbs.reply";
+export const BAN = "xyz.atbbs.ban";
+export const HIDE = "xyz.atbbs.hide";

@@ -9,9 +9,9 @@ import {
 import { BAN, HIDE } from "../../lib/lexicon";
 import { parseAtUri } from "../../lib/util";
 import { is } from "@atcute/lexicons/validations";
-import { mainSchema as banSchema } from "../../lexicons/types/xyz/atboards/ban";
-import { mainSchema as hideSchema } from "../../lexicons/types/xyz/atboards/hide";
-import type { XyzAtboardsBan, XyzAtboardsHide } from "../../lexicons";
+import { mainSchema as banSchema } from "../../lexicons/types/xyz/atbbs/ban";
+import { mainSchema as hideSchema } from "../../lexicons/types/xyz/atbbs/hide";
+import type { XyzAtbbsBan, XyzAtbbsHide } from "../../lexicons";
 import { requireAuth } from "./auth";
 
 export interface HiddenInfo {
@@ -83,12 +83,12 @@ export async function sysopModerateLoader() {
     listRecords(user.pdsUrl, user.did, HIDE),
   ]);
 
-  const banRkeys = buildRkeyMap<XyzAtboardsBan.Main>(
+  const banRkeys = buildRkeyMap<XyzAtbbsBan.Main>(
     banRecs,
     banSchema,
     (ban) => ban.did,
   );
-  const hideRkeys = buildRkeyMap<XyzAtboardsHide.Main>(
+  const hideRkeys = buildRkeyMap<XyzAtbbsHide.Main>(
     hideRecs,
     hideSchema,
     (hide) => hide.uri,

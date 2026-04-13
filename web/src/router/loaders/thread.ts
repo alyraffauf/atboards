@@ -9,8 +9,8 @@ import {
 import { THREAD, REPLY } from "../../lib/lexicon";
 import { makeAtUri, parseAtUri } from "../../lib/util";
 import { is } from "@atcute/lexicons/validations";
-import { mainSchema as threadSchema } from "../../lexicons/types/xyz/atboards/thread";
-import type { XyzAtboardsThread } from "../../lexicons";
+import { mainSchema as threadSchema } from "../../lexicons/types/xyz/atbbs/thread";
+import type { XyzAtbbsThread } from "../../lexicons";
 
 export interface ThreadObj {
   uri: string;
@@ -52,7 +52,7 @@ export async function threadLoader({ params }: LoaderFunctionArgs) {
   if (!is(threadSchema, threadRecord.value)) {
     throw new Response("Invalid thread record", { status: 404 });
   }
-  const threadValue = threadRecord.value as unknown as XyzAtboardsThread.Main;
+  const threadValue = threadRecord.value as unknown as XyzAtbbsThread.Main;
   const boardSlug = parseAtUri(threadValue.board).rkey;
   const thread: ThreadObj = {
     uri: threadRecord.uri,

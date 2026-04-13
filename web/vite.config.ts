@@ -8,13 +8,13 @@ const SERVER_PORT = 5173;
 const SCOPE = [
   "atproto",
   "blob:*/*",
-  "repo:xyz.atboards.site",
-  "repo:xyz.atboards.board",
-  "repo:xyz.atboards.news",
-  "repo:xyz.atboards.thread",
-  "repo:xyz.atboards.reply",
-  "repo:xyz.atboards.ban",
-  "repo:xyz.atboards.hide",
+  "repo:xyz.atbbs.site",
+  "repo:xyz.atbbs.board",
+  "repo:xyz.atbbs.news",
+  "repo:xyz.atbbs.thread",
+  "repo:xyz.atbbs.reply",
+  "repo:xyz.atbbs.ban",
+  "repo:xyz.atbbs.hide",
 ].join(" ");
 
 interface ClientMetadata {

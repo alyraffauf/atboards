@@ -1,7 +1,7 @@
-export * as XyzAtboardsBan from "./types/xyz/atboards/ban.js";
-export * as XyzAtboardsBoard from "./types/xyz/atboards/board.js";
-export * as XyzAtboardsHide from "./types/xyz/atboards/hide.js";
-export * as XyzAtboardsNews from "./types/xyz/atboards/news.js";
-export * as XyzAtboardsReply from "./types/xyz/atboards/reply.js";
-export * as XyzAtboardsSite from "./types/xyz/atboards/site.js";
-export * as XyzAtboardsThread from "./types/xyz/atboards/thread.js";
+export * as XyzAtbbsBan from "./types/xyz/atbbs/ban.js";
+export * as XyzAtbbsBoard from "./types/xyz/atbbs/board.js";
+export * as XyzAtbbsHide from "./types/xyz/atbbs/hide.js";
+export * as XyzAtbbsNews from "./types/xyz/atbbs/news.js";
+export * as XyzAtbbsReply from "./types/xyz/atbbs/reply.js";
+export * as XyzAtbbsSite from "./types/xyz/atbbs/site.js";
+export * as XyzAtbbsThread from "./types/xyz/atbbs/thread.js";

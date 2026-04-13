@@ -1,4 +1,4 @@
-/** Field length limits from the atboards lexicons. */
+/** Field length limits from the atbbs lexicons. */
 
 export const SITE_NAME = 100;
 export const SITE_DESCRIPTION = 1000;

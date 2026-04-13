@@ -6,27 +6,27 @@ import { invalidateBBSCache } from "./bbs";
 import { nowIso } from "./util";
 import { getCurrentUser } from "./auth";
 import type {
-  XyzAtboardsThread,
-  XyzAtboardsReply,
-  XyzAtboardsSite,
-  XyzAtboardsBoard,
-  XyzAtboardsNews,
-  XyzAtboardsBan,
-  XyzAtboardsHide,
+  XyzAtbbsThread,
+  XyzAtbbsReply,
+  XyzAtbbsSite,
+  XyzAtbbsBoard,
+  XyzAtbbsNews,
+  XyzAtbbsBan,
+  XyzAtbbsHide,
 } from "../lexicons";
 
 // --- Lexicon value types ---
 
 // Strip $type so a single Attachment value works for both thread and reply.
-type Attachment = Omit<XyzAtboardsThread.Attachment, "$type">;
+type Attachment = Omit<XyzAtbbsThread.Attachment, "$type">;
 
-type ThreadValue = Omit<XyzAtboardsThread.Main, "$type">;
-type ReplyValue = Omit<XyzAtboardsReply.Main, "$type">;
-type SiteValue = Omit<XyzAtboardsSite.Main, "$type">;
-type BoardValue = Omit<XyzAtboardsBoard.Main, "$type">;
-type NewsValue = Omit<XyzAtboardsNews.Main, "$type">;
-type BanValue = Omit<XyzAtboardsBan.Main, "$type">;
-type HideValue = Omit<XyzAtboardsHide.Main, "$type">;
+type ThreadValue = Omit<XyzAtbbsThread.Main, "$type">;
+type ReplyValue = Omit<XyzAtbbsReply.Main, "$type">;
+type SiteValue = Omit<XyzAtbbsSite.Main, "$type">;
+type BoardValue = Omit<XyzAtbbsBoard.Main, "$type">;
+type NewsValue = Omit<XyzAtbbsNews.Main, "$type">;
+type BanValue = Omit<XyzAtbbsBan.Main, "$type">;
+type HideValue = Omit<XyzAtbbsHide.Main, "$type">;
 
 interface BlobRef {
   $type: "blob";
