@@ -1,7 +1,7 @@
 /** Authenticated PDS write helpers using an atcute Client from useAuth().agent. */
 
 import type { Client } from "@atcute/client";
-import { SITE, BOARD, NEWS, THREAD, REPLY, BAN, HIDE } from "./lexicon";
+import { SITE, BOARD, NEWS, THREAD, REPLY, BAN, HIDE, PIN } from "./lexicon";
 import { invalidateBBSCache } from "./bbs";
 import { nowIso } from "./util";
 import { getCurrentUser } from "./auth";
@@ -13,6 +13,7 @@ import type {
   XyzAtboardsNews,
   XyzAtboardsBan,
   XyzAtboardsHide,
+  XyzAtboardsPin,
 } from "../lexicons";
 
 // --- Lexicon value types ---
@@ -27,6 +28,7 @@ type BoardValue = Omit<XyzAtboardsBoard.Main, "$type">;
 type NewsValue = Omit<XyzAtboardsNews.Main, "$type">;
 type BanValue = Omit<XyzAtboardsBan.Main, "$type">;
 type HideValue = Omit<XyzAtboardsHide.Main, "$type">;
+type PinValue = Omit<XyzAtboardsPin.Main, "$type">;
 
 interface BlobRef {
   $type: "blob";
@@ -250,4 +252,14 @@ export async function createHide(rpc: Client, uri: string) {
   const resp = await createRecord(rpc, HIDE, value);
   invalidateBBSCache();
   return resp;
+}
+
+// --- Pins ---
+
+export async function createPin(rpc: Client, did: string) {
+  const value: PinValue = {
+    did: did as PinValue["did"],
+    createdAt: nowIso(),
+  };
+  return createRecord(rpc, PIN, value);
 }

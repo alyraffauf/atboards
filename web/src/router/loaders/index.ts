@@ -5,6 +5,8 @@ export {
   accountLoader,
   requireAuthLoader,
   type InboxItem,
+  type PinnedBBS,
+  type MyThread,
 } from "./account";
 export {
   sysopEditLoader,

@@ -10,12 +10,15 @@ import * as limits from "../lib/limits";
 import { usePageTitle } from "../hooks/usePageTitle";
 import Localtime from "../components/Localtime";
 import ListLink from "../components/nav/ListLink";
+import ActionBar from "../components/nav/ActionBar";
+import { ActionLink } from "../components/nav/ActionButton";
+import PinButton from "../components/PinButton";
 import type { News } from "../lib/bbs";
 import type { BBSLoaderData } from "../router/loaders";
 import PostBody from "../components/post/PostBody";
 
 export default function BBSPage() {
-  const { handle, bbs } = useRouteLoaderData("bbs") as BBSLoaderData;
+  const { handle, bbs, pinRkey } = useRouteLoaderData("bbs") as BBSLoaderData;
   const { user, agent } = useAuth();
   const [newsTitle, setNewsTitle] = useState("");
   const [newsBody, setNewsBody] = useState("");
@@ -77,7 +80,12 @@ export default function BBSPage() {
     <>
       <div className="mb-8">
         <h1 className="text-lg text-neutral-200 mb-1">{bbs.site.name}</h1>
-        <p className="text-neutral-500">{bbs.site.description}</p>
+        <p className="text-neutral-500 mb-3">{bbs.site.description}</p>
+        <ActionBar>
+          <PinButton bbsDid={bbs.identity.did} initialRkey={pinRkey} />
+          {isSysop && <ActionLink to="/account/edit">edit</ActionLink>}
+          {isSysop && <ActionLink to="/account/moderate">moderate</ActionLink>}
+        </ActionBar>
       </div>
 
       {bbs.site.intro && (

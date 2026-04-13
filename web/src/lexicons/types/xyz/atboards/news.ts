@@ -22,8 +22,15 @@ const _mainSchema = /*#__PURE__*/ v.record(
   /*#__PURE__*/ v.tidString(),
   /*#__PURE__*/ v.object({
     $type: /*#__PURE__*/ v.literal("xyz.atboards.news"),
+    /**
+     * @maxLength 10
+     */
     get attachments() {
-      return /*#__PURE__*/ v.optional(/*#__PURE__*/ v.array(attachmentSchema));
+      return /*#__PURE__*/ v.optional(
+        /*#__PURE__*/ v.constrain(/*#__PURE__*/ v.array(attachmentSchema), [
+          /*#__PURE__*/ v.arrayLength(0, 10),
+        ]),
+      );
     },
     /**
      * @maxLength 10000

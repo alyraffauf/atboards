@@ -7,8 +7,10 @@ import { parseAtUri } from "../lib/util";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { deleteRecord } from "../lib/writes";
 import InboxList from "../components/InboxList";
+import PinnedList from "../components/PinnedList";
+import MyThreadList from "../components/MyThreadList";
 import BBSPanel from "../components/BBSPanel";
-import type { InboxItem } from "../router/loaders";
+import type { InboxItem, PinnedBBS, MyThread } from "../router/loaders";
 import type { AuthUser } from "../lib/auth";
 
 interface LoaderData {
@@ -16,13 +18,19 @@ interface LoaderData {
   hasBBS: boolean;
   bbsName: string | null;
   items: Promise<InboxItem[]>;
+  pins: Promise<PinnedBBS[]>;
+  threads: Promise<MyThread[]>;
 }
 
+type Tab = "pinned" | "threads" | "inbox" | "bbs";
+
 export default function Account() {
-  const { user, hasBBS, bbsName, items } = useLoaderData() as LoaderData;
+  const { user, hasBBS, bbsName, items, pins, threads } =
+    useLoaderData() as LoaderData;
   const { agent } = useAuth();
   const revalidator = useRevalidator();
-  const [tab, setTab] = useState<"inbox" | "bbs">("inbox");
+  const [tab, setTab] = useState<Tab>("pinned");
+  const [removedPins, setRemovedPins] = useState<Set<string>>(new Set());
   usePageTitle("Account — atbbs");
 
   async function deleteBBS() {
@@ -78,6 +86,13 @@ export default function Account() {
     }
   }
 
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "pinned", label: "Pinned" },
+    { key: "threads", label: "My Threads" },
+    { key: "inbox", label: "Inbox" },
+    { key: "bbs", label: hasBBS ? (bbsName ?? "Your BBS") : "Your BBS" },
+  ];
+
   const activeTab = "py-2 border-b-2 text-neutral-200 border-neutral-200";
   const inactiveTab =
     "py-2 border-b-2 text-neutral-500 hover:text-neutral-300 border-transparent";
@@ -100,20 +115,40 @@ export default function Account() {
         </p>
       </div>
 
-      <div className="flex gap-4 border-b border-neutral-800 mb-6">
-        <button
-          onClick={() => setTab("inbox")}
-          className={tab === "inbox" ? activeTab : inactiveTab}
-        >
-          Messages
-        </button>
-        <button
-          onClick={() => setTab("bbs")}
-          className={tab === "bbs" ? activeTab : inactiveTab}
-        >
-          {hasBBS ? (bbsName ?? "Your BBS") : "Your BBS"}
-        </button>
+      <div className="flex gap-4 border-b border-neutral-800 mb-6 overflow-x-auto">
+        {tabs.map((entry) => (
+          <button
+            key={entry.key}
+            onClick={() => setTab(entry.key)}
+            className={`${tab === entry.key ? activeTab : inactiveTab} whitespace-nowrap`}
+          >
+            {entry.label}
+          </button>
+        ))}
       </div>
+
+      {tab === "pinned" && (
+        <Suspense fallback={<p className="text-neutral-500">Loading...</p>}>
+          <Await resolve={pins}>
+            {(resolved: PinnedBBS[]) => (
+              <PinnedList
+                pins={resolved.filter((pin) => !removedPins.has(pin.did))}
+                onUnpin={(did) =>
+                  setRemovedPins((prev) => new Set(prev).add(did))
+                }
+              />
+            )}
+          </Await>
+        </Suspense>
+      )}
+
+      {tab === "threads" && (
+        <Suspense fallback={<p className="text-neutral-500">Loading...</p>}>
+          <Await resolve={threads}>
+            {(resolved: MyThread[]) => <MyThreadList threads={resolved} />}
+          </Await>
+        </Suspense>
+      )}
 
       {tab === "inbox" && (
         <Suspense fallback={<p className="text-neutral-500">Loading...</p>}>

@@ -1,0 +1,24 @@
+{
+  "lexicon": 1,
+  "id": "xyz.atboards.pin",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["did", "createdAt"],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}
