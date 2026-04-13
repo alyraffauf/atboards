@@ -3,6 +3,7 @@
 import { redirect, type LoaderFunctionArgs } from "react-router-dom";
 import { ensureAuthReady, getCurrentUser } from "../lib/auth";
 import { resolveBBS, type BBS } from "../lib/bbs";
+import { fetchInbox } from "../lib/inbox";
 import {
   getRecord,
   getRecordByUri,
@@ -11,7 +12,6 @@ import {
   listRecords,
   resolveIdentitiesBatch,
   resolveIdentity,
-  fetchAndHydrate,
   type ATRecord,
   type BacklinkRef,
 } from "../lib/atproto";
@@ -19,12 +19,10 @@ import { SITE, THREAD, REPLY, BAN, HIDE, BOARD } from "../lib/lexicon";
 import { makeAtUri, parseAtUri } from "../lib/util";
 import { is } from "@atcute/lexicons/validations";
 import { mainSchema as threadSchema } from "../lexicons/types/xyz/atboards/thread";
-import { mainSchema as replySchema } from "../lexicons/types/xyz/atboards/reply";
 import { mainSchema as banSchema } from "../lexicons/types/xyz/atboards/ban";
 import { mainSchema as hideSchema } from "../lexicons/types/xyz/atboards/hide";
 import type {
   XyzAtboardsThread,
-  XyzAtboardsReply,
   XyzAtboardsBan,
   XyzAtboardsHide,
 } from "../lexicons";
@@ -158,17 +156,9 @@ export async function threadLoader({ params }: LoaderFunctionArgs) {
   return { handle, bbs, thread, allRefs };
 }
 
-// --- Account / inbox ---
+// --- Account ---
 
-export interface InboxItem {
-  type: "reply" | "quote";
-  threadTitle: string;
-  threadUri: string;
-  replyUri: string;
-  handle: string;
-  body: string;
-  createdAt: string;
-}
+export type { InboxItem } from "../lib/inbox";
 
 /** Collect all reply refs, paginating Constellation in chunks of 100. */
 async function collectAllReplyRefs(threadUri: string): Promise<BacklinkRef[]> {
@@ -202,78 +192,6 @@ export async function accountLoader() {
   // immediately and items stream in via <Await>. (v7 auto-defers promises.)
   const itemsPromise = fetchInbox(user.did, user.pdsUrl);
   return { user, hasBBS, bbsName, items: itemsPromise };
-}
-
-async function fetchBacklinkItems(
-  sourceUri: string,
-  backlinkSource: string,
-  excludeDid: string,
-  type: InboxItem["type"],
-  threadTitle: string,
-  threadUri: string,
-): Promise<InboxItem[]> {
-  try {
-    const { records } = await fetchAndHydrate(sourceUri, backlinkSource, {
-      limit: 50,
-      excludeDid,
-    });
-    return records.map((r) => ({
-      type,
-      threadTitle,
-      threadUri,
-      replyUri: r.uri,
-      handle: r.handle,
-      body: ((r.value.body as string) ?? "").substring(0, 200),
-      createdAt: (r.value.createdAt as string) ?? "",
-    }));
-  } catch {
-    return [];
-  }
-}
-
-async function fetchInbox(did: string, pdsUrl: string): Promise<InboxItem[]> {
-  const SCAN_LIMIT = 50;
-  const [allThreads, allReplies] = await Promise.all([
-    listRecords(pdsUrl, did, THREAD, SCAN_LIMIT),
-    listRecords(pdsUrl, did, REPLY, SCAN_LIMIT),
-  ]);
-  const threads = allThreads.filter((r) => is(threadSchema, r.value));
-  const replies = allReplies.filter((r) => is(replySchema, r.value));
-
-  const results = await Promise.all([
-    ...threads.map((tr) => {
-      const v = tr.value as unknown as XyzAtboardsThread.Main;
-      return fetchBacklinkItems(
-        tr.uri,
-        `${REPLY}:subject`,
-        did,
-        "reply",
-        v.title ?? "",
-        tr.uri,
-      );
-    }),
-    ...replies.map((rr) => {
-      const v = rr.value as unknown as XyzAtboardsReply.Main;
-      return fetchBacklinkItems(
-        rr.uri,
-        `${REPLY}:quote`,
-        did,
-        "quote",
-        "",
-        v.subject ?? "",
-      );
-    }),
-  ]);
-
-  // Deduplicate — prefer "quote" type when the same reply appears as both.
-  const seen = new Map<string, InboxItem>();
-  for (const item of results.flat()) {
-    const key = item.handle + item.body + item.createdAt;
-    if (!seen.has(key) || item.type === "quote") seen.set(key, item);
-  }
-  return [...seen.values()].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  );
 }
 
 // --- Sysop ---
