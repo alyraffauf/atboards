@@ -11,15 +11,15 @@
   "dependencies": {
     "@atcute/atproto": "^3.1.11",
     "@atcute/client": "^4.2.1",
-    "@atcute/lex-cli": "^2.7.0",
     "@atcute/oauth-browser-client": "^3.0.0",
-    "@tailwindcss/typography": "^0.5.19",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.14.0"
   },
   "devDependencies": {
+    "@atcute/lex-cli": "^2.7.0",
+    "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
