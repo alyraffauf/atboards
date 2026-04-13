@@ -6,7 +6,9 @@
   </p>
   <img width="128" height="128" src="assets/logo.svg" alt="@bbs logo">
   <h1>@bbs</h1>
-  <h3>Build a community from your existing account. Tightly curated, fully portable, open by design. Built on <a href="https://atproto.com">atproto</a>.</h3>
+  <h3>Build a community from your existing account.</h3>
+  <h3>Tightly curated, fully portable, open by design.</h3>
+  <h3>Built on <a href="https://atproto.com">atproto</a>.</h3>
   <img src="assets/screenshot.png" alt="@bbs screenshot" width="800">
 </div>
 
