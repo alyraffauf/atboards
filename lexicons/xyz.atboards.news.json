@@ -32,6 +32,7 @@
           },
           "attachments": {
             "type": "array",
+            "maxLength": 10,
             "items": {
               "type": "ref",
               "ref": "#attachment"

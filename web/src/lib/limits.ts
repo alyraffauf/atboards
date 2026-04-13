@@ -11,3 +11,4 @@ export const NEWS_TITLE = 300;
 export const NEWS_BODY = 10000;
 export const REPLY_BODY = 10000;
 export const ATTACHMENT_NAME = 256;
+export const MAX_ATTACHMENTS = 10;

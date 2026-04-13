@@ -1,5 +1,6 @@
 import type { SyntheticEvent } from "react";
 import { Input, Textarea, Button } from "./Form";
+import { MAX_ATTACHMENTS } from "../lib/limits";
 
 interface ComposeFormProps {
   onSubmit: (e: SyntheticEvent) => void;
@@ -42,8 +43,11 @@ export default function ComposeForm({
 }: ComposeFormProps) {
   function addFiles(fileList: FileList | null) {
     if (!fileList) return;
-    onFilesChange([...files, ...Array.from(fileList)]);
+    const combined = [...files, ...Array.from(fileList)].slice(0, MAX_ATTACHMENTS);
+    onFilesChange(combined);
   }
+
+  const atLimit = files.length >= MAX_ATTACHMENTS;
 
   function removeFile(index: number) {
     onFilesChange(files.filter((_, i) => i !== index));
@@ -112,6 +116,7 @@ export default function ComposeForm({
         <Button type="submit" disabled={posting}>
           {posting ? "posting..." : submitLabel}
         </Button>
+        {!atLimit && (
         <label className="text-neutral-200 cursor-pointer bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded inline-block">
           attach
           <input
@@ -122,6 +127,7 @@ export default function ComposeForm({
             className="hidden"
           />
         </label>
+        )}
       </div>
     </form>
   );
