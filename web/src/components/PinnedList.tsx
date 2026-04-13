@@ -25,6 +25,7 @@ export default function PinnedList({ pins }: PinnedListProps) {
           key={entry.did}
           to={`/bbs/${entry.handle}`}
           name={entry.name}
+          description={entry.handle}
         />
       ))}
       {shown < pins.length && (
