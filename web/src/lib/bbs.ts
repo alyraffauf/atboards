@@ -1,5 +1,6 @@
 /** Resolve a handle to a fully hydrated BBS via Slingshot/Constellation. */
 
+import { TTLCache } from "./cache";
 import {
   getRecord,
   getRecordsBatch,
@@ -68,20 +69,17 @@ export interface BBS {
   news: News[];
 }
 
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes — invalidated explicitly on writes
-let cache: { key: string; bbs: BBS; expires: number } | null = null;
+const bbsCache = new TTLCache<string, BBS>(5 * 60 * 1000);
 
 export function invalidateBBSCache() {
-  cache = null;
+  bbsCache.clear();
 }
 
 export async function resolveBBS(handle: string): Promise<BBS> {
-  const now = Date.now();
-  if (cache && cache.key === handle && cache.expires > now) {
-    return cache.bbs;
-  }
+  const cached = bbsCache.get(handle);
+  if (cached) return cached;
   const bbs = await _resolveBBS(handle);
-  cache = { key: handle, bbs, expires: now + CACHE_TTL };
+  bbsCache.set(handle, bbs);
   return bbs;
 }
 

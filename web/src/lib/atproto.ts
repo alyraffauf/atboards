@@ -1,5 +1,6 @@
 /** Read-side wrappers for Slingshot and Constellation (no auth needed). */
 
+import { TTLCache } from "./cache";
 import { parseAtUri } from "./util";
 
 const SLINGSHOT = "https://slingshot.microcosm.blue/xrpc";
@@ -40,18 +41,17 @@ async function fetchJson<T>(url: string): Promise<T> {
   return resp.json() as Promise<T>;
 }
 
-const identityCache = new Map<string, { doc: MiniDoc; expires: number }>();
-const IDENTITY_TTL = 5 * 60 * 1000; // 5 minutes
+const identityCache = new TTLCache<string, MiniDoc>(5 * 60 * 1000);
 
 export async function resolveIdentity(identifier: string): Promise<MiniDoc> {
   const cached = identityCache.get(identifier);
-  if (cached && cached.expires > Date.now()) return cached.doc;
+  if (cached) return cached;
 
   const doc = await fetchJson<MiniDoc>(
     `${SLINGSHOT}/blue.microcosm.identity.resolveMiniDoc?identifier=${encodeURIComponent(identifier)}`,
   );
-  identityCache.set(identifier, { doc, expires: Date.now() + IDENTITY_TTL });
-  identityCache.set(doc.did, { doc, expires: Date.now() + IDENTITY_TTL });
+  identityCache.set(identifier, doc);
+  identityCache.set(doc.did, doc);
   return doc;
 }
 

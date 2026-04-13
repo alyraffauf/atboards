@@ -1,5 +1,6 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { TTLCache } from "../lib/cache";
 import HandleInput from "../components/form/HandleInput";
 import ListLink from "../components/nav/ListLink";
 import { resolveIdentitiesBatch } from "../lib/atproto";
@@ -17,8 +18,7 @@ interface Discovered {
   desc: string;
 }
 
-let discoveryCache: { items: Discovered[]; expires: number } | null = null;
-const DISCOVERY_TTL = 5 * 60 * 1000; // 5 minutes
+const discoveryCache = new TTLCache<string, Discovered[]>(5 * 60 * 1000);
 
 export default function Home() {
   const navigate = useNavigate();
@@ -40,29 +40,32 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (discoveryCache && discoveryCache.expires > Date.now()) {
-      setDiscovered(discoveryCache.items);
+    const cached = discoveryCache.get("all");
+    if (cached) {
+      setDiscovered(cached);
       return;
     }
     (async () => {
       try {
-        const r = await fetch(
+        const resp = await fetch(
           `https://ufos-api.microcosm.blue/records?collection=${SITE}&limit=50`,
         );
-        let records = (await r.json()) as UFORecord[];
+        let records = (await resp.json()) as UFORecord[];
         if (!records.length) return;
         records = records.sort(() => Math.random() - 0.5);
-        const authors = await resolveIdentitiesBatch(records.map((r) => r.did));
+        const authors = await resolveIdentitiesBatch(
+          records.map((record) => record.did),
+        );
         const items: Discovered[] = [];
-        for (const r of records) {
-          if (!(r.did in authors)) continue;
+        for (const record of records) {
+          if (!(record.did in authors)) continue;
           items.push({
-            handle: authors[r.did].handle,
-            name: r.record.name || authors[r.did].handle,
-            desc: r.record.description || "",
+            handle: authors[record.did].handle,
+            name: record.record.name || authors[record.did].handle,
+            desc: record.record.description || "",
           });
         }
-        discoveryCache = { items, expires: Date.now() + DISCOVERY_TTL };
+        discoveryCache.set("all", items);
         setDiscovered(items);
       } catch {}
     })();
