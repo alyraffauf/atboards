@@ -58,6 +58,7 @@ export async function fetchPins(
       createdAt: value.createdAt,
     });
   }
+  results.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return results;
 }
 
