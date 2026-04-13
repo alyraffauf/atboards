@@ -134,11 +134,11 @@ async function uploadBlob(rpc: Client, file: File): Promise<BlobRef> {
 
 export async function uploadAttachments(
   rpc: Client,
-  files: FileList | File[] | null,
+  files: File[],
 ): Promise<Attachment[]> {
-  if (!files || files.length === 0) return [];
+  if (files.length === 0) return [];
   const out: Attachment[] = [];
-  for (const file of Array.from(files)) {
+  for (const file of files) {
     if (file.size === 0) continue;
     if (file.size > 1_000_000) throw new Error(`${file.name} exceeds 1MB`);
     const blob = await uploadBlob(rpc, file);

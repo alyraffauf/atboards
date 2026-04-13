@@ -12,8 +12,8 @@ interface ComposeFormProps {
   onTitleChange?: (value: string) => void;
   titlePlaceholder?: string;
   titleMaxLength?: number;
-  files: FileList | null;
-  onFilesChange: (files: FileList | null) => void;
+  files: File[];
+  onFilesChange: (files: File[]) => void;
   quote?: { uri: string; handle: string } | null;
   onClearQuote?: () => void;
   submitLabel?: string;
@@ -40,11 +40,14 @@ export default function ComposeForm({
   bodyMaxLength,
   titleMaxLength,
 }: ComposeFormProps) {
-  const fileNames = files?.length
-    ? Array.from(files)
-        .map((f) => f.name)
-        .join(", ")
-    : "";
+  function addFiles(fileList: FileList | null) {
+    if (!fileList) return;
+    onFilesChange([...files, ...Array.from(fileList)]);
+  }
+
+  function removeFile(index: number) {
+    onFilesChange(files.filter((_, i) => i !== index));
+  }
 
   return (
     <form onSubmit={onSubmit} className={`space-y-3 ${className}`}>
@@ -88,16 +91,20 @@ export default function ComposeForm({
         maxLength={bodyMaxLength}
       />
 
-      {fileNames && (
-        <div className="flex items-center gap-2 text-xs text-neutral-500">
-          <span className="truncate">{fileNames}</span>
-          <button
-            type="button"
-            onClick={() => onFilesChange(null)}
-            className="text-neutral-500 hover:text-red-400 shrink-0"
-          >
-            ✕
-          </button>
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-2 text-xs text-neutral-500">
+          {files.map((f, i) => (
+            <span key={i} className="flex items-center gap-1 bg-neutral-800 px-2 py-1 rounded">
+              {f.name}
+              <button
+                type="button"
+                onClick={() => removeFile(i)}
+                className="text-neutral-500 hover:text-red-400"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
         </div>
       )}
 
@@ -111,7 +118,7 @@ export default function ComposeForm({
             name="attachments"
             type="file"
             multiple
-            onChange={(e) => onFilesChange(e.target.files)}
+            onChange={(e) => addFiles(e.target.files)}
             className="hidden"
           />
         </label>

@@ -19,7 +19,7 @@ export default function BBSPage() {
   const { user, agent } = useAuth();
   const [newsTitle, setNewsTitle] = useState("");
   const [newsBody, setNewsBody] = useState("");
-  const [newsFiles, setNewsFiles] = useState<FileList | null>(null);
+  const [newsFiles, setNewsFiles] = useState<File[]>([]);
   const [pendingNews, setPendingNews] = useState<News[]>([]);
   const [deletedTids, setDeletedTids] = useState<Set<string>>(new Set());
   const [showAllNews, setShowAllNews] = useState(false);
@@ -52,7 +52,7 @@ export default function BBSPage() {
     ]);
     setNewsTitle("");
     setNewsBody("");
-    setNewsFiles(null);
+    setNewsFiles([]);
   }
 
   async function removeNews(tid: string) {

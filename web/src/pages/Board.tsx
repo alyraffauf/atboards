@@ -49,7 +49,7 @@ export default function BoardPage() {
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
 
   useTitle(`${board.name} — ${bbs.site.name}`);
   useBreadcrumb(
@@ -92,7 +92,7 @@ export default function BoardPage() {
       );
       setTitle("");
       setBody("");
-      setFiles(null);
+      setFiles([]);
       setTimeout(() => revalidator.revalidate(), 1500);
       const { did, rkey } = parseAtUri(resp.data.uri);
       navigate(`/bbs/${handle}/thread/${did}/${rkey}`);

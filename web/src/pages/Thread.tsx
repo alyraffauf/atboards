@@ -64,7 +64,7 @@ function ThreadPage({ loaded }: { loaded: LoaderData }) {
   } = useThreadReplies(loaded);
 
   const [body, setBody] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [quote, setQuote] = useState<{ uri: string; handle: string } | null>(
     null,
   );
@@ -101,7 +101,7 @@ function ThreadPage({ loaded }: { loaded: LoaderData }) {
         attachments: attachments as Reply["attachments"],
       });
       setBody("");
-      setFiles(null);
+      setFiles([]);
       setQuote(null);
     } catch {
       alert("Failed to post reply.");
