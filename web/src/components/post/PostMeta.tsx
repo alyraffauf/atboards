@@ -1,4 +1,4 @@
-import { formatFullDate, relativeDate } from "../lib/util";
+import { formatFullDate, relativeDate } from "../../lib/util";
 
 interface PostMetaProps {
   handle: string;

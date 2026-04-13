@@ -4,7 +4,7 @@ import { useAuth } from "../lib/auth";
 import { resolveIdentity } from "../lib/atproto";
 import { BAN, HIDE } from "../lib/lexicon";
 import { invalidateBBSCache } from "../lib/bbs";
-import HandleInput from "../components/HandleInput";
+import HandleInput from "../components/form/HandleInput";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { createBan, createHide, deleteRecord } from "../lib/writes";
 import type { BBS } from "../lib/bbs";

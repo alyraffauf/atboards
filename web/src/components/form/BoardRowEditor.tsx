@@ -1,5 +1,5 @@
 import { Input } from "./Form";
-import * as limits from "../lib/limits";
+import * as limits from "../../lib/limits";
 
 export interface BoardRow {
   slug: string;

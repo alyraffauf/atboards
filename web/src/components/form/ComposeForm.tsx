@@ -1,7 +1,7 @@
 import type { SyntheticEvent } from "react";
 import { Input, Textarea, Button } from "./Form";
 import FileChips from "./FileChips";
-import { MAX_ATTACHMENTS } from "../lib/limits";
+import { MAX_ATTACHMENTS } from "../../lib/limits";
 
 interface ComposeFormProps {
   onSubmit: (e: SyntheticEvent) => void;

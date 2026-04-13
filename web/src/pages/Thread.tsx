@@ -20,10 +20,10 @@ import {
   uploadAttachments,
 } from "../lib/writes";
 import type { BBSLoaderData, ThreadObj } from "../router/loaders";
-import PageNav from "../components/PageNav";
-import ReplyCard, { type Reply } from "../components/ReplyCard";
-import ComposeForm from "../components/ComposeForm";
-import ThreadCard from "../components/ThreadCard";
+import PageNav from "../components/nav/PageNav";
+import ReplyCard, { type Reply } from "../components/post/ReplyCard";
+import ComposeForm from "../components/form/ComposeForm";
+import ThreadCard from "../components/post/ThreadCard";
 
 interface LoaderData {
   handle: string;

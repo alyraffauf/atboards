@@ -5,7 +5,7 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { NEWS } from "../lib/lexicon";
 import { deleteRecord } from "../lib/writes";
 import type { BBSLoaderData } from "../router/loaders";
-import NewsCard from "../components/NewsCard";
+import NewsCard from "../components/post/NewsCard";
 
 export default function NewsPage() {
   const { handle, tid } = useParams();

@@ -5,8 +5,8 @@ import { putBoard, putSite } from "../lib/writes";
 import { nowIso } from "../lib/util";
 import * as limits from "../lib/limits";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { Input, Textarea, Button } from "../components/Form";
-import BoardRowEditor, { type BoardRow } from "../components/BoardRowEditor";
+import { Input, Textarea, Button } from "../components/form/Form";
+import BoardRowEditor, { type BoardRow } from "../components/form/BoardRowEditor";
 import type { AuthUser } from "../lib/auth";
 
 export default function SysopCreate() {

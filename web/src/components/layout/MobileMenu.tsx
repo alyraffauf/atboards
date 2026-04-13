@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import type { useAuth } from "../lib/auth";
+import type { useAuth } from "../../lib/auth";
 
 interface MobileMenuProps {
   user: ReturnType<typeof useAuth>["user"];

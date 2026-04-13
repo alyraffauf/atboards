@@ -1,7 +1,7 @@
 import { useState, type SyntheticEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { usePageTitle } from "../hooks/usePageTitle";
-import HandleInput from "../components/HandleInput";
+import HandleInput from "../components/form/HandleInput";
 
 export default function Login() {
   const { login } = useAuth();

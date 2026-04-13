@@ -1,4 +1,4 @@
-import type { ThreadObj } from "../router/loaders";
+import type { ThreadObj } from "../../router/loaders";
 import AttachmentLink from "./AttachmentLink";
 import PostActions from "./PostActions";
 import PostBody from "./PostBody";

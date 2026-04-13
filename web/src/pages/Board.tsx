@@ -12,8 +12,8 @@ import { makeAtUri, parseAtUri, relativeDate } from "../lib/util";
 import { BOARD } from "../lib/lexicon";
 import { createThread, uploadAttachments } from "../lib/writes";
 import * as limits from "../lib/limits";
-import ThreadLink from "../components/ThreadLink";
-import ComposeForm from "../components/ComposeForm";
+import ThreadLink from "../components/nav/ThreadLink";
+import ComposeForm from "../components/form/ComposeForm";
 import {
   hydrateThreadPage,
   type BBSLoaderData,

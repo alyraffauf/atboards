@@ -1,7 +1,7 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import HandleInput from "../components/HandleInput";
-import ListLink from "../components/ListLink";
+import HandleInput from "../components/form/HandleInput";
+import ListLink from "../components/nav/ListLink";
 import { resolveIdentitiesBatch } from "../lib/atproto";
 import { SITE } from "../lib/lexicon";
 import { usePageTitle } from "../hooks/usePageTitle";

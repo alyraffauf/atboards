@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { getRecordsBatch, resolveIdentitiesBatch } from "../lib/atproto";
 import { parseAtUri } from "../lib/util";
 import type { BBS } from "../lib/bbs";
-import type { Reply } from "../components/ReplyCard";
+import type { Reply } from "../components/post/ReplyCard";
 import {
   REPLIES_PER_PAGE,
   type BacklinkRef,

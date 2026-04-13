@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { parseAtUri } from "../lib/util";
-import PostBody from "./PostBody";
-import PostMeta from "./PostMeta";
+import PostBody from "./post/PostBody";
+import PostMeta from "./post/PostMeta";
 import type { InboxItem } from "../router/loaders";
 
 const PAGE_SIZE = 10;

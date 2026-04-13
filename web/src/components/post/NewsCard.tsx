@@ -1,4 +1,4 @@
-import type { News } from "../lib/bbs";
+import type { News } from "../../lib/bbs";
 import AttachmentLink from "./AttachmentLink";
 import PostActions from "./PostActions";
 import PostBody from "./PostBody";

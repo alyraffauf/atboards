@@ -3,16 +3,16 @@ import { Link, useRouteLoaderData } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { createNews, deleteRecord, uploadAttachments } from "../lib/writes";
-import ComposeForm from "../components/ComposeForm";
+import ComposeForm from "../components/form/ComposeForm";
 import { NEWS, SITE } from "../lib/lexicon";
 import { makeAtUri, nowIso, parseAtUri } from "../lib/util";
 import * as limits from "../lib/limits";
 import { usePageTitle } from "../hooks/usePageTitle";
 import Localtime from "../components/Localtime";
-import ListLink from "../components/ListLink";
+import ListLink from "../components/nav/ListLink";
 import type { News } from "../lib/bbs";
 import type { BBSLoaderData } from "../router/loaders";
-import PostBody from "../components/PostBody";
+import PostBody from "../components/post/PostBody";
 
 export default function BBSPage() {
   const { handle, bbs } = useRouteLoaderData("bbs") as BBSLoaderData;

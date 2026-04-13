@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../../lib/auth";
 import Logo from "./Logo";
 import HeaderBreadcrumbs from "./HeaderBreadcrumbs";
 import MobileMenu from "./MobileMenu";

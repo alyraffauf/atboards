@@ -4,7 +4,7 @@ import {
   type RouteObject,
 } from "react-router-dom";
 
-import Layout from "../components/Layout";
+import Layout from "../components/layout/Layout";
 import ErrorPage from "../components/ErrorPage";
 
 import Home from "../pages/Home";

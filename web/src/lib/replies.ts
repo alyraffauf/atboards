@@ -5,7 +5,7 @@ import { parseAtUri } from "./util";
 import { is } from "@atcute/lexicons/validations";
 import { mainSchema as replySchema } from "../lexicons/types/xyz/atboards/reply";
 import type { XyzAtboardsReply } from "../lexicons";
-import type { Reply } from "../components/ReplyCard";
+import type { Reply } from "../components/post/ReplyCard";
 
 export type { BacklinkRef };
 
