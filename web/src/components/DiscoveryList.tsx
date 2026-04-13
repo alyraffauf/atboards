@@ -23,6 +23,7 @@ export default function DiscoveryList({
             key={bbs.handle}
             to={`/bbs/${encodeURIComponent(bbs.handle)}`}
             name={bbs.name}
+            description={bbs.handle}
           />
         ))}
       </div>
