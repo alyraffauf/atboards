@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PostBody from "../post/PostBody";
+import { ActionButton } from "../nav/ActionButton";
 import type { Profile } from "../../lib/profile";
 
 interface ViewProfileProps {
@@ -22,12 +23,7 @@ export default function ViewProfile({
           {profile?.name ?? handle}
         </h1>
         {isOwner && (
-          <button
-            onClick={onEdit}
-            className="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded text-xs"
-          >
-            edit profile
-          </button>
+          <ActionButton onClick={onEdit}>edit profile</ActionButton>
         )}
       </div>
       <p className="text-neutral-500">

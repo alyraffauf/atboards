@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import HandleInput from "./form/HandleInput";
+import { Button } from "./form/Form";
 import { resolveIdentity, getRecord } from "../lib/atproto";
 import { SITE } from "../lib/lexicon";
 import type { DiscoveredBBS } from "../hooks/useDiscovery";
@@ -108,19 +109,8 @@ export default function DialBBS({ discovered, suggestions }: DialBBSProps) {
           required
           className="sm:flex-1"
         />
-        <button
-          type="submit"
-          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded"
-        >
-          go
-        </button>
-        <button
-          type="button"
-          onClick={onRandom}
-          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded"
-        >
-          random
-        </button>
+        <Button type="submit">go</Button>
+        <Button type="button" onClick={onRandom}>random</Button>
       </form>
       {focused && visibleSuggestions.length > 0 && (
         <div className="relative">

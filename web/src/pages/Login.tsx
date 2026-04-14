@@ -2,6 +2,7 @@ import { useState, type SyntheticEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { usePageTitle } from "../hooks/usePageTitle";
 import HandleInput from "../components/form/HandleInput";
+import { Button } from "../components/form/Form";
 
 export default function Login() {
   const { login } = useAuth();
@@ -37,13 +38,9 @@ export default function Login() {
           required
           className="flex-1"
         />
-        <button
-          type="submit"
-          disabled={busy}
-          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded"
-        >
+        <Button type="submit" disabled={busy}>
           {busy ? "..." : "log in"}
-        </button>
+        </Button>
       </form>
     </>
   );

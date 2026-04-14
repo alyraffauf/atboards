@@ -5,6 +5,7 @@ import { resolveIdentity } from "../lib/atproto";
 import { BAN, HIDE } from "../lib/lexicon";
 import { invalidateBBSCache } from "../lib/bbs";
 import HandleInput from "../components/form/HandleInput";
+import { Button } from "../components/form/Form";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { createBan, createHide, deleteRecord } from "../lib/writes";
 import type { BBS } from "../lib/bbs";
@@ -117,12 +118,7 @@ export default function SysopModerate() {
               onChange={setIdentifier}
               className="flex-1"
             />
-            <button
-              onClick={ban}
-              className="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-3 py-2 rounded text-xs"
-            >
-              ban
-            </button>
+            <Button onClick={ban}>ban</Button>
           </div>
         </div>
 
@@ -163,12 +159,7 @@ export default function SysopModerate() {
               placeholder="at://did/collection/rkey"
               className="flex-1 bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
             />
-            <button
-              onClick={hide}
-              className="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-3 py-2 rounded text-xs"
-            >
-              hide
-            </button>
+            <Button onClick={hide}>hide</Button>
           </div>
         </div>
       </div>

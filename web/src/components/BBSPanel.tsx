@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ActionLink } from "./nav/ActionButton";
 
 const cardStyle =
   "bg-neutral-900 border border-neutral-800 rounded px-4 py-3 text-neutral-300 hover:text-neutral-200 hover:border-neutral-700";
@@ -16,12 +17,7 @@ export default function BBSPanel({ hasBBS, userHandle, onDelete }: BBSPanelProps
         <p className="text-neutral-500 mb-4">
           You haven't set up a BBS yet.
         </p>
-        <Link
-          to="/account/create"
-          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded inline-block"
-        >
-          create a bbs
-        </Link>
+        <ActionLink to="/account/create">create a bbs</ActionLink>
       </>
     );
   }

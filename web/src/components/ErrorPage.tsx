@@ -1,5 +1,6 @@
-import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom";
+import { isRouteErrorResponse, useRouteError } from "react-router-dom";
 import { BBSNotFoundError, NoBBSError, NetworkError } from "../lib/bbs";
+import { ActionLink } from "./nav/ActionButton";
 
 export default function ErrorPage() {
   const error = useRouteError();
@@ -28,12 +29,7 @@ export default function ErrorPage() {
     <div className="py-16 text-center">
       <h1 className="text-lg text-neutral-200 mb-2">{title}</h1>
       {detail && <p className="text-neutral-500 mb-6">{detail}</p>}
-      <Link
-        to="/"
-        className="inline-block bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded"
-      >
-        ← back to home
-      </Link>
+      <ActionLink to="/">← back to home</ActionLink>
     </div>
   );
 }
