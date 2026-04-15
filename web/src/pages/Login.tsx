@@ -107,7 +107,7 @@ export default function Login() {
         )}
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded p-4 text-xs text-neutral-400 space-y-3">
+      <div className="bg-neutral-900 border border-neutral-800 rounded p-4 text-sm text-neutral-400 space-y-3">
         <p>Once signed in, you can:</p>
         <ul className="list-disc list-inside space-y-1">
           <li>Post threads and replies</li>
@@ -116,7 +116,7 @@ export default function Login() {
           <li>Start your own community</li>
         </ul>
         <p className="text-neutral-400 pt-3 border-t border-neutral-800">
-          You'll be redirected to your hosting provider to continue.
+          We'll redirect you to your provider to continue.
         </p>
       </div>
     </div>
