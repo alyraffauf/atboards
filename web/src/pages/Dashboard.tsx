@@ -104,37 +104,57 @@ export default function Dashboard({ data }: { data: DashboardData }) {
       </div>
 
       {tab === "inbox" && (
-        <Suspense fallback={loading}>
-          <Await resolve={activity}>
-            {(resolved: ActivityItem[]) => (
-              <ActivityList items={resolved} userHandle={user.handle} />
-            )}
-          </Await>
-        </Suspense>
+        <>
+          <p className="text-neutral-500 text-xs mb-4">
+            Recent replies and quotes from other users.
+          </p>
+          <Suspense fallback={loading}>
+            <Await resolve={activity}>
+              {(resolved: ActivityItem[]) => (
+                <ActivityList items={resolved} userHandle={user.handle} />
+              )}
+            </Await>
+          </Suspense>
+        </>
       )}
 
       {tab === "threads" && (
-        <Suspense fallback={loading}>
-          <Await resolve={threads}>
-            {(resolved: MyThread[]) => <MyThreadList threads={resolved} />}
-          </Await>
-        </Suspense>
+        <>
+          <p className="text-neutral-500 text-xs mb-4">
+            Threads you've posted across all BBSes.
+          </p>
+          <Suspense fallback={loading}>
+            <Await resolve={threads}>
+              {(resolved: MyThread[]) => <MyThreadList threads={resolved} />}
+            </Await>
+          </Suspense>
+        </>
       )}
 
       {tab === "pinned" && (
-        <Suspense fallback={loading}>
-          <Await resolve={pins}>
-            {(resolved: PinnedBBS[]) => <PinnedList pins={resolved} />}
-          </Await>
-        </Suspense>
+        <>
+          <p className="text-neutral-500 text-xs mb-4">
+            BBSes you've pinned for quick access.
+          </p>
+          <Suspense fallback={loading}>
+            <Await resolve={pins}>
+              {(resolved: PinnedBBS[]) => <PinnedList pins={resolved} />}
+            </Await>
+          </Suspense>
+        </>
       )}
 
       {tab === "bbs" && (
-        <BBSPanel
-          hasBBS={hasBBS}
-          userHandle={user.handle}
-          onDelete={handleDeleteBBS}
-        />
+        <>
+          <p className="text-neutral-500 text-xs mb-4">
+            Manage your BBS.
+          </p>
+          <BBSPanel
+            hasBBS={hasBBS}
+            userHandle={user.handle}
+            onDelete={handleDeleteBBS}
+          />
+        </>
       )}
     </>
   );
