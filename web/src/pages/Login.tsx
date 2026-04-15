@@ -62,7 +62,7 @@ export default function Login() {
             href="https://atproto.com"
             className="text-neutral-200 underline underline-offset-2 hover:text-neutral-300"
           >
-            atproto
+            AT Protocol
           </a>
           {" "}account.
         </h1>

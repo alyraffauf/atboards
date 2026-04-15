@@ -38,7 +38,7 @@ class LoginScreen(Screen):
         with Vertical():
             yield Static("log in", classes="title")
             yield Static(
-                "Sign in with your atproto handle. A browser window will open.",
+                "Sign in with your AT Protocol handle. A browser window will open.",
                 classes="subtitle",
             )
             yield HandleInput(id="login-handle")

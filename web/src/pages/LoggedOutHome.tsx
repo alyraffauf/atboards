@@ -34,7 +34,7 @@ export default function LoggedOutHome() {
             href="https://atproto.com"
             className="text-neutral-400 hover:text-neutral-300 underline underline-offset-2"
           >
-            Atmosphere
+            AT Protocol
           </a>
           .
         </h1>

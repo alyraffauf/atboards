@@ -188,7 +188,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
         await write(writer, f"\r\n{LOGO}\r\n")
         await write(
             writer,
-            "  This is a read-only telnet gateway for Atmosphere BBSes.\r\n  Please dial a BBS.\r\n\r\n",
+            "  This is a read-only telnet gateway for AT Protocol BBSes.\r\n  Please dial a BBS.\r\n\r\n",
         )
 
         handle = await prompt(reader, writer, "handle> ")
