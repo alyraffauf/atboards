@@ -56,8 +56,16 @@ export default function Login() {
             style={{ width: 180, imageRendering: "pixelated" }}
           />
         </picture>
-        <h1 className="text-lg text-neutral-200 mb-2">Log in to atbbs</h1>
-        <p className="text-neutral-400">Use any atproto account.</p>
+        <h1 className="text-lg text-neutral-200 mb-2">
+          Log in with any{" "}
+          <a
+            href="https://atproto.com"
+            className="text-neutral-200 underline underline-offset-2 hover:text-neutral-300"
+          >
+            atproto
+          </a>
+          {" "}account.
+        </h1>
       </div>
 
       {error && <p className="text-red-400 mb-4 text-center">{error}</p>}
