@@ -15,6 +15,7 @@ export default function FileChips({ files, onRemove }: FileChipsProps) {
           <button
             type="button"
             onClick={() => onRemove(i)}
+            aria-label={`Remove ${file.name}`}
             className="text-neutral-400 hover:text-red-400"
           >
             ✕
