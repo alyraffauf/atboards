@@ -62,9 +62,10 @@ export default function ComposeForm({
           <button
             type="button"
             onClick={onClearQuote}
+            aria-label="Clear quote"
             className="text-neutral-400 hover:text-red-400 ml-2"
           >
-            x
+            ✕
           </button>
         </div>
       )}
