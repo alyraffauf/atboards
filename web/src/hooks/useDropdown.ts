@@ -6,6 +6,8 @@ export function useDropdown(optionCount: number, onSelect: (index: number) => vo
   const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const blurTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
 
   function onFocus() {
     clearTimeout(blurTimeout.current);
@@ -34,7 +36,7 @@ export function useDropdown(optionCount: number, onSelect: (index: number) => vo
       );
     } else if (event.key === "Enter" && activeIndex >= 0) {
       event.preventDefault();
-      onSelect(activeIndex);
+      onSelectRef.current(activeIndex);
     } else if (event.key === "Escape") {
       setFocused(false);
       setActiveIndex(-1);
