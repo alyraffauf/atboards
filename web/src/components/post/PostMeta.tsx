@@ -21,6 +21,12 @@ export default function PostMeta({ handle, createdAt }: PostMetaProps) {
         role="link"
         tabIndex={0}
         onClick={handleClick}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleClick(event as unknown as React.MouseEvent);
+          }
+        }}
         className="text-neutral-200 hover:underline cursor-pointer"
       >
         {handle}
