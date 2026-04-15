@@ -9,7 +9,7 @@ import MyThreadList from "../components/MyThreadList";
 import type { MyThread } from "../lib/mythreads";
 import type { ProfileLoaderData } from "../router/loaders/profile";
 
-export default function ProfilePage() {
+export default function Profile() {
   const { handle, profile, threads } = useLoaderData() as ProfileLoaderData;
   const { user, agent } = useAuth();
   const revalidator = useRevalidator();

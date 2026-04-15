@@ -11,7 +11,7 @@ import ErrorPage from "../components/ErrorPage";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import OAuthCallback from "../pages/OAuthCallback";
-import ProfilePage from "../pages/ProfilePage";
+import Profile from "../pages/Profile";
 import BBS from "../pages/BBS";
 import Board from "../pages/Board";
 import Thread from "../pages/Thread";
@@ -87,7 +87,7 @@ const routes: RouteObject[] = [
       {
         path: "/profile/:handle",
         loader: profileLoader,
-        element: <ProfilePage />,
+        element: <Profile />,
         errorElement: <ErrorPage />,
       },
       { path: "*", element: <NotFound /> },
