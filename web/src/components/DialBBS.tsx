@@ -29,10 +29,12 @@ function buildVisibleSuggestions(
       entry.handle.toLowerCase().includes(filterQuery),
   );
 
-  if (resolved && !filtered.some((entry) => entry.handle === resolved.handle)) {
-    return [resolved, ...filtered];
-  }
-  return filtered;
+  if (!resolved) return filtered;
+
+  const alreadyIncluded = filtered.some(
+    (entry) => entry.handle === resolved.handle,
+  );
+  return alreadyIncluded ? filtered : [resolved, ...filtered];
 }
 
 export default function DialBBS({ discovered, suggestions }: DialBBSProps) {
