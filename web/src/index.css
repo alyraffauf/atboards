@@ -42,12 +42,14 @@ samp {
     monospace;
 }
 
-.reply-actions {
-  display: none;
-}
+@media (hover: hover) {
+  .post-actions {
+    visibility: hidden;
+  }
 
-.reply-card:hover .reply-actions {
-  display: inline-flex;
+  .reply-card:hover .post-actions {
+    visibility: visible;
+  }
 }
 
 @keyframes atbbs-progress {
