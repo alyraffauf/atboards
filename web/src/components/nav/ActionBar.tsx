@@ -5,5 +5,5 @@ interface ActionBarProps {
 }
 
 export default function ActionBar({ children }: ActionBarProps) {
-  return <div className="flex items-center gap-2">{children}</div>;
+  return <div className="flex flex-wrap items-center gap-2">{children}</div>;
 }
