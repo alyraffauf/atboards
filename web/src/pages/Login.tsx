@@ -59,8 +59,8 @@ export default function Login() {
             className="text-neutral-400 hover:text-neutral-300 underline underline-offset-2"
           >
             AT Protocol
-          </a>
-          {" "}account.
+          </a>{" "}
+          account.
         </h1>
       </div>
 
@@ -94,7 +94,10 @@ export default function Login() {
         </form>
         {dropdownOpen && (
           <div className="relative">
-            <div role="listbox" className="absolute left-0 right-0 mt-1 bg-neutral-900 border border-neutral-800 rounded shadow-lg z-10">
+            <div
+              role="listbox"
+              className="absolute left-0 right-0 mt-1 bg-neutral-900 border border-neutral-800 rounded shadow-lg z-10"
+            >
               {matches.map((match, index) => (
                 <button
                   key={match.handle}
@@ -131,13 +134,21 @@ export default function Login() {
         )}
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded p-4 text-sm text-neutral-400 space-y-3">
+      <div className="bg-neutral-900 border border-neutral-800 rounded p-4 text-xs text-neutral-400 space-y-3">
         <p>Once signed in, you can:</p>
         <ul className="space-y-2">
-          <li className="flex items-center gap-2"><MessageSquare size={14} /> Post threads and replies</li>
-          <li className="flex items-center gap-2"><Pin size={14} /> Pin boards you like</li>
-          <li className="flex items-center gap-2"><User size={14} /> Set up a profile</li>
-          <li className="flex items-center gap-2"><Monitor size={14} /> Start your own community</li>
+          <li className="flex items-center gap-2">
+            <MessageSquare size={14} /> Post threads and replies
+          </li>
+          <li className="flex items-center gap-2">
+            <Pin size={14} /> Pin boards you like
+          </li>
+          <li className="flex items-center gap-2">
+            <User size={14} /> Set up a profile
+          </li>
+          <li className="flex items-center gap-2">
+            <Monitor size={14} /> Start your own community
+          </li>
         </ul>
         <p className="text-neutral-400 pt-3 border-t border-neutral-800">
           We'll redirect you to your provider to continue.
