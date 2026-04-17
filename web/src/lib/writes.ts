@@ -140,7 +140,6 @@ export async function uploadAttachments(
   const out: Attachment[] = [];
   for (const file of files) {
     if (file.size === 0) continue;
-    if (file.size > 1_000_000) throw new Error(`${file.name} exceeds 1MB`);
     const blob = await uploadBlob(rpc, file);
     out.push({
       file: blob as unknown as Attachment["file"],
