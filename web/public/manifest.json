@@ -1,7 +1,7 @@
 {
   "name": "atbbs",
   "short_name": "atbbs",
-  "description": "Bulletin boards on the Atmosphere.",
+  "description": "Bulletin boards on the AT Protocol.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
