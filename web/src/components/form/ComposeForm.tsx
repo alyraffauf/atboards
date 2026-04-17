@@ -113,7 +113,7 @@ export default function ComposeForm({
             </>
           )}
         </Button>
-        {!attachmentsAtLimit && (
+        {!attachmentsAtLimit && !posting && (
           <label className="text-neutral-200 cursor-pointer bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded inline-block">
             <span className="inline-flex items-center gap-1.5">
               <Paperclip size={14} /> attach

@@ -35,6 +35,7 @@ export default function BBSPage() {
   const [pendingNews, setPendingNews] = useState<NewsPost[]>([]);
   const [deletedTids, setDeletedTids] = useState<Set<string>>(new Set());
   const [showAllNews, setShowAllNews] = useState(false);
+  const [postingNews, setPostingNews] = useState(false);
 
   useBreadcrumb(
     [{ label: bbs.site.name, to: `/bbs/${handle}` }],
@@ -46,23 +47,30 @@ export default function BBSPage() {
 
   async function postNews(e: SyntheticEvent) {
     e.preventDefault();
-    if (!agent) return;
-    const title = newsTitle.trim();
-    const body = newsBody.trim();
-    const siteUri = makeAtUri(bbs.identity.did, SITE, "self");
-    const attachments = await uploadAttachments(agent, newsFiles);
-    const resp = await createPost(agent, siteUri, body, {
-      title,
-      attachments,
-    });
-    const rkey = parseAtUri(resp.data.uri).rkey;
-    setPendingNews((prev) => [
-      { uri: resp.data.uri, rkey, title, body, createdAt: nowIso() },
-      ...prev,
-    ]);
-    setNewsTitle("");
-    setNewsBody("");
-    setNewsFiles([]);
+    if (!agent || postingNews) return;
+    setPostingNews(true);
+    try {
+      const title = newsTitle.trim();
+      const body = newsBody.trim();
+      const siteUri = makeAtUri(bbs.identity.did, SITE, "self");
+      const attachments = await uploadAttachments(agent, newsFiles);
+      const resp = await createPost(agent, siteUri, body, {
+        title,
+        attachments,
+      });
+      const rkey = parseAtUri(resp.data.uri).rkey;
+      setPendingNews((prev) => [
+        { uri: resp.data.uri, rkey, title, body, createdAt: nowIso() },
+        ...prev,
+      ]);
+      setNewsTitle("");
+      setNewsBody("");
+      setNewsFiles([]);
+    } catch (error: unknown) {
+      alert(`Could not post: ${error instanceof Error ? error.message : error}`);
+    } finally {
+      setPostingNews(false);
+    }
   }
 
   async function removeNews(rkey: string) {
@@ -153,6 +161,7 @@ export default function BBSPage() {
               files={newsFiles}
               onFilesChange={setNewsFiles}
               submitLabel="post"
+              posting={postingNews}
             />
           </details>
         )}

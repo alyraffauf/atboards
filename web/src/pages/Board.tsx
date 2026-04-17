@@ -51,6 +51,7 @@ export default function BoardPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [posting, setPosting] = useState(false);
 
   usePageTitle(`${board.name} — ${bbs.site.name}`);
   useBreadcrumb(
@@ -75,10 +76,8 @@ export default function BoardPage() {
 
   async function onCreate(e: SyntheticEvent) {
     e.preventDefault();
-    if (!agent || !user) {
-      alert("Not signed in.");
-      return;
-    }
+    if (!agent || !user || posting) return;
+    setPosting(true);
     try {
       const boardUri = makeAtUri(bbs.identity.did, BOARD, board.slug);
       const attachments = await uploadAttachments(agent, files);
@@ -95,6 +94,8 @@ export default function BoardPage() {
     } catch (err: unknown) {
       console.error("createPost failed:", err);
       alert(`Could not post: ${err instanceof Error ? err.message : err}`);
+    } finally {
+      setPosting(false);
     }
   }
 
@@ -122,6 +123,7 @@ export default function BoardPage() {
             bodyMaxLength={limits.POST_BODY}
             files={files}
             onFilesChange={setFiles}
+            posting={posting}
           />
         </details>
       )}
