@@ -279,27 +279,28 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // Dynamic og:image at /og/bbs/...
+    // Dynamic og:image at /og/bbs/... — cached at the edge for 1 hour.
     if (path.startsWith("/og/bbs/")) {
+      const cache = caches.default;
+      const cachedResponse = await cache.match(request);
+      if (cachedResponse) return cachedResponse;
+
       const route = parseRoute(path);
-      if (!route) {
-        return renderOgImage(DEFAULT_TITLE, "", DEFAULT_DESCRIPTION);
-      }
+      let imageResponse: Response;
 
       try {
-        const metadata = await fetchMetadata(route);
-        if (metadata) {
-          return renderOgImage(
-            metadata.title,
-            metadata.subtitle,
-            metadata.description,
-          );
-        }
+        const metadata = route ? await fetchMetadata(route) : null;
+        imageResponse = metadata
+          ? await renderOgImage(metadata.title, metadata.subtitle, metadata.description)
+          : await renderOgImage(DEFAULT_TITLE, "", DEFAULT_DESCRIPTION);
       } catch {
-        // Fall through to default image.
+        imageResponse = await renderOgImage(DEFAULT_TITLE, "", DEFAULT_DESCRIPTION);
       }
 
-      return renderOgImage(DEFAULT_TITLE, "", DEFAULT_DESCRIPTION);
+      const cachedCopy = new Response(imageResponse.body, imageResponse);
+      cachedCopy.headers.set("Cache-Control", "public, max-age=3600");
+      await cache.put(request, cachedCopy.clone());
+      return cachedCopy;
     }
 
     // Inject metadata into HTML for /bbs/... routes.
