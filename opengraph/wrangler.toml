@@ -1,0 +1,15 @@
+name = "atbbs-opengraph"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+rules = [
+  { type = "Text", globs = ["**/*.svg"] }
+]
+
+[[routes]]
+pattern = "*atbbs.xyz/bbs/*"
+zone_name = "atbbs.xyz"
+
+[[routes]]
+pattern = "*atbbs.xyz/og/*"
+zone_name = "atbbs.xyz"
