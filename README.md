@@ -89,7 +89,7 @@ The web app and TUI query existing network infrastructure:
 
 - [Slingshot](https://slingshot.microcosm.blue/) — cached record and identity fetching
 - [Constellation](https://constellation.microcosm.blue/) — backlink index for discovering threads and replies
-- [UFOs](https://ufos.microcosm.blue/) — BBS discovery feed
+- [Lightrail](https://lightrail.microcosm.blue/) — BBS discovery via collection listing
 
 ## Configuration
 

@@ -1,13 +1,15 @@
-/** Fetch discovered BBSes from the UFOs API, cached in memory. */
+/** Fetch discovered BBSes from the Lightrail API, cached in memory. */
 
 import { useEffect, useState } from "react";
 import { TTLCache } from "../lib/cache";
-import { resolveIdentitiesBatch } from "../lib/atproto";
+import { getRecord, resolveIdentitiesBatch } from "../lib/atproto";
 import { SITE } from "../lib/lexicon";
+import { is } from "@atcute/lexicons/validations";
+import { mainSchema as siteSchema } from "../lexicons/types/xyz/atbbs/site";
+import type { XyzAtbbsSite } from "../lexicons";
 
-interface UFORecord {
+interface LightrailRepo {
   did: string;
-  record: { name?: string; description?: string };
 }
 
 export interface DiscoveredBBS {
@@ -30,25 +32,35 @@ export function useDiscovery(): DiscoveredBBS[] {
     }
     (async () => {
       try {
-        const resp = await fetch(
-          `https://ufos-api.microcosm.blue/records?collection=${SITE}&limit=50`,
+        const response = await fetch(
+          `https://lightrail.microcosm.blue/xrpc/com.atproto.sync.listReposByCollection?collection=${SITE}&limit=50`,
         );
-        let records = (await resp.json()) as UFORecord[];
-        if (!records.length) return;
-        records = records.sort(() => Math.random() - 0.5);
-        const authors = await resolveIdentitiesBatch(
-          records.map((record) => record.did),
+        const data = (await response.json()) as { repos: LightrailRepo[] };
+        if (!data.repos.length) return;
+
+        const shuffled = data.repos.sort(() => Math.random() - 0.5);
+        const identities = await resolveIdentitiesBatch(
+          shuffled.map((repo) => repo.did),
         );
+
         const items: DiscoveredBBS[] = [];
-        for (const record of records) {
-          if (!(record.did in authors)) continue;
-          items.push({
-            did: record.did,
-            handle: authors[record.did].handle,
-            name: record.record.name || authors[record.did].handle,
-            description: record.record.description || "",
-          });
+        for (const repo of shuffled) {
+          if (!(repo.did in identities)) continue;
+          try {
+            const siteRecord = await getRecord(repo.did, SITE, "self");
+            if (!is(siteSchema, siteRecord.value)) continue;
+            const siteValue = siteRecord.value as unknown as XyzAtbbsSite.Main;
+            items.push({
+              did: repo.did,
+              handle: identities[repo.did].handle,
+              name: siteValue.name || identities[repo.did].handle,
+              description: siteValue.description || "",
+            });
+          } catch {
+            continue;
+          }
         }
+
         discoveryCache.set("all", items);
         setDiscovered(items);
       } catch {}

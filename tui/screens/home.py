@@ -11,7 +11,7 @@ from tui.widgets.handle_input import HandleInput
 from core import lexicon
 from core.models import BBSNotFoundError, NetworkError, NoBBSError
 from core.resolver import resolve_bbs
-from core.slingshot import resolve_identities_batch
+from core.slingshot import get_record, resolve_identities_batch
 from tui.screens.site import SiteScreen
 
 
@@ -103,26 +103,31 @@ class HomeScreen(Screen):
         client = self.app.http_client
         try:
             resp = await client.get(
-                "https://ufos-api.microcosm.blue/records",
+                "https://lightrail.microcosm.blue/xrpc/com.atproto.sync.listReposByCollection",
                 params={"collection": lexicon.SITE, "limit": 50},
             )
             if resp.status_code != 200:
                 return
-            raw = resp.json()
-            if len(raw) > 5:
-                raw = random.sample(raw, 5)
+            repos = resp.json().get("repos", [])
+            if len(repos) > 5:
+                repos = random.sample(repos, 5)
 
-            dids = [record["did"] for record in raw]
+            dids = [repo["did"] for repo in repos]
             authors = await resolve_identities_batch(client, dids)
 
             items = []
-            for record in raw:
-                did = record["did"]
-                if did in authors:
-                    name = record["record"].get("name", "")
-                    desc = record["record"].get("description", "")
-                    handle = authors[did].handle
-                    items.append((handle, name, desc))
+            for repo in repos:
+                did = repo["did"]
+                if did not in authors:
+                    continue
+                try:
+                    site_record = await get_record(client, did, lexicon.SITE, "self")
+                    name = site_record.value.get("name", "")
+                    desc = site_record.value.get("description", "")
+                except Exception:
+                    continue
+                handle = authors[did].handle
+                items.append((handle, name, desc))
 
             if not items:
                 return
