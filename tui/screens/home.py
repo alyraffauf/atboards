@@ -16,6 +16,10 @@ from tui.screens.site import SiteScreen
 
 
 class HomeScreen(Screen):
+    BINDINGS = [
+        ("ctrl+n", "create_bbs", "create bbs"),
+    ]
+
     DEFAULT_CSS = """
     HomeScreen ListView {
         height: auto;
@@ -62,6 +66,33 @@ class HomeScreen(Screen):
         self.query_one("#discover-label").display = False
         self.query_one("#discover-list").display = False
         self.load_discover()
+
+    def action_create_bbs(self) -> None:
+        if not self.app.user_session:
+            self.notify("Log in to create a BBS.", severity="warning")
+            return
+        self._check_and_create_bbs()
+
+    @work(exclusive=True)
+    async def _check_and_create_bbs(self) -> None:
+        """Check the user doesn't already have a BBS, then open the create screen."""
+        session = self.app.user_session
+        try:
+            await get_record(
+                self.app.http_client, session["did"], lexicon.SITE, "self"
+            )
+            # If we got here the record exists — they already have a BBS.
+            self.notify(
+                "You already have a BBS. Dial your handle to manage it.",
+                severity="warning",
+            )
+            return
+        except Exception:
+            pass
+
+        from tui.screens.sysop.create import SysopCreateScreen
+
+        self.app.push_screen(SysopCreateScreen())
 
     def refresh_data(self) -> None:
         lv = self.query_one("#discover-list", ListView)

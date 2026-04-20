@@ -5,16 +5,16 @@ from textual.screen import Screen
 from textual.widgets import Footer, Input
 
 from core import lexicon
-from core.models import AtUri, AuthError, BBS
-from core.records import delete_record, put_board_record, put_site_record
-from core.resolver import invalidate_bbs_cache
+from core.models import AtUri, AuthError
+from core.records import put_board_record, put_site_record
+from core.resolver import invalidate_bbs_cache, resolve_bbs
 from core.util import now_iso
-from tui.screens.sysop.bbs_form import BBSFormMixin
+from tui.screens.sysop.bbs_form import BBSFormMixin, DEFAULT_BOARD
 from tui.util import make_session_updater, require_session
 from tui.widgets.breadcrumb import Breadcrumb
 
 
-class SysopEditScreen(BBSFormMixin, Screen):
+class SysopCreateScreen(BBSFormMixin, Screen):
     BINDINGS = [
         ("escape", "app.pop_screen", "back"),
         ("ctrl+s", "save", "save"),
@@ -22,33 +22,14 @@ class SysopEditScreen(BBSFormMixin, Screen):
         ("ctrl+d", "remove_board", "remove board"),
     ]
 
-    def __init__(self, bbs: BBS, handle: str) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.bbs = bbs
-        self.handle = handle
-        self._boards = [
-            {
-                "slug": board.slug,
-                "name": board.name,
-                "description": board.description,
-                "created_at": board.created_at,
-            }
-            for board in bbs.site.boards
-        ]
+        self._boards = [{**DEFAULT_BOARD, "created_at": now_iso()}]
 
     def compose(self) -> ComposeResult:
-        yield Breadcrumb(
-            ("@bbs", 3),
-            (self.bbs.site.name, 2),
-            ("sysop", 1),
-            ("edit", 0),
-        )
+        yield Breadcrumb(("@bbs", 1), ("create bbs", 0))
         with VerticalScroll(id="edit-scroll"):
-            yield from self.compose_site_fields(
-                name=self.bbs.site.name,
-                description=self.bbs.site.description,
-                intro=self.bbs.site.intro,
-            )
+            yield from self.compose_site_fields()
             yield from self.compose_board_widgets()
         yield Footer()
 
@@ -73,7 +54,8 @@ class SysopEditScreen(BBSFormMixin, Screen):
         now = now_iso()
 
         try:
-            # Save each board record
+            # Create each board record (must exist before the site record
+            # because the site record references them by AT-URI).
             for board in self.get_board_values():
                 await put_board_record(
                     self.app.http_client,
@@ -81,23 +63,11 @@ class SysopEditScreen(BBSFormMixin, Screen):
                     board["slug"],
                     board["name"],
                     board["description"],
-                    board["created_at"],
+                    board["created_at"] or now,
                     updater,
                 )
 
-            # Delete any boards that were removed
-            current_slugs = {board["slug"] for board in self._boards}
-            for board in self.bbs.site.boards:
-                if board.slug not in current_slugs:
-                    await delete_record(
-                        self.app.http_client,
-                        session,
-                        lexicon.BOARD,
-                        board.slug,
-                        updater,
-                    )
-
-            # Update the site record
+            # Create the site record, referencing all board AT-URIs.
             await put_site_record(
                 self.app.http_client,
                 session,
@@ -110,15 +80,22 @@ class SysopEditScreen(BBSFormMixin, Screen):
                         str(AtUri(session["did"], lexicon.BOARD, board["slug"]))
                         for board in self._boards
                     ],
-                    "createdAt": self.bbs.site.created_at or now,
-                    "updatedAt": now,
+                    "createdAt": now,
                 },
                 updater,
             )
             invalidate_bbs_cache()
-            self.notify("BBS updated.")
+            self.notify("BBS created!")
+
+            # Navigate to the new BBS so the user lands on it.
+            handle = session.get("handle", "")
             self.app.pop_screen()
+            bbs = await resolve_bbs(self.app.http_client, handle)
+
+            from tui.screens.site import SiteScreen
+
+            self.app.push_screen(SiteScreen(bbs, handle))
         except AuthError:
             self.notify("Session expired. Please log in again.", severity="error")
         except Exception as e:
-            self.notify(f"Could not update BBS: {e}", severity="error")
+            self.notify(f"Could not create BBS: {e}", severity="error")
