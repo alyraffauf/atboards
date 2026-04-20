@@ -7,7 +7,7 @@ from textual.widgets import Footer
 from core import lexicon
 from core.models import AtUri, AuthError, BBS, Post as PostModel
 from core.records import delete_record
-from tui.util import make_session_updater
+from tui.util import make_session_updater, require_sysop
 from tui.widgets.breadcrumb import Breadcrumb
 from tui.widgets.post import Post
 
@@ -43,9 +43,7 @@ class NewsScreen(Screen):
         yield Footer()
 
     def action_delete(self) -> None:
-        session = self.app.user_session
-        if not session or session["did"] != self.bbs.identity.did:
-            self.notify("Only the sysop can delete news.", severity="error")
+        if not require_sysop(self, self.bbs):
             return
         self._do_delete()
 

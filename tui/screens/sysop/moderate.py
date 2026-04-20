@@ -8,15 +8,10 @@ from textual.widgets import Footer, Input, ListItem, ListView, Static
 
 from core import lexicon
 from core.models import AtUri, AuthError, BBS
-from core.records import (
-    create_ban_record,
-    create_hidden_record,
-    delete_record,
-    list_pds_records,
-)
+from core.records import delete_record, list_pds_records
 from core.resolver import invalidate_bbs_cache
 from core.slingshot import resolve_identities_batch, resolve_identity
-from tui.util import make_session_updater
+from tui.util import ban_user, hide_post, make_session_updater
 from tui.widgets.breadcrumb import Breadcrumb
 
 
@@ -154,14 +149,10 @@ class SysopModerateScreen(Screen):
 
     @work
     async def _do_add_ban(self, identifier: str) -> None:
-        session = self.app.user_session
-        client = self.app.http_client
-        updater = make_session_updater(self.app.session_store)
-
         did = identifier
         if not identifier.startswith("did:"):
             try:
-                identity = await resolve_identity(client, identifier)
+                identity = await resolve_identity(self.app.http_client, identifier)
                 did = identity.did
             except Exception:
                 self.notify(f"Could not resolve {identifier}.", severity="error")
@@ -171,16 +162,9 @@ class SysopModerateScreen(Screen):
             self.notify("Already banned.", severity="warning")
             return
 
-        try:
-            await create_ban_record(client, session, did, updater)
-            invalidate_bbs_cache()
-            self.notify(f"Banned {did}.")
+        if await ban_user(self, did):
             self.query_one("#ban-input", Input).value = ""
             self._load_data()
-        except AuthError:
-            self.notify("Session expired. Please log in again.", severity="error")
-        except Exception:
-            self.notify("Could not ban user.", severity="error")
 
     def action_add_hide(self) -> None:
         uri = self.query_one("#hide-input", Input).value.strip()
@@ -191,23 +175,13 @@ class SysopModerateScreen(Screen):
 
     @work
     async def _do_add_hide(self, uri: str) -> None:
-        session = self.app.user_session
-        updater = make_session_updater(self.app.session_store)
-
         if uri in self._hide_rkeys:
             self.notify("Already hidden.", severity="warning")
             return
 
-        try:
-            await create_hidden_record(self.app.http_client, session, uri, updater)
-            invalidate_bbs_cache()
-            self.notify("Post hidden.")
+        if await hide_post(self, uri):
             self.query_one("#hide-input", Input).value = ""
             self._load_data()
-        except AuthError:
-            self.notify("Session expired. Please log in again.", severity="error")
-        except Exception:
-            self.notify("Could not hide post.", severity="error")
 
     def refresh_data(self) -> None:
         self._load_data()

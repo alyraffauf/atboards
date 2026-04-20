@@ -11,7 +11,7 @@ from tui.screens.board import BoardScreen
 from tui.screens.compose import ComposeNewsScreen
 from tui.screens.news import NewsScreen
 from tui.screens.sysop import SysopScreen
-from tui.util import require_session
+from tui.util import require_sysop
 from tui.widgets.breadcrumb import Breadcrumb
 
 
@@ -79,20 +79,12 @@ class SiteScreen(Screen):
             self.notify("Could not refresh.", severity="error")
 
     def action_sysop(self) -> None:
-        session = require_session(self)
-        if not session:
-            return
-        if session["did"] != self.bbs.identity.did:
-            self.notify("Only the sysop can manage this BBS.", severity="error")
+        if not require_sysop(self, self.bbs):
             return
         self.app.push_screen(SysopScreen(self.bbs, self.handle))
 
     def action_new_news(self) -> None:
-        session = require_session(self)
-        if not session:
-            return
-        if session["did"] != self.bbs.identity.did:
-            self.notify("Only the sysop can post news.", severity="error")
+        if not require_sysop(self, self.bbs):
             return
         self.app.push_screen(ComposeNewsScreen(self.bbs, self.handle))
 
