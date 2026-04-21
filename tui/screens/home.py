@@ -1,6 +1,7 @@
 import asyncio
 import random
 
+import httpx
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Vertical
@@ -88,8 +89,11 @@ class HomeScreen(Screen):
                 severity="warning",
             )
             return
-        except Exception:
+        except httpx.HTTPStatusError:
             pass
+        except Exception:
+            self.notify("Could not check for existing BBS.", severity="error")
+            return
 
         from tui.screens.sysop.create import SysopCreateScreen
 
@@ -181,4 +185,4 @@ class HomeScreen(Screen):
             discover_list.index = 0
 
         except Exception:
-            pass
+            self.notify("Could not load discover list.", severity="error")
