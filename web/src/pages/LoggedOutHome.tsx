@@ -16,14 +16,13 @@ export default function LoggedOutHome() {
       })),
     [discovered],
   );
-  const [tab, setTab] = useState<"pip" | "uv" | "brew" | "telnet">("pip");
+  const [tab, setTab] = useState<"brew" | "uv" | "telnet">("brew");
   const [copied, setCopied] = useState(false);
   usePageTitle("atbbs");
 
   const installCommands: Record<string, string> = {
-    pip: "pip install atbbs\natbbs",
-    uv: "uv tool install atbbs\natbbs",
     brew: "brew install alyraffauf/tap/atbbs\natbbs",
+    uv: "uv tool install atbbs\natbbs",
     telnet: "telnet tel.atbbs.xyz",
   };
 
@@ -81,7 +80,7 @@ export default function LoggedOutHome() {
       <div className="border-t border-neutral-800 py-4">
         <h2 className="text-neutral-300 mb-4">Better yet, use your terminal</h2>
         <div className="flex gap-4 border-b border-neutral-800 mb-4">
-          {(["pip", "uv", "brew", "telnet"] as const).map((installer) => (
+          {(["brew", "uv", "telnet"] as const).map((installer) => (
             <button
               key={installer}
               onClick={() => setTab(installer)}
