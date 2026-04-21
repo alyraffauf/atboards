@@ -9,7 +9,7 @@ import { useAuth } from "../lib/auth";
 import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useThreadReplies } from "../hooks/useThreadReplies";
-import { POST } from "../lib/lexicon";
+import { BOARD, POST } from "../lib/lexicon";
 import { makeAtUri, parseAtUri } from "../lib/util";
 import * as limits from "../lib/limits";
 import {
@@ -83,7 +83,6 @@ function ThreadPage({ loaded }: { loaded: LoaderData }) {
     try {
       const threadUri = makeAtUri(thread.did, POST, thread.rkey);
       const attachments = await uploadAttachments(agent, files);
-      const { BOARD } = await import("../lib/lexicon");
       const boardUri = makeAtUri(bbs.identity.did, BOARD, thread.boardSlug);
       const resp = await createPost(agent, boardUri, body.trim(), {
         root: threadUri,
