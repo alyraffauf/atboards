@@ -27,36 +27,41 @@ const TAB_STYLE_ACTIVE =
 const TAB_STYLE_INACTIVE =
   "py-2 border-b-2 text-neutral-400 hover:text-neutral-300 border-transparent whitespace-nowrap";
 
-export default function Dashboard({ data }: { data: DashboardData }) {
-  const { user, hasBBS, pins, threads, activity } = data;
+export default function Dashboard({
+  user,
+  hasBBS,
+  pins: pinsPromise,
+  threads: threadsPromise,
+  activity: activityPromise,
+}: DashboardData) {
   const { agent } = useAuth();
   const revalidator = useRevalidator();
-  const discovered = useDiscovery();
+  const discoveredBBSes = useDiscovery();
   const [tab, setTab] = useState<Tab>("inbox");
-  const [resolvedPins, setResolvedPins] = useState<PinnedBBS[]>([]);
+  const [pins, setPins] = useState<PinnedBBS[]>([]);
   usePageTitle("atbbs");
 
   useEffect(() => {
-    pins.then(setResolvedPins);
-  }, [pins]);
+    pinsPromise.then(setPins);
+  }, [pinsPromise]);
 
   const suggestions = useMemo<Suggestion[]>(() => {
-    const pinnedDids = new Set(resolvedPins.map((entry) => entry.did));
-    const fromPins: Suggestion[] = resolvedPins.map((entry) => ({
-      to: `/bbs/${entry.handle}`,
-      name: entry.name,
-      handle: entry.handle,
+    const pinnedDids = new Set(pins.map((pin) => pin.did));
+    const fromPins: Suggestion[] = pins.map((pin) => ({
+      to: `/bbs/${pin.handle}`,
+      name: pin.name,
+      handle: pin.handle,
     }));
-    const fromDiscovery: Suggestion[] = discovered
-      .filter((entry) => !pinnedDids.has(entry.did))
+    const fromDiscovery: Suggestion[] = discoveredBBSes
+      .filter((bbs) => !pinnedDids.has(bbs.did))
       .slice(0, 5)
-      .map((entry) => ({
-        to: `/bbs/${encodeURIComponent(entry.handle)}`,
-        name: entry.name,
-        handle: entry.handle,
+      .map((bbs) => ({
+        to: `/bbs/${encodeURIComponent(bbs.handle)}`,
+        name: bbs.name,
+        handle: bbs.handle,
       }));
     return [...fromPins, ...fromDiscovery];
-  }, [resolvedPins, discovered]);
+  }, [pins, discoveredBBSes]);
 
   async function handleDeleteBBS() {
     if (!agent) return;
@@ -81,29 +86,29 @@ export default function Dashboard({ data }: { data: DashboardData }) {
     { key: "bbs", label: "My BBS" },
   ];
 
-  const loading = <p className="text-neutral-400">loading...</p>;
+  const loadingFallback = <p className="text-neutral-400">loading...</p>;
 
   return (
     <>
       <div className="border-b border-neutral-800 mb-6 pb-4">
-        <DialBBS discovered={discovered} suggestions={suggestions} />
+        <DialBBS discovered={discoveredBBSes} suggestions={suggestions} />
       </div>
 
       <div
         role="tablist"
         className="flex gap-4 border-b border-neutral-800 mb-6 overflow-x-auto"
       >
-        {tabs.map((entry) => (
+        {tabs.map((tabDef) => (
           <button
-            key={entry.key}
+            key={tabDef.key}
             role="tab"
-            aria-selected={tab === entry.key}
-            onClick={() => setTab(entry.key)}
+            aria-selected={tab === tabDef.key}
+            onClick={() => setTab(tabDef.key)}
             className={
-              tab === entry.key ? TAB_STYLE_ACTIVE : TAB_STYLE_INACTIVE
+              tab === tabDef.key ? TAB_STYLE_ACTIVE : TAB_STYLE_INACTIVE
             }
           >
-            {entry.label}
+            {tabDef.label}
           </button>
         ))}
       </div>
@@ -113,10 +118,10 @@ export default function Dashboard({ data }: { data: DashboardData }) {
           <p className="text-neutral-400 text-xs mb-4">
             Recent replies from other users.
           </p>
-          <Suspense fallback={loading}>
-            <Await resolve={activity}>
-              {(resolved: ActivityItem[]) => (
-                <ActivityList items={resolved} userHandle={user.handle} />
+          <Suspense fallback={loadingFallback}>
+            <Await resolve={activityPromise}>
+              {(items: ActivityItem[]) => (
+                <ActivityList items={items} userHandle={user.handle} />
               )}
             </Await>
           </Suspense>
@@ -128,9 +133,9 @@ export default function Dashboard({ data }: { data: DashboardData }) {
           <p className="text-neutral-400 text-xs mb-4">
             Threads you've posted across all BBSes.
           </p>
-          <Suspense fallback={loading}>
-            <Await resolve={threads}>
-              {(resolved: MyThread[]) => <MyThreadList threads={resolved} />}
+          <Suspense fallback={loadingFallback}>
+            <Await resolve={threadsPromise}>
+              {(threads: MyThread[]) => <MyThreadList threads={threads} />}
             </Await>
           </Suspense>
         </>
@@ -141,9 +146,9 @@ export default function Dashboard({ data }: { data: DashboardData }) {
           <p className="text-neutral-400 text-xs mb-4">
             BBSes you've pinned for quick access.
           </p>
-          <Suspense fallback={loading}>
-            <Await resolve={pins}>
-              {(resolved: PinnedBBS[]) => <PinnedList pins={resolved} />}
+          <Suspense fallback={loadingFallback}>
+            <Await resolve={pinsPromise}>
+              {(pins: PinnedBBS[]) => <PinnedList pins={pins} />}
             </Await>
           </Suspense>
         </>

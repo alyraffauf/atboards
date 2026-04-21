@@ -9,7 +9,7 @@ interface HomeLoaderData {
 export default function Home() {
   const data = useLoaderData() as HomeLoaderData;
 
-  if (data.user) return <Dashboard data={data as DashboardData} />;
+  if (data.user) return <Dashboard {...(data as DashboardData)} />;
 
   return <LoggedOutHome />;
 }
