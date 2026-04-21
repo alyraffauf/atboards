@@ -31,7 +31,7 @@ export default function HandleInput({
   useEffect(() => {
     const timer = setInterval(() => {
       setPlaceholderIndex((i) => (i + 1) % PLACEHOLDERS.length);
-    }, 3000);
+    }, 6000);
 
     return () => clearInterval(timer);
   }, []);
@@ -42,6 +42,10 @@ export default function HandleInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={PLACEHOLDERS[placeholderIndex]}
+      spellCheck={false}
+      autoCapitalize="none"
+      autoCorrect="off"
+      autoComplete="off"
       className={`${inputStyles} ${className}`}
       {...rest}
     />

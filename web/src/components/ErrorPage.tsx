@@ -24,7 +24,7 @@ export default function ErrorPage() {
     } else {
       detail =
         "This account isn't running a BBS yet. Is this you? Log in to start one.";
-      action = { to: "/login", label: "log in" };
+      action = { to: "/?login=1", label: "log in" };
     }
   } else if (error instanceof NetworkError) {
     title = "Couldn't reach the network.";

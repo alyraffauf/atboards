@@ -4,6 +4,6 @@ import { ensureAuthReady, getCurrentUser } from "../../lib/auth";
 export async function requireAuth() {
   await ensureAuthReady();
   const user = getCurrentUser();
-  if (!user) throw redirect("/login");
+  if (!user) throw redirect("/?login=1");
   return user;
 }

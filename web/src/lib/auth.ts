@@ -168,11 +168,11 @@ export function getCurrentUser(): AuthUser | null {
 // --- Login ---
 
 async function login(handle: string): Promise<void> {
-  // Remember where to send the user after the OAuth round-trip, but
-  // never back to /login or /oauth/callback (that would loop).
+  // Remember where to send the user after the OAuth round-trip, but never
+  // back to /oauth/callback (that would loop).
   try {
     const here = window.location.pathname;
-    const dest = here === "/login" || here.startsWith("/oauth/") ? "/" : here;
+    const dest = here.startsWith("/oauth/") ? "/" : here;
     sessionStorage.setItem(POST_LOGIN_KEY, dest);
   } catch {
     // non-fatal

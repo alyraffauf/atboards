@@ -1,22 +1,28 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useLoginModal } from "../lib/loginModal";
+import { pickRandomApps } from "../lib/atprotoApps";
 import LoginForm from "./form/LoginForm";
+import AtprotoAppsCard from "./AtprotoAppsCard";
 
 export default function LoginModal() {
   const { open, closeLogin } = useLoginModal();
+  const [apps] = useState(() => pickRandomApps(3));
 
   useEffect(() => {
     if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") closeLogin();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") closeLogin();
     }
-    document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
+
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKeyDown);
+
     return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, closeLogin]);
 
@@ -27,12 +33,12 @@ export default function LoginModal() {
       role="dialog"
       aria-modal="true"
       aria-label="Log in"
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-16 md:items-center md:pt-0"
       onClick={closeLogin}
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 px-4 pt-16 md:items-center md:pt-0"
     >
       <div
-        className="relative w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-lg p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-lg p-6 shadow-xl"
       >
         <button
           type="button"
@@ -42,8 +48,9 @@ export default function LoginModal() {
         >
           <X size={18} />
         </button>
-        <h2 className="text-xl text-neutral-200 mb-1">Log in</h2>
-        <p className="text-sm text-neutral-400 mb-5">
+
+        <h2 className="text-2xl text-neutral-200 mb-4">Log in</h2>
+        <p className="text-sm text-neutral-400 mb-6 leading-relaxed">
           Use any{" "}
           <a
             href="https://atproto.com"
@@ -53,10 +60,12 @@ export default function LoginModal() {
           </a>{" "}
           account.
         </p>
+
         <LoginForm autoFocus idPrefix="login-modal" />
-        <p className="text-xs text-neutral-500 mt-4">
-          We'll redirect you to your provider to continue.
-        </p>
+
+        <div className="mt-6">
+          <AtprotoAppsCard apps={apps} />
+        </div>
       </div>
     </div>
   );

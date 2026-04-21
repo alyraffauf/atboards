@@ -9,7 +9,6 @@ import Layout from "../components/layout/Layout";
 import ErrorPage from "../components/ErrorPage";
 
 import Home from "../pages/Home";
-import Login from "../pages/Login";
 import OAuthCallback from "../pages/OAuthCallback";
 import Profile from "../pages/Profile";
 import BBS from "../pages/BBS";
@@ -38,7 +37,6 @@ const routes: RouteObject[] = [
     errorElement: <ErrorPage />,
     children: [
       { path: "/", loader: homeLoader, element: <Home /> },
-      { path: "/login", element: <Login /> },
       { path: "/oauth/callback", element: <OAuthCallback /> },
       { path: "/account", loader: () => redirect("/") },
       {
