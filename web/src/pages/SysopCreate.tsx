@@ -23,7 +23,7 @@ export default function SysopCreate() {
   const [boards, setBoards] = useState<BoardRow[]>([
     {
       slug: "general",
-      name: "General Discussion",
+      name: "General",
       desc: "Whatever's on your mind.",
     },
   ]);

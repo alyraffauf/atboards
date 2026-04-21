@@ -13,7 +13,7 @@ from core.util import now_iso
 
 DEFAULT_BOARD = {
     "slug": "general",
-    "name": "General Discussion",
+    "name": "General",
     "description": "Whatever's on your mind.",
     "created_at": "",
 }
