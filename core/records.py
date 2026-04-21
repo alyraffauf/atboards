@@ -517,8 +517,8 @@ async def fetch_inbox(
 
     from core.constellation import get_backlinks
 
-    SCAN_LIMIT = 20  # how many posts to scan
-    BACKLINK_LIMIT = 25  # backlinks per record
+    SCAN_LIMIT = 50  # how many posts to scan
+    BACKLINK_LIMIT = 50  # backlinks per record
     MAX_CONCURRENT = 10  # concurrent API calls
 
     sem = asyncio.Semaphore(MAX_CONCURRENT)
