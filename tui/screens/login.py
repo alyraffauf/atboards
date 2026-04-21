@@ -47,9 +47,7 @@ class LoginScreen(Screen):
         lines = ["The same account works for apps like:"]
         for app in pick_random_apps(3):
             # Textual markup: clicking the name triggers action_open_url below.
-            lines.append(
-                f"  • [@click=open_url('{app['url']}')]{app['name']}[/]"
-            )
+            lines.append(f"  • [@click=open_url('{app['url']}')]{app['name']}[/]")
         return Static("\n".join(lines), markup=True, classes="apps-card")
 
     def action_open_url(self, url: str) -> None:
