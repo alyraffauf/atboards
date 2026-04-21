@@ -43,6 +43,44 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 const identityCache = new TTLCache<string, MiniDoc>(5 * 60 * 1000);
+// `null` means we've looked and there's no avatar — cache that too so we don't refetch.
+const avatarCache = new TTLCache<string, string | null>(5 * 60 * 1000);
+
+const BSKY_CDN = "https://cdn.bsky.app";
+const BSKY_PROFILE = "app.bsky.actor.profile";
+
+function extractAvatarCid(value: Record<string, unknown>): string | null {
+  const avatar = value.avatar as { ref?: { $link?: string } } | undefined;
+  return avatar?.ref?.$link ?? null;
+}
+
+export async function getAvatar(did: string): Promise<string | undefined> {
+  const cached = avatarCache.get(did);
+  if (cached !== undefined) return cached ?? undefined;
+  try {
+    const record = await getRecord(did, BSKY_PROFILE, "self");
+    const cid = extractAvatarCid(record.value);
+    const url = cid ? `${BSKY_CDN}/img/avatar/plain/${did}/${cid}` : null;
+    avatarCache.set(did, url);
+    return url ?? undefined;
+  } catch {
+    avatarCache.set(did, null);
+    return undefined;
+  }
+}
+
+export async function getAvatars(
+  dids: string[],
+): Promise<Record<string, string>> {
+  const unique = [...new Set(dids)];
+  const urls = await Promise.all(unique.map(getAvatar));
+  const map: Record<string, string> = {};
+  unique.forEach((did, index) => {
+    const url = urls[index];
+    if (url) map[did] = url;
+  });
+  return map;
+}
 
 export async function resolveIdentity(identifier: string): Promise<MiniDoc> {
   const cached = identityCache.get(identifier);

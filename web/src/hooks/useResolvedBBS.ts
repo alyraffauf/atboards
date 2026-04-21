@@ -1,7 +1,7 @@
 /** Debounced BBS resolution — resolves a handle to a BBS name if one exists. */
 
 import { useEffect, useState } from "react";
-import { resolveIdentity, getRecord } from "../lib/atproto";
+import { resolveIdentity, getRecord, getAvatar } from "../lib/atproto";
 import { SITE } from "../lib/lexicon";
 import type { Suggestion } from "../components/DialBBS";
 
@@ -21,13 +21,17 @@ export function useResolvedBBS(query: string): Suggestion | null {
     const timeout = setTimeout(async () => {
       try {
         const identity = await resolveIdentity(trimmed);
-        const siteRecord = await getRecord(identity.did, SITE, "self");
+        const [siteRecord, avatar] = await Promise.all([
+          getRecord(identity.did, SITE, "self"),
+          getAvatar(identity.did),
+        ]);
         const siteValue = siteRecord.value as { name?: string };
         if (!cancelled) {
           setResult({
             to: `/bbs/${encodeURIComponent(identity.handle)}`,
             name: siteValue.name ?? identity.handle,
             handle: identity.handle,
+            avatar,
           });
         }
       } catch {

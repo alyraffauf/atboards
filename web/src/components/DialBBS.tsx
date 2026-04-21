@@ -12,6 +12,20 @@ export interface Suggestion {
   to: string;
   name: string;
   handle: string;
+  avatar?: string;
+}
+
+export function bbsToSuggestion(bbs: {
+  handle: string;
+  name: string;
+  avatar?: string;
+}): Suggestion {
+  return {
+    to: `/bbs/${encodeURIComponent(bbs.handle)}`,
+    name: bbs.name,
+    handle: bbs.handle,
+    avatar: bbs.avatar,
+  };
 }
 
 interface DialBBSProps {
@@ -121,6 +135,7 @@ export default function DialBBS({ discovered, suggestions }: DialBBSProps) {
                 }`}
               >
                 <IdentityRow
+                  avatar={entry.avatar}
                   primary={entry.name}
                   secondary={
                     entry.name !== entry.handle ? entry.handle : undefined

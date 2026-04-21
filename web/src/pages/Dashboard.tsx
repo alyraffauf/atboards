@@ -4,7 +4,10 @@ import { useAuth } from "../lib/auth";
 import { deleteBBS } from "../lib/deletebbs";
 import { useDiscovery } from "../hooks/useDiscovery";
 import { usePageTitle } from "../hooks/usePageTitle";
-import DialBBS, { type Suggestion } from "../components/DialBBS";
+import DialBBS, {
+  bbsToSuggestion,
+  type Suggestion,
+} from "../components/DialBBS";
 import PinnedList from "../components/PinnedList";
 import MyThreadList from "../components/MyThreadList";
 import ActivityList from "../components/ActivityList";
@@ -47,19 +50,11 @@ export default function Dashboard({
 
   const suggestions = useMemo<Suggestion[]>(() => {
     const pinnedDids = new Set(pins.map((pin) => pin.did));
-    const fromPins: Suggestion[] = pins.map((pin) => ({
-      to: `/bbs/${pin.handle}`,
-      name: pin.name,
-      handle: pin.handle,
-    }));
-    const fromDiscovery: Suggestion[] = discoveredBBSes
+    const fromPins = pins.map(bbsToSuggestion);
+    const fromDiscovery = discoveredBBSes
       .filter((bbs) => !pinnedDids.has(bbs.did))
       .slice(0, 5)
-      .map((bbs) => ({
-        to: `/bbs/${encodeURIComponent(bbs.handle)}`,
-        name: bbs.name,
-        handle: bbs.handle,
-      }));
+      .map(bbsToSuggestion);
     return [...fromPins, ...fromDiscovery];
   }, [pins, discoveredBBSes]);
 

@@ -12,11 +12,7 @@ export default function IdentityRow({
   return (
     <div className="flex items-center gap-3 min-w-0">
       {avatar && (
-        <img
-          src={avatar}
-          alt=""
-          className="w-6 h-6 rounded-full shrink-0"
-        />
+        <img src={avatar} alt="" className="w-6 h-6 rounded-full shrink-0" />
       )}
       <div className="min-w-0">
         <div className="text-sm text-neutral-200 truncate">{primary}</div>

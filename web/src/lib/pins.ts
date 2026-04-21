@@ -1,6 +1,11 @@
 /** Fetch and resolve the user's pinned BBSes. */
 
-import { listRecords, getRecord, resolveIdentitiesBatch } from "./atproto";
+import {
+  getAvatars,
+  getRecord,
+  listRecords,
+  resolveIdentitiesBatch,
+} from "./atproto";
 import { PIN, SITE } from "./lexicon";
 import { is } from "@atcute/lexicons/validations";
 import { mainSchema as pinSchema } from "../lexicons/types/xyz/atbbs/pin";
@@ -14,6 +19,7 @@ export interface PinnedBBS {
   handle: string;
   name: string;
   createdAt: string;
+  avatar?: string;
 }
 
 export async function fetchPins(
@@ -28,11 +34,14 @@ export async function fetchPins(
   );
   if (!pinnedDids.length) return [];
 
-  const identities = await resolveIdentitiesBatch(pinnedDids);
+  const [identities, siteResults, avatars] = await Promise.all([
+    resolveIdentitiesBatch(pinnedDids),
+    Promise.allSettled(
+      pinnedDids.map((pinnedDid) => getRecord(pinnedDid, SITE, "self")),
+    ),
+    getAvatars(pinnedDids),
+  ]);
 
-  const siteResults = await Promise.allSettled(
-    pinnedDids.map((pinnedDid) => getRecord(pinnedDid, SITE, "self")),
-  );
   const siteNames: Record<string, string> = {};
   siteResults.forEach((result, index) => {
     if (result.status !== "fulfilled") return;
@@ -52,6 +61,7 @@ export async function fetchPins(
       handle: identity.handle,
       name: siteNames[value.did] ?? identity.handle,
       createdAt: value.createdAt,
+      avatar: avatars[value.did],
     });
   }
   results.sort((a, b) => b.createdAt.localeCompare(a.createdAt));

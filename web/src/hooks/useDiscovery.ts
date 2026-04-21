@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { TTLCache } from "../lib/cache";
-import { getRecord, resolveIdentitiesBatch } from "../lib/atproto";
+import { getAvatars, getRecord, resolveIdentitiesBatch } from "../lib/atproto";
 import { SITE } from "../lib/lexicon";
 import { SERVICES } from "../lib/shared";
 import { is } from "@atcute/lexicons/validations";
@@ -18,6 +18,7 @@ export interface DiscoveredBBS {
   handle: string;
   name: string;
   description: string;
+  avatar?: string;
 }
 
 const discoveryCache = new TTLCache<string, DiscoveredBBS[]>(5 * 60 * 1000);
@@ -60,6 +61,11 @@ export function useDiscovery(): DiscoveredBBS[] {
           } catch {
             continue;
           }
+        }
+
+        const avatars = await getAvatars(items.map((item) => item.did));
+        for (const item of items) {
+          item.avatar = avatars[item.did];
         }
 
         discoveryCache.set("all", items);

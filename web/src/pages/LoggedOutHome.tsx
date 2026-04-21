@@ -2,18 +2,16 @@ import { useMemo, useState } from "react";
 import { Phone, Copy, Check } from "lucide-react";
 import { useDiscovery } from "../hooks/useDiscovery";
 import { usePageTitle } from "../hooks/usePageTitle";
-import DialBBS, { type Suggestion } from "../components/DialBBS";
+import DialBBS, {
+  bbsToSuggestion,
+  type Suggestion,
+} from "../components/DialBBS";
 import DiscoveryList from "../components/DiscoveryList";
 
 export default function LoggedOutHome() {
   const discovered = useDiscovery();
   const suggestions = useMemo<Suggestion[]>(
-    () =>
-      discovered.map((entry) => ({
-        to: `/bbs/${entry.handle}`,
-        name: entry.name,
-        handle: entry.handle,
-      })),
+    () => discovered.map(bbsToSuggestion),
     [discovered],
   );
   const [tab, setTab] = useState<"brew" | "uv" | "telnet">("brew");
