@@ -42,9 +42,9 @@ export default function BBSPanel({
     <>
       <Link
         to={`/bbs/${encodeURIComponent(userHandle)}`}
-        className="flex items-center justify-between py-3 border-b border-neutral-800 text-neutral-300 hover:text-neutral-200"
+        className="group flex items-center justify-between py-3 border-b border-neutral-800"
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 text-neutral-300 group-hover:text-neutral-200">
           {avatar && (
             <img
               src={avatar}
@@ -54,7 +54,7 @@ export default function BBSPanel({
           )}
           <span className="truncate">{bbsName ?? `@${userHandle}`}</span>
         </div>
-        <span className="flex items-center gap-1 text-sm text-neutral-400">
+        <span className="flex items-center gap-1 text-sm text-neutral-400 group-hover:text-neutral-300">
           view <ArrowRight size={12} />
         </span>
       </Link>
@@ -78,7 +78,7 @@ export default function BBSPanel({
       <button
         type="button"
         onClick={onDelete}
-        className="group w-full flex items-center justify-between py-3 text-left border-t border-red-400/30 hover:bg-red-500/5"
+        className="group w-full flex items-center justify-between py-3 text-left border-t border-red-400/30"
       >
         <div className="flex items-center gap-3">
           <Trash2
@@ -120,7 +120,9 @@ function SettingsRow({ to, icon: Icon, label, hint }: SettingsRowProps) {
           className="text-neutral-400 group-hover:text-neutral-200"
         />
         <div>
-          <div className="text-neutral-200">{label}</div>
+          <div className="text-neutral-300 group-hover:text-neutral-200">
+            {label}
+          </div>
           <div className="text-xs text-neutral-400">{hint}</div>
         </div>
       </div>
