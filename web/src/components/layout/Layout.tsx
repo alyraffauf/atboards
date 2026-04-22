@@ -4,9 +4,11 @@ import MobileBackButton from "./MobileBackButton";
 import Footer from "./Footer";
 import LoginModal from "../LoginModal";
 import { LoginModalProvider } from "../../lib/loginModal";
+import { useRevalidateOnFocus } from "../../hooks/useRevalidateOnFocus";
 
 export default function Layout() {
   const isLoading = useNavigation().state === "loading";
+  useRevalidateOnFocus();
 
   return (
     <LoginModalProvider>
