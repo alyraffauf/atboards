@@ -5,8 +5,8 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import DialBBS, {
   bbsToSuggestion,
   type Suggestion,
-} from "../components/DialBBS";
-import DiscoveryList from "../components/DiscoveryList";
+} from "../components/dashboard/DialBBS";
+import DiscoveryList from "../components/dashboard/DiscoveryList";
 
 export default function LoggedOutHome() {
   const discovered = useDiscovery();

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-import { parseAtUri, formatFullDate, relativeDate } from "../lib/util";
-import type { MyThread } from "../router/loaders";
+import { parseAtUri, formatFullDate, relativeDate } from "../../lib/util";
+import type { MyThread } from "../../router/loaders";
 
 const PAGE_SIZE = 10;
 

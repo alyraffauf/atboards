@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { useLoginModal } from "../lib/loginModal";
-import { pickRandomApps } from "../lib/atprotoApps";
-import LoginForm from "./form/LoginForm";
+import { useLoginModal } from "../../lib/loginModal";
+import { pickRandomApps } from "../../lib/atprotoApps";
+import LoginForm from "../form/LoginForm";
 import AtprotoAppsCard from "./AtprotoAppsCard";
 
 export default function LoginModal() {

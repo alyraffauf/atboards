@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
-import ErrorPage from "../components/ErrorPage";
+import ErrorPage from "../components/layout/ErrorPage";
 import HydrateFallback from "../components/layout/HydrateFallback";
 
 import Home from "../pages/Home";

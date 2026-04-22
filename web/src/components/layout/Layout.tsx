@@ -2,7 +2,7 @@ import { Outlet, useNavigation } from "react-router-dom";
 import Header from "./Header";
 import MobileBackButton from "./MobileBackButton";
 import Footer from "./Footer";
-import LoginModal from "../LoginModal";
+import LoginModal from "../auth/LoginModal";
 import { LoginModalProvider } from "../../lib/loginModal";
 import { useRevalidateOnFocus } from "../../hooks/useRevalidateOnFocus";
 

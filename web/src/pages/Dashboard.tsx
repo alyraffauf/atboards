@@ -7,11 +7,11 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import DialBBS, {
   bbsToSuggestion,
   type Suggestion,
-} from "../components/DialBBS";
-import PinnedList from "../components/PinnedList";
-import MyThreadList from "../components/MyThreadList";
-import ActivityList from "../components/ActivityList";
-import BBSPanel from "../components/BBSPanel";
+} from "../components/dashboard/DialBBS";
+import PinnedList from "../components/dashboard/PinnedList";
+import MyThreadList from "../components/dashboard/MyThreadList";
+import ActivityList from "../components/dashboard/ActivityList";
+import BBSPanel from "../components/dashboard/BBSPanel";
 import type { ActivityItem, PinnedBBS, MyThread } from "../router/loaders";
 import type { AuthUser } from "../lib/auth";
 

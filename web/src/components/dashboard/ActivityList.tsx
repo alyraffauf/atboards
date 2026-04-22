@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-import { parseAtUri } from "../lib/util";
-import PostBody from "./post/PostBody";
-import PostMeta from "./post/PostMeta";
-import type { ActivityItem } from "../lib/activity";
+import { parseAtUri } from "../../lib/util";
+import PostBody from "../post/PostBody";
+import PostMeta from "../post/PostMeta";
+import type { ActivityItem } from "../../lib/activity";
 
 const PAGE_SIZE = 10;
 

@@ -6,7 +6,7 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { putProfile } from "../lib/writes";
 import ViewProfile from "../components/profile/ViewProfile";
 import EditProfile from "../components/profile/EditProfile";
-import MyThreadList from "../components/MyThreadList";
+import MyThreadList from "../components/dashboard/MyThreadList";
 import type { MyThread } from "../lib/mythreads";
 import type { ProfileLoaderData } from "../router/loaders/profile";
 

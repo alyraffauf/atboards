@@ -1,7 +1,7 @@
 import { isRouteErrorResponse, useRouteError } from "react-router-dom";
-import { BBSNotFoundError, NoBBSError, NetworkError } from "../lib/bbs";
-import { useAuth } from "../lib/auth";
-import { ActionLink } from "./nav/ActionButton";
+import { BBSNotFoundError, NoBBSError, NetworkError } from "../../lib/bbs";
+import { useAuth } from "../../lib/auth";
+import { ActionLink } from "../nav/ActionButton";
 
 export default function ErrorPage() {
   const error = useRouteError();

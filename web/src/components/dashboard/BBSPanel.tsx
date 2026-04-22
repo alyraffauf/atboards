@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Pencil, Plus, Shield, Trash2 } from "lucide-react";
-import { ActionLink } from "./nav/ActionButton";
-import { getAvatar } from "../lib/atproto";
+import { ActionLink } from "../nav/ActionButton";
+import { getAvatar } from "../../lib/atproto";
 
 interface BBSPanelProps {
   hasBBS: boolean;

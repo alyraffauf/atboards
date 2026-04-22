@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { resolveIdentity, getRecord, getAvatar } from "../lib/atproto";
 import { SITE } from "../lib/lexicon";
-import type { Suggestion } from "../components/DialBBS";
+import type { Suggestion } from "../components/dashboard/DialBBS";
 
 const DEBOUNCE_MS = 300;
 

@@ -1,12 +1,12 @@
 import { useState, type SyntheticEvent } from "react";
 import { ArrowRight, Dices } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import HandleInput from "./form/HandleInput";
-import IdentityRow from "./IdentityRow";
-import { Button } from "./form/Form";
-import { useDropdown } from "../hooks/useDropdown";
-import { useResolvedBBS } from "../hooks/useResolvedBBS";
-import type { DiscoveredBBS } from "../hooks/useDiscovery";
+import HandleInput from "../form/HandleInput";
+import IdentityRow from "../IdentityRow";
+import { Button } from "../form/Form";
+import { useDropdown } from "../../hooks/useDropdown";
+import { useResolvedBBS } from "../../hooks/useResolvedBBS";
+import type { DiscoveredBBS } from "../../hooks/useDiscovery";
 
 export interface Suggestion {
   to: string;
