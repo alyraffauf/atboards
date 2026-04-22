@@ -81,10 +81,7 @@ export default function BBSPanel({
         className="group flex items-center justify-between py-3 -mx-3 px-3 rounded text-left hover:bg-red-400/10"
       >
         <div className="flex items-center gap-3">
-          <Trash2
-            size={16}
-            className="text-red-400 group-hover:text-red-500"
-          />
+          <Trash2 size={16} className="text-red-400 group-hover:text-red-500" />
           <div>
             <div className="text-red-400 group-hover:text-red-500">Delete</div>
             <div className="text-xs text-neutral-400">
