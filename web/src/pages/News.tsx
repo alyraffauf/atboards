@@ -38,7 +38,7 @@ export default function NewsPage() {
     if (!confirm("Delete this news post?")) return;
     await deleteRecord(agent, POST, tid);
     invalidateBBSCache();
-    navigate(`/bbs/${handle}`);
+    navigate(`/bbs/${handle}`, { state: { deletedNewsRkey: tid } });
   }
 
   return (

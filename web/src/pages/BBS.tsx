@@ -1,5 +1,5 @@
 import { useState, type SyntheticEvent } from "react";
-import { Link, useRouteLoaderData } from "react-router-dom";
+import { Link, useLocation, useRouteLoaderData } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { createPost, uploadAttachments } from "../lib/writes";
@@ -29,6 +29,10 @@ import PostBody from "../components/post/PostBody";
 export default function BBSPage() {
   const { handle, bbs, pinRkey } = useRouteLoaderData("bbs") as BBSLoaderData;
   const { user, agent } = useAuth();
+  // Set when arriving here via a news delete; Constellation/Slingshot may
+  // still be returning the record, so filter it out for this one render.
+  const justDeletedRkey = (useLocation().state as { deletedNewsRkey?: string })
+    ?.deletedNewsRkey;
   const [newsTitle, setNewsTitle] = useState("");
   const [newsBody, setNewsBody] = useState("");
   const [newsFiles, setNewsFiles] = useState<File[]>([]);
@@ -74,12 +78,13 @@ export default function BBSPage() {
     }
   }
 
-  // Merge pending news with loader data, deduplicating by rkey.
+  // Merge pending news with loader data, deduplicating by rkey and dropping
+  // anything just deleted from the News page.
   const loaderTids = new Set(bbs.news.map((n) => n.rkey));
   const allNews = [
     ...pendingNews.filter((n) => !loaderTids.has(n.rkey)),
     ...bbs.news,
-  ];
+  ].filter((n) => n.rkey !== justDeletedRkey);
   const visibleNews = showAllNews ? allNews : allNews.slice(0, 3);
 
   return (
