@@ -39,13 +39,13 @@ export default function BBSPanel({
         <div className="flex items-center gap-2 text-neutral-200 mb-1">
           <Pencil size={14} /> Edit
         </div>
-        <div className="text-xs text-neutral-400">Name, boards, intro.</div>
+        <div className="text-xs text-neutral-400">Update name and boards.</div>
       </Link>
       <Link to="/account/moderate" className={cardStyle}>
         <div className="flex items-center gap-2 text-neutral-200 mb-1">
           <Shield size={14} /> Moderate
         </div>
-        <div className="text-xs text-neutral-400">Bans and hidden posts.</div>
+        <div className="text-xs text-neutral-400">Ban users and hide posts.</div>
       </Link>
       <button
         onClick={onDelete}
