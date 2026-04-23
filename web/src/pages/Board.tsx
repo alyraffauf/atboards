@@ -5,11 +5,13 @@ import {
   useMutation,
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
+  type InfiniteData,
+  type QueryKey,
 } from "@tanstack/react-query";
 import { useAuth } from "../lib/auth";
 import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { makeAtUri, parseAtUri, relativeDate } from "../lib/util";
+import { makeAtUri, nowIso, parseAtUri, relativeDate } from "../lib/util";
 import { BOARD } from "../lib/lexicon";
 import { createPost, uploadAttachments } from "../lib/writes";
 import * as limits from "../lib/limits";
@@ -19,8 +21,31 @@ import {
   boardThreadsInfiniteQuery,
 } from "../lib/queries";
 import { queryClient } from "../lib/queryClient";
+import type { ThreadItem, ThreadPageResult } from "../lib/boardThreads";
 import ThreadLink, { ThreadListHeader } from "../components/nav/ThreadLink";
 import ComposeForm from "../components/form/ComposeForm";
+
+// Constellation indexes PDS writes asynchronously — usually within a second,
+// occasionally longer. After creating a thread we refetch with backoff until
+// the board's server data includes the new URI, so the optimistic prepend is
+// replaced by authoritative data rather than being wiped by a premature
+// refetch-on-mount returning stale results.
+async function refetchUntilIndexed(boardKey: QueryKey, threadUri: string) {
+  const delays = [500, 800, 1300, 2100, 3400];
+  for (const delay of delays) {
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    try {
+      await queryClient.refetchQueries({ queryKey: boardKey });
+    } catch {
+      continue;
+    }
+    const data =
+      queryClient.getQueryData<InfiniteData<ThreadPageResult>>(boardKey);
+    if (data?.pages.some((p) => p.threads.some((t) => t.uri === threadUri))) {
+      return;
+    }
+  }
+}
 
 export default function BoardPage() {
   const { handle, slug } = useParams();
@@ -80,18 +105,47 @@ export default function BoardPage() {
       });
       return resp;
     },
-    onSuccess: (resp) => {
-      // Constellation lags a few seconds behind the PDS write. Wait
-      // before invalidating or we'll refetch before the index is fresh.
-      setTimeout(() => {
-        queryClient.invalidateQueries(
-          boardThreadsInfiniteQuery(bbs.identity.did, board.slug),
-        );
-      }, 1500);
+    onSuccess: (resp, input) => {
+      if (!user) return;
+      const { did, rkey } = parseAtUri(resp.data.uri);
+      const now = nowIso();
+      const newThread: ThreadItem = {
+        uri: resp.data.uri,
+        did,
+        rkey,
+        handle: user.handle,
+        title: input.title,
+        body: input.body,
+        createdAt: now,
+        lastActivityAt: now,
+        replyCount: 0,
+        participants: [{ did, handle: user.handle }],
+      };
+      const boardKey = boardThreadsInfiniteQuery(
+        bbs.identity.did,
+        board.slug,
+      ).queryKey;
+      queryClient.setQueryData<InfiniteData<ThreadPageResult>>(
+        boardKey,
+        (prev) => {
+          if (!prev || !prev.pages.length) return prev;
+          const [firstPage, ...rest] = prev.pages;
+          return {
+            ...prev,
+            pages: [
+              {
+                ...firstPage,
+                threads: [newThread, ...firstPage.threads],
+              },
+              ...rest,
+            ],
+          };
+        },
+      );
+      refetchUntilIndexed(boardKey, resp.data.uri);
       setTitle("");
       setBody("");
       setFiles([]);
-      const { did, rkey } = parseAtUri(resp.data.uri);
       navigate(`/bbs/${handle}/thread/${did}/${rkey}`);
     },
     onError: (error) => {
