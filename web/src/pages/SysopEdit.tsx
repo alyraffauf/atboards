@@ -6,6 +6,7 @@ import { putBoard, putSite } from "../lib/writes";
 import { BOARD } from "../lib/lexicon";
 import { makeAtUri, nowIso } from "../lib/util";
 import * as limits from "../lib/limits";
+import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { bbsQuery } from "../lib/queries";
 import { Input, Textarea, Button } from "../components/form/Form";
@@ -34,6 +35,13 @@ export default function SysopEdit() {
   const [error, setError] = useState<string | null>(null);
 
   usePageTitle("Edit community — atbbs");
+  useBreadcrumb(
+    [
+      { label: bbs.site.name, to: `/bbs/${user!.handle}` },
+      { label: "Edit" },
+    ],
+    [bbs, user!.handle],
+  );
 
   async function onSubmit(e: SyntheticEvent) {
     e.preventDefault();

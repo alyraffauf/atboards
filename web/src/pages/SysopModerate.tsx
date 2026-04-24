@@ -4,6 +4,7 @@ import { useAuth } from "../lib/auth";
 import { bbsQuery, sysopModerationQuery } from "../lib/queries";
 import HandleInput from "../components/form/HandleInput";
 import { Button } from "../components/form/Form";
+import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useModerationMutations } from "../hooks/useModerationMutations";
 
@@ -60,6 +61,14 @@ export default function SysopModerate() {
     sysopModerationQuery(user!.pdsUrl, user!.did),
   );
   const { banRkeys, bannedHandles, hideRkeys, hidden } = moderation;
+
+  useBreadcrumb(
+    [
+      { label: bbs.site.name, to: `/bbs/${user!.handle}` },
+      { label: "Moderate" },
+    ],
+    [bbs, user!.handle],
+  );
 
   const { ban, unban, hide, unhide } = useModerationMutations();
 
