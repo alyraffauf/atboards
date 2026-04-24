@@ -3,6 +3,7 @@
 import type { Client } from "@atcute/client";
 import { SITE, BOARD, POST, BAN, HIDE, PIN, PROFILE } from "./lexicon";
 import { invalidateAllBBSCaches } from "./bbs";
+import { queryClient } from "./queryClient";
 import { nowIso } from "./util";
 import { getCurrentUser } from "./auth";
 import type {
@@ -102,14 +103,20 @@ export async function deleteRecord(
   collection: string,
   rkey: string,
 ) {
+  const did = currentDid();
   const resp = await rpc.post("com.atproto.repo.deleteRecord", {
     input: {
-      repo: currentDid(),
+      repo: did,
       collection: asNsid(collection),
       rkey,
     },
   });
   assertOk(resp, "deleteRecord");
+  // Drop the per-record cache entry from the cache
+  queryClient.removeQueries({
+    queryKey: ["record", did, collection, rkey],
+    exact: true,
+  });
   return resp;
 }
 
