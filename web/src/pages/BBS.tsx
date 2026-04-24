@@ -2,7 +2,7 @@ import { useState, type SyntheticEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSuspenseQuery, useMutation, useQuery } from "@tanstack/react-query";
 import {
-  User,
+  UserCog,
   Pencil,
   Shield,
   LayoutGrid,
@@ -118,7 +118,7 @@ export default function BBSPage() {
           />
           <ActionLink
             to={`/profile/${encodeURIComponent(handle!)}`}
-            icon={User}
+            icon={UserCog}
           >
             admin
           </ActionLink>
