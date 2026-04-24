@@ -27,7 +27,7 @@ export default function BoardRowEditor({
     <div>
       <label className="block text-neutral-400 mb-1">Boards</label>
       <p className="text-neutral-400 text-xs mb-2">
-        One board per row: slug, name, descriptionription
+        One board per row: slug, name, description
       </p>
       <div className="space-y-2">
         {boards.map((board, i) => (
