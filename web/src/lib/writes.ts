@@ -269,6 +269,18 @@ export async function createHide(rpc: Client, uri: string) {
   return resp;
 }
 
+export async function deleteBan(rpc: Client, rkey: string) {
+  const resp = await deleteRecord(rpc, BAN, rkey);
+  invalidateAllBBSCaches();
+  return resp;
+}
+
+export async function deleteHide(rpc: Client, rkey: string) {
+  const resp = await deleteRecord(rpc, HIDE, rkey);
+  invalidateAllBBSCaches();
+  return resp;
+}
+
 // --- Pins ---
 
 export async function createPin(rpc: Client, did: string) {

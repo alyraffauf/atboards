@@ -5,13 +5,15 @@ import { useAuth } from "../lib/auth";
 import { useBreadcrumb } from "../hooks/useBreadcrumb";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useThreadReplies } from "../hooks/useThreadReplies";
-import { BAN, BOARD, HIDE, POST } from "../lib/lexicon";
+import { BOARD, POST } from "../lib/lexicon";
 import { makeAtUri, nowIso, parseAtUri } from "../lib/util";
 import * as limits from "../lib/limits";
 import {
   createBan,
   createHide,
   createPost,
+  deleteBan,
+  deleteHide,
   deleteRecord,
   uploadAttachments,
 } from "../lib/writes";
@@ -31,7 +33,6 @@ import {
   removeRefAndReply,
   setRefs,
 } from "../lib/threadCache";
-import { invalidateAllBBSCaches } from "../lib/bbs";
 import { alertOnError } from "../lib/alerts";
 import type { BacklinkRef } from "../lib/atproto";
 import type { BBS } from "../lib/bbs";
@@ -173,10 +174,7 @@ export default function ThreadPage() {
     onError: alertOnError("delete"),
   });
 
-  const moderationMutationDefaults = { onSuccess: invalidateAllBBSCaches };
-
   const banMutation = useMutation({
-    ...moderationMutationDefaults,
     mutationFn: async (banDid: string) => {
       if (!agent) throw new Error("Not signed in");
       await createBan(agent, banDid);
@@ -184,15 +182,13 @@ export default function ThreadPage() {
   });
 
   const unbanMutation = useMutation({
-    ...moderationMutationDefaults,
     mutationFn: async (rkey: string) => {
       if (!agent) throw new Error("Not signed in");
-      await deleteRecord(agent, BAN, rkey);
+      await deleteBan(agent, rkey);
     },
   });
 
   const hideMutation = useMutation({
-    ...moderationMutationDefaults,
     mutationFn: async (uri: string) => {
       if (!agent) throw new Error("Not signed in");
       await createHide(agent, uri);
@@ -200,10 +196,9 @@ export default function ThreadPage() {
   });
 
   const unhideMutation = useMutation({
-    ...moderationMutationDefaults,
     mutationFn: async (rkey: string) => {
       if (!agent) throw new Error("Not signed in");
-      await deleteRecord(agent, HIDE, rkey);
+      await deleteHide(agent, rkey);
     },
   });
 

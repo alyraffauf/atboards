@@ -2,14 +2,16 @@ import { useState } from "react";
 import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../lib/auth";
 import { resolveIdentity } from "../lib/atproto";
-import { BAN, HIDE } from "../lib/lexicon";
-import { invalidateAllBBSCaches } from "../lib/bbs";
 import { bbsQuery, sysopModerationQuery } from "../lib/queries";
-import { queryClient } from "../lib/queryClient";
 import HandleInput from "../components/form/HandleInput";
 import { Button } from "../components/form/Form";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { createBan, createHide, deleteRecord } from "../lib/writes";
+import {
+  createBan,
+  createHide,
+  deleteBan,
+  deleteHide,
+} from "../lib/writes";
 import { alertOnError } from "../lib/alerts";
 
 export default function SysopModerate() {
@@ -25,13 +27,6 @@ export default function SysopModerate() {
   );
   const { banRkeys, bannedHandles, hideRkeys, hidden } = moderation;
 
-  function refreshModeration() {
-    queryClient.invalidateQueries(
-      sysopModerationQuery(user!.pdsUrl, user!.did),
-    );
-    invalidateAllBBSCaches();
-  }
-
   const banMutation = useMutation({
     mutationFn: async (identifier: string) => {
       if (!agent) throw new Error("Not signed in");
@@ -39,19 +34,15 @@ export default function SysopModerate() {
       if (!did.startsWith("did:")) did = (await resolveIdentity(did)).did;
       await createBan(agent, did);
     },
-    onSuccess: () => {
-      setIdentifier("");
-      refreshModeration();
-    },
+    onSuccess: () => setIdentifier(""),
     onError: alertOnError("ban"),
   });
 
   const unbanMutation = useMutation({
     mutationFn: async (rkey: string) => {
       if (!agent) throw new Error("Not signed in");
-      await deleteRecord(agent, BAN, rkey);
+      await deleteBan(agent, rkey);
     },
-    onSuccess: refreshModeration,
   });
 
   const hideMutation = useMutation({
@@ -59,18 +50,14 @@ export default function SysopModerate() {
       if (!agent) throw new Error("Not signed in");
       await createHide(agent, uri);
     },
-    onSuccess: () => {
-      setHideUri("");
-      refreshModeration();
-    },
+    onSuccess: () => setHideUri(""),
   });
 
   const unhideMutation = useMutation({
     mutationFn: async (rkey: string) => {
       if (!agent) throw new Error("Not signed in");
-      await deleteRecord(agent, HIDE, rkey);
+      await deleteHide(agent, rkey);
     },
-    onSuccess: refreshModeration,
   });
 
   function ban() {
