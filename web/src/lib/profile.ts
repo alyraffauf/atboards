@@ -2,10 +2,7 @@
 
 import { getAvatar, getRecord, resolveIdentity } from "./atproto";
 import { PROFILE, SITE } from "./lexicon";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as profileSchema } from "../lexicons/types/xyz/atbbs/profile";
-import { mainSchema as siteSchema } from "../lexicons/types/xyz/atbbs/site";
-import type { XyzAtbbsProfile, XyzAtbbsSite } from "../lexicons";
+import { isProfileRecord, isSiteRecord } from "./recordGuards";
 
 export interface Profile {
   did: string;
@@ -45,9 +42,9 @@ export async function fetchProfile(handle: string): Promise<Profile | null> {
 
   if (
     profileResult.status === "fulfilled" &&
-    is(profileSchema, profileResult.value.value)
+    isProfileRecord(profileResult.value)
   ) {
-    const value = profileResult.value.value as unknown as XyzAtbbsProfile.Main;
+    const value = profileResult.value.value;
     profile.name = value.name;
     profile.pronouns = value.pronouns;
     profile.bio = value.bio;
@@ -56,9 +53,9 @@ export async function fetchProfile(handle: string): Promise<Profile | null> {
 
   if (
     siteResult.status === "fulfilled" &&
-    is(siteSchema, siteResult.value.value)
+    isSiteRecord(siteResult.value)
   ) {
-    const value = siteResult.value.value as unknown as XyzAtbbsSite.Main;
+    const value = siteResult.value.value;
     profile.bbsName = value.name;
     profile.bbsDescription = value.description;
   }

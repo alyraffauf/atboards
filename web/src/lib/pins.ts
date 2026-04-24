@@ -7,10 +7,7 @@ import {
   resolveIdentitiesBatch,
 } from "./atproto";
 import { PIN, SITE } from "./lexicon";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as pinSchema } from "../lexicons/types/xyz/atbbs/pin";
-import { mainSchema as siteSchema } from "../lexicons/types/xyz/atbbs/site";
-import type { XyzAtbbsPin, XyzAtbbsSite } from "../lexicons";
+import { isPinRecord, isSiteRecord } from "./recordGuards";
 import { parseAtUri } from "./util";
 
 export interface PinnedBBS {
@@ -27,11 +24,9 @@ export async function fetchPins(
   did: string,
 ): Promise<PinnedBBS[]> {
   const records = await listRecords(pdsUrl, did, PIN);
-  const pinRecords = records.filter((record) => is(pinSchema, record.value));
+  const pinRecords = records.filter(isPinRecord);
 
-  const pinnedDids = pinRecords.map(
-    (record) => (record.value as unknown as XyzAtbbsPin.Main).did,
-  );
+  const pinnedDids = pinRecords.map((record) => record.value.did);
   if (!pinnedDids.length) return [];
 
   const [identities, siteResults, avatars] = await Promise.all([
@@ -45,23 +40,21 @@ export async function fetchPins(
   const siteNames: Record<string, string> = {};
   siteResults.forEach((result, index) => {
     if (result.status !== "fulfilled") return;
-    if (!is(siteSchema, result.value.value)) return;
-    const siteValue = result.value.value as unknown as XyzAtbbsSite.Main;
-    siteNames[pinnedDids[index]] = siteValue.name;
+    if (!isSiteRecord(result.value)) return;
+    siteNames[pinnedDids[index]] = result.value.value.name;
   });
 
   const results: PinnedBBS[] = [];
   for (const record of pinRecords) {
-    const value = record.value as unknown as XyzAtbbsPin.Main;
-    const identity = identities[value.did];
+    const identity = identities[record.value.did];
     if (!identity) continue;
     results.push({
-      did: value.did,
+      did: record.value.did,
       rkey: parseAtUri(record.uri).rkey,
       handle: identity.handle,
-      name: siteNames[value.did] ?? identity.handle,
-      createdAt: value.createdAt,
-      avatar: avatars[value.did],
+      name: siteNames[record.value.did] ?? identity.handle,
+      createdAt: record.value.createdAt,
+      avatar: avatars[record.value.did],
     });
   }
   results.sort((a, b) => b.createdAt.localeCompare(a.createdAt));

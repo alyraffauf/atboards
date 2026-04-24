@@ -15,9 +15,7 @@ import {
 } from "./atproto";
 import { POST, BOARD } from "./lexicon";
 import { makeAtUri, parseAtUri } from "./util";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as postSchema } from "../lexicons/types/xyz/atbbs/post";
-import type { XyzAtbbsPost } from "../lexicons";
+import { isPostRecord } from "./recordGuards";
 
 export interface Participant {
   did: string;
@@ -70,11 +68,10 @@ export async function hydrateThreadPage(
 
     const records = await getRecordsBatch(backlinks.records);
     for (const record of records) {
-      if (!is(postSchema, record.value)) continue;
-      const value = record.value as unknown as XyzAtbbsPost.Main;
-      const threadUri = value.root ?? record.uri;
+      if (!isPostRecord(record)) continue;
+      const threadUri = record.value.root ?? record.uri;
       if (!lastActivity.has(threadUri)) {
-        lastActivity.set(threadUri, value.createdAt);
+        lastActivity.set(threadUri, record.value.createdAt);
       }
       let posters = postersByThread.get(threadUri);
       if (!posters) {
@@ -91,11 +88,9 @@ export async function hydrateThreadPage(
   const threadUris = [...lastActivity.keys()].slice(0, PAGE_SIZE);
   const rootRecords = await getRecordsByUri(threadUris);
 
-  const validRoots = rootRecords.filter((record) => {
-    if (!is(postSchema, record.value)) return false;
-    const value = record.value as unknown as XyzAtbbsPost.Main;
-    return value.title && !value.root;
-  });
+  const validRoots = rootRecords
+    .filter(isPostRecord)
+    .filter((record) => record.value.title && !record.value.root);
 
   const allDids = new Set<string>();
   for (const record of validRoots) {
@@ -117,7 +112,6 @@ export async function hydrateThreadPage(
     .filter((record) => parseAtUri(record.uri).did in identities)
     .map((record) => {
       const { did, rkey } = parseAtUri(record.uri);
-      const value = record.value as unknown as XyzAtbbsPost.Main;
       const posterDids = postersByThread.get(record.uri) ?? new Set([did]);
       const participants: Participant[] = [...posterDids]
         .filter((posterDid) => posterDid in identities)
@@ -131,10 +125,10 @@ export async function hydrateThreadPage(
         did,
         rkey,
         handle: identities[did].handle,
-        title: value.title ?? "",
-        body: value.body,
-        createdAt: value.createdAt,
-        lastActivityAt: lastActivity.get(record.uri) ?? value.createdAt,
+        title: record.value.title ?? "",
+        body: record.value.body,
+        createdAt: record.value.createdAt,
+        lastActivityAt: lastActivity.get(record.uri) ?? record.value.createdAt,
         replyCount: replyCounts[record.uri] ?? 0,
         participants,
       };

@@ -9,10 +9,7 @@ import {
 import { queryClient } from "./queryClient";
 import { SITE } from "./lexicon";
 import { parseAtUri } from "./util";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as siteSchema } from "../lexicons/types/xyz/atbbs/site";
-import { mainSchema as boardSchema } from "../lexicons/types/xyz/atbbs/board";
-import type { XyzAtbbsSite, XyzAtbbsBoard } from "../lexicons";
+import { isBoardRecord, isSiteRecord } from "./recordGuards";
 
 export class BBSNotFoundError extends Error {}
 export class NoBBSError extends Error {}
@@ -77,10 +74,10 @@ export async function resolveBBS(handle: string): Promise<BBS> {
     throw new NoBBSError(`${handle} isn't running a BBS.`);
   }
 
-  if (!is(siteSchema, siteRecord.value)) {
+  if (!isSiteRecord(siteRecord)) {
     throw new NoBBSError(`${handle} has an invalid site record.`);
   }
-  const siteValue = siteRecord.value as unknown as XyzAtbbsSite.Main;
+  const siteValue = siteRecord.value;
   const boardUris: string[] = siteValue.boards ?? [];
 
   const boardResults = await Promise.allSettled(
@@ -93,8 +90,8 @@ export async function resolveBBS(handle: string): Promise<BBS> {
   const boards: Board[] = [];
   boardResults.forEach((result, index) => {
     if (result.status !== "fulfilled") return;
-    if (!is(boardSchema, result.value.value)) return;
-    const board = result.value.value as unknown as XyzAtbbsBoard.Main;
+    if (!isBoardRecord(result.value)) return;
+    const board = result.value.value;
     const parsed = parseAtUri(boardUris[index]);
     boards.push({
       slug: parsed.rkey,

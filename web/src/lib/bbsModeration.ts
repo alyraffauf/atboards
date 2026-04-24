@@ -4,10 +4,7 @@
 import { listRecords } from "./atproto";
 import { BAN, HIDE } from "./lexicon";
 import { parseAtUri } from "./util";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as banSchema } from "../lexicons/types/xyz/atbbs/ban";
-import { mainSchema as hideSchema } from "../lexicons/types/xyz/atbbs/hide";
-import type { XyzAtbbsBan, XyzAtbbsHide } from "../lexicons";
+import { isBanRecord, isHideRecord } from "./recordGuards";
 
 export interface BBSModeration {
   bannedDids: Set<string>;
@@ -30,19 +27,17 @@ export async function fetchBBSModeration(
   const bannedDids = new Set<string>();
   const banRkeys: Record<string, string> = {};
   for (const record of banRecs) {
-    if (!is(banSchema, record.value)) continue;
-    const value = record.value as unknown as XyzAtbbsBan.Main;
-    bannedDids.add(value.did);
-    banRkeys[value.did] = parseAtUri(record.uri).rkey;
+    if (!isBanRecord(record)) continue;
+    bannedDids.add(record.value.did);
+    banRkeys[record.value.did] = parseAtUri(record.uri).rkey;
   }
 
   const hiddenUris = new Set<string>();
   const hideRkeys: Record<string, string> = {};
   for (const record of hideRecs) {
-    if (!is(hideSchema, record.value)) continue;
-    const value = record.value as unknown as XyzAtbbsHide.Main;
-    hiddenUris.add(value.uri);
-    hideRkeys[value.uri] = parseAtUri(record.uri).rkey;
+    if (!isHideRecord(record)) continue;
+    hiddenUris.add(record.value.uri);
+    hideRkeys[record.value.uri] = parseAtUri(record.uri).rkey;
   }
 
   return { bannedDids, hiddenUris, banRkeys, hideRkeys };

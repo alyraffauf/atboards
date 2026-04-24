@@ -2,9 +2,7 @@
 
 import { fetchAndHydrate, listRecords } from "./atproto";
 import { POST } from "./lexicon";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as postSchema } from "../lexicons/types/xyz/atbbs/post";
-import type { XyzAtbbsPost } from "../lexicons";
+import { isPostRecord } from "./recordGuards";
 
 export interface ActivityItem {
   type: "reply" | "parent_reply";
@@ -49,38 +47,32 @@ export async function fetchActivity(
 ): Promise<ActivityItem[]> {
   const SCAN_LIMIT = 50;
   const allPosts = await listRecords(pdsUrl, did, POST, SCAN_LIMIT);
-  const validPosts = allPosts.filter((record) => is(postSchema, record.value));
+  const validPosts = allPosts.filter(isPostRecord);
 
-  const rootPosts = validPosts.filter(
-    (record) => !(record.value as Record<string, unknown>).root,
-  );
-  const replyPosts = validPosts.filter(
-    (record) => !!(record.value as Record<string, unknown>).root,
-  );
+  const rootPosts = validPosts.filter((record) => !record.value.root);
+  const replyPosts = validPosts.filter((record) => !!record.value.root);
 
   const results = await Promise.all([
-    ...rootPosts.map((post) => {
-      const value = post.value as unknown as XyzAtbbsPost.Main;
-      return fetchBacklinkItems(
+    ...rootPosts.map((post) =>
+      fetchBacklinkItems(
         post.uri,
         `${POST}:root`,
         did,
         "reply",
-        value.title ?? "",
+        post.value.title ?? "",
         post.uri,
-      );
-    }),
-    ...replyPosts.map((reply) => {
-      const value = reply.value as unknown as XyzAtbbsPost.Main;
-      return fetchBacklinkItems(
+      ),
+    ),
+    ...replyPosts.map((reply) =>
+      fetchBacklinkItems(
         reply.uri,
         `${POST}:parent`,
         did,
         "parent_reply",
         "",
-        value.root ?? "",
-      );
-    }),
+        reply.value.root ?? "",
+      ),
+    ),
   ]);
 
   // Deduplicate — prefer "parent-reply" type when the same reply appears as both.

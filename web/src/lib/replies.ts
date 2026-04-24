@@ -1,10 +1,8 @@
 /** Pure helpers for reply pagination and hydration. */
 
-import { type BacklinkRef } from "./atproto";
+import { type ATRecord, type BacklinkRef } from "./atproto";
 import { parseAtUri } from "./util";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as postSchema } from "../lexicons/types/xyz/atbbs/post";
-import type { XyzAtbbsPost } from "../lexicons";
+import { isPostRecord } from "./recordGuards";
 import type { Reply } from "../components/post/ReplyCard";
 
 export type { BacklinkRef };
@@ -44,22 +42,21 @@ export function clampPage(page: number, totalRefs: number): number {
 }
 
 export function recordToReply(
-  record: { uri: string; value: Record<string, unknown> },
+  record: ATRecord,
   authors: Record<string, { handle: string; pds?: string }>,
 ): Reply | null {
   const { did, rkey } = parseAtUri(record.uri);
   if (!(did in authors)) return null;
-  if (!is(postSchema, record.value)) return null;
-  const value = record.value as unknown as XyzAtbbsPost.Main;
+  if (!isPostRecord(record)) return null;
   return {
     uri: record.uri,
     did,
     rkey,
     handle: authors[did].handle,
     pds: authors[did].pds ?? "",
-    body: value.body,
-    createdAt: value.createdAt,
-    parent: value.parent ?? null,
-    attachments: (value.attachments ?? []) as Reply["attachments"],
+    body: record.value.body,
+    createdAt: record.value.createdAt,
+    parent: record.value.parent ?? null,
+    attachments: (record.value.attachments ?? []) as Reply["attachments"],
   };
 }

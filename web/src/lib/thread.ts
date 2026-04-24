@@ -12,10 +12,8 @@ import {
 import { POST } from "./lexicon";
 import { makeAtUri, parseAtUri } from "./util";
 import { recordToReply } from "./replies";
+import { isPostRecord } from "./recordGuards";
 import type { Reply } from "../components/post/ReplyCard";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as postSchema } from "../lexicons/types/xyz/atbbs/post";
-import type { XyzAtbbsPost } from "../lexicons";
 
 export interface ThreadRoot {
   uri: string;
@@ -58,11 +56,11 @@ export async function fetchThreadRoot(
   tid: string,
 ): Promise<ThreadRoot> {
   const threadRecord = await getRecord(did, POST, tid);
-  if (!is(postSchema, threadRecord.value)) {
+  if (!isPostRecord(threadRecord)) {
     throw new Error("Invalid post record");
   }
   const author = await resolveIdentity(did);
-  const postValue = threadRecord.value as unknown as XyzAtbbsPost.Main;
+  const postValue = threadRecord.value;
   const boardSlug = parseAtUri(postValue.scope).rkey;
   return {
     uri: threadRecord.uri,

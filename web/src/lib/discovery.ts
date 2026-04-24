@@ -3,9 +3,7 @@
 import { getAvatars, getRecord, resolveIdentitiesBatch } from "./atproto";
 import { SITE } from "./lexicon";
 import { SERVICES } from "./shared";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as siteSchema } from "../lexicons/types/xyz/atbbs/site";
-import type { XyzAtbbsSite } from "../lexicons";
+import { isSiteRecord } from "./recordGuards";
 
 export interface DiscoveredBBS {
   did: string;
@@ -42,13 +40,12 @@ export async function fetchDiscovery(): Promise<DiscoveredBBS[]> {
     if (!(repo.did in identities)) continue;
     try {
       const siteRecord = await getRecord(repo.did, SITE, "self");
-      if (!is(siteSchema, siteRecord.value)) continue;
-      const siteValue = siteRecord.value as unknown as XyzAtbbsSite.Main;
+      if (!isSiteRecord(siteRecord)) continue;
       items.push({
         did: repo.did,
         handle: identities[repo.did].handle,
-        name: siteValue.name || identities[repo.did].handle,
-        description: siteValue.description || "",
+        name: siteRecord.value.name || identities[repo.did].handle,
+        description: siteRecord.value.description || "",
       });
     } catch {
       continue;

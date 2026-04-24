@@ -3,9 +3,7 @@
 import { listRecords, resolveIdentitiesBatch } from "./atproto";
 import { POST } from "./lexicon";
 import { parseAtUri } from "./util";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as postSchema } from "../lexicons/types/xyz/atbbs/post";
-import type { XyzAtbbsPost } from "../lexicons";
+import { isPostRecord } from "./recordGuards";
 
 export interface MyThread {
   uri: string;
@@ -23,33 +21,26 @@ export async function fetchMyThreads(
 ): Promise<MyThread[]> {
   const records = await listRecords(pdsUrl, did, POST);
   const rootPosts = records
-    .filter((record) => is(postSchema, record.value))
-    .filter((record) => {
-      const value = record.value as Record<string, unknown>;
-      return !value.root && value.title; // root posts with titles = threads
-    });
+    .filter(isPostRecord)
+    .filter((record) => !record.value.root && record.value.title);
   if (!rootPosts.length) return [];
 
   const bbsDids = new Set(
-    rootPosts.map((record) => {
-      const value = record.value as unknown as XyzAtbbsPost.Main;
-      return parseAtUri(value.scope).did;
-    }),
+    rootPosts.map((record) => parseAtUri(record.value.scope).did),
   );
   const identities = await resolveIdentitiesBatch([...bbsDids]);
 
   const results: MyThread[] = [];
   for (const record of rootPosts) {
-    const value = record.value as unknown as XyzAtbbsPost.Main;
-    const bbsDid = parseAtUri(value.scope).did;
+    const bbsDid = parseAtUri(record.value.scope).did;
     const identity = identities[bbsDid];
     if (!identity) continue;
     results.push({
       uri: record.uri,
       rkey: parseAtUri(record.uri).rkey,
-      title: value.title ?? "",
-      body: value.body,
-      createdAt: value.createdAt,
+      title: record.value.title ?? "",
+      body: record.value.body,
+      createdAt: record.value.createdAt,
       bbsDid,
       bbsHandle: identity.handle,
     });

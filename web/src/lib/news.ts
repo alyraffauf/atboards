@@ -3,9 +3,7 @@
 import { getBacklinks, getRecordsBatch } from "./atproto";
 import { POST, SITE } from "./lexicon";
 import { makeAtUri, parseAtUri } from "./util";
-import { is } from "@atcute/lexicons/validations";
-import { mainSchema as postSchema } from "../lexicons/types/xyz/atbbs/post";
-import type { XyzAtbbsPost } from "../lexicons";
+import { isPostRecord } from "./recordGuards";
 import type { NewsPost } from "./bbs";
 
 export async function fetchNews(bbsDid: string): Promise<NewsPost[]> {
@@ -19,22 +17,16 @@ export async function fetchNews(bbsDid: string): Promise<NewsPost[]> {
   const records = await getRecordsBatch(sysopRefs);
 
   const news: NewsPost[] = records
-    .filter((record) => is(postSchema, record.value))
-    .filter((record) => {
-      const value = record.value as unknown as XyzAtbbsPost.Main;
-      return value.title && !value.root;
-    })
-    .map((record) => {
-      const value = record.value as unknown as XyzAtbbsPost.Main;
-      return {
-        uri: record.uri,
-        rkey: parseAtUri(record.uri).rkey,
-        title: value.title ?? "",
-        body: value.body,
-        createdAt: value.createdAt,
-        attachments: value.attachments as NewsPost["attachments"],
-      };
-    });
+    .filter(isPostRecord)
+    .filter((record) => record.value.title && !record.value.root)
+    .map((record) => ({
+      uri: record.uri,
+      rkey: parseAtUri(record.uri).rkey,
+      title: record.value.title ?? "",
+      body: record.value.body,
+      createdAt: record.value.createdAt,
+      attachments: record.value.attachments as NewsPost["attachments"],
+    }));
 
   news.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return news;
