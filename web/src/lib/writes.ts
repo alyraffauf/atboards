@@ -4,7 +4,8 @@ import type { Client } from "@atcute/client";
 import { SITE, BOARD, POST, BAN, HIDE, PIN, PROFILE } from "./lexicon";
 import { invalidateAllBBSCaches } from "./bbs";
 import { queryClient } from "./queryClient";
-import { nowIso } from "./util";
+import type { ATRecord } from "./atproto";
+import { nowIso, parseAtUri } from "./util";
 import { getCurrentUser } from "./auth";
 import type {
   XyzAtbbsPost,
@@ -62,21 +63,49 @@ function assertOk(
   }
 }
 
+// Seed the per-record cache used by getRecord so immediate re-reads (e.g. a
+// refetch of profileQuery after putProfile) see the new value instead of the
+// pre-write cached entry.
+function syncRecordCache<V extends object>(
+  did: string,
+  collection: string,
+  rkey: string,
+  value: V,
+  uri: string,
+  cid: string,
+) {
+  queryClient.setQueryData<ATRecord>(["record", did, collection, rkey], {
+    uri,
+    cid,
+    value: { $type: collection, ...value },
+  });
+}
+
 async function createRecord<V extends object>(
   rpc: Client,
   collection: string,
   value: V,
   rkey?: string,
 ) {
+  const did = currentDid();
   const resp = await rpc.post("com.atproto.repo.createRecord", {
     input: {
-      repo: currentDid(),
+      repo: did,
       collection: asNsid(collection),
       ...(rkey ? { rkey } : {}),
       record: { $type: collection, ...value },
     },
   });
   assertOk(resp, "createRecord");
+  const createdRkey = parseAtUri(resp.data.uri).rkey;
+  syncRecordCache(
+    did,
+    collection,
+    createdRkey,
+    value,
+    resp.data.uri,
+    resp.data.cid,
+  );
   return resp;
 }
 
@@ -86,15 +115,17 @@ async function putRecord<V extends object>(
   rkey: string,
   value: V,
 ) {
+  const did = currentDid();
   const resp = await rpc.post("com.atproto.repo.putRecord", {
     input: {
-      repo: currentDid(),
+      repo: did,
       collection: asNsid(collection),
       rkey,
       record: { $type: collection, ...value },
     },
   });
   assertOk(resp, "putRecord");
+  syncRecordCache(did, collection, rkey, value, resp.data.uri, resp.data.cid);
   return resp;
 }
 
