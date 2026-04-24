@@ -22,6 +22,7 @@ import {
   myThreadsQuery,
 } from "../lib/queries";
 import { queryClient } from "../lib/queryClient";
+import { alertOnError } from "../lib/alerts";
 import type { ThreadItem, ThreadPageResult } from "../lib/boardThreads";
 import ThreadLink, { ThreadListHeader } from "../components/nav/ThreadLink";
 import ComposeForm from "../components/form/ComposeForm";
@@ -143,18 +144,14 @@ export default function BoardPage() {
           };
         },
       );
-      refetchUntilIndexed(boardKey, resp.data.uri);
+      void refetchUntilIndexed(boardKey, resp.data.uri);
       queryClient.invalidateQueries(myThreadsQuery(user.pdsUrl, user.did));
       setTitle("");
       setBody("");
       setFiles([]);
       navigate(`/bbs/${handle}/thread/${did}/${rkey}`);
     },
-    onError: (error) => {
-      alert(
-        `Could not post: ${error instanceof Error ? error.message : error}`,
-      );
-    },
+    onError: alertOnError("post"),
   });
 
   function onCreate(event: SyntheticEvent) {

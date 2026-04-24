@@ -28,7 +28,7 @@ export default function SysopEdit() {
     bbs.site.boards.map((board) => ({
       slug: board.slug,
       name: board.name,
-      desc: board.description,
+      description: board.description,
     })),
   );
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export default function SysopEdit() {
       .map((board) => ({
         slug: board.slug.trim(),
         name: board.name.trim(),
-        desc: board.desc.trim(),
+        description: board.description.trim(),
       }))
       .filter((board) => board.slug);
     const now = nowIso();
@@ -52,7 +52,7 @@ export default function SysopEdit() {
           agent,
           board.slug,
           board.name || board.slug,
-          board.desc,
+          board.description,
           now,
         );
       }

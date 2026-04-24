@@ -10,6 +10,7 @@ import HandleInput from "../components/form/HandleInput";
 import { Button } from "../components/form/Form";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { createBan, createHide, deleteRecord } from "../lib/writes";
+import { alertOnError } from "../lib/alerts";
 
 export default function SysopModerate() {
   const { user, agent } = useAuth();
@@ -42,8 +43,7 @@ export default function SysopModerate() {
       setIdentifier("");
       refreshModeration();
     },
-    onError: (err) =>
-      alert(`Could not ban: ${err instanceof Error ? err.message : err}`),
+    onError: alertOnError("ban"),
   });
 
   const unbanMutation = useMutation({
@@ -85,12 +85,12 @@ export default function SysopModerate() {
   }
 
   function hide() {
-    const u = hideUri.trim();
-    if (!u.startsWith("at://")) {
+    const uri = hideUri.trim();
+    if (!uri.startsWith("at://")) {
       alert("Enter a valid AT-URI.");
       return;
     }
-    hideMutation.mutate(u);
+    hideMutation.mutate(uri);
   }
 
   function unhide(rkey: string) {
@@ -149,24 +149,24 @@ export default function SysopModerate() {
         <div>
           <label className="block text-neutral-400 mb-3">Hidden Posts</label>
           <div className="space-y-1 mb-3">
-            {hidden.map((p) => (
+            {hidden.map((post) => (
               <div
-                key={p.uri}
-                title={p.uri}
+                key={post.uri}
+                title={post.uri}
                 className="flex items-center justify-between gap-3 px-3 py-2 -mx-3 rounded hover:bg-neutral-800"
               >
                 <a
-                  href={`https://pdsls.dev/${p.uri}`}
+                  href={`https://pdsls.dev/${post.uri}`}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label={`${p.handle} — ${p.title || p.body} (opens in new tab)`}
+                  aria-label={`${post.handle} — ${post.title || post.body} (opens in new tab)`}
                   className="truncate text-neutral-300 hover:text-neutral-200"
                 >
-                  {p.handle} — {p.title || p.body}
+                  {post.handle} — {post.title || post.body}
                 </a>
-                {hideRkeys[p.uri] && (
+                {hideRkeys[post.uri] && (
                   <button
-                    onClick={() => unhide(hideRkeys[p.uri])}
+                    onClick={() => unhide(hideRkeys[post.uri])}
                     className="text-xs text-neutral-400 hover:text-red-400 shrink-0"
                   >
                     unhide

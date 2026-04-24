@@ -7,6 +7,7 @@ import { POST } from "../lib/lexicon";
 import { deleteRecord } from "../lib/writes";
 import { bbsQuery, newsQuery } from "../lib/queries";
 import { queryClient } from "../lib/queryClient";
+import { alertOnError } from "../lib/alerts";
 import type { NewsPost } from "../lib/bbs";
 import NewsCard from "../components/post/NewsCard";
 
@@ -44,11 +45,7 @@ export default function NewsPage() {
       );
       navigate(`/bbs/${handle}`);
     },
-    onError: (error) => {
-      alert(
-        `Could not delete: ${error instanceof Error ? error.message : error}`,
-      );
-    },
+    onError: alertOnError("delete"),
   });
 
   if (!item) {

@@ -19,16 +19,21 @@ import {
   bbsModerationQuery,
   bbsQuery,
   myThreadsQuery,
-  threadPageQuery,
-  threadRefsQuery,
   threadRootQuery,
 } from "../lib/queries";
 import { queryClient } from "../lib/queryClient";
 import { threadUriFor } from "../lib/thread";
-import { REPLIES_PER_PAGE, refToUri } from "../lib/replies";
+import { REPLIES_PER_PAGE } from "../lib/replies";
+import {
+  appendRefAndReply,
+  cancelRefsRefetch,
+  getRefs,
+  removeRefAndReply,
+  setRefs,
+} from "../lib/threadCache";
 import { invalidateAllBBSCaches } from "../lib/bbs";
+import { alertOnError } from "../lib/alerts";
 import type { BacklinkRef } from "../lib/atproto";
-import type { ReplyPage } from "../lib/thread";
 import type { BBS } from "../lib/bbs";
 import PageNav from "../components/nav/PageNav";
 import ReplyCard, { type Reply } from "../components/post/ReplyCard";
@@ -133,10 +138,7 @@ export default function ThreadPage() {
       );
       if (page !== newLastPage) setPage(newLastPage);
     },
-    onError: (err) =>
-      alert(
-        `Could not post reply: ${err instanceof Error ? err.message : err}`,
-      ),
+    onError: alertOnError("post reply"),
   });
 
   const deleteReplyMutation = useMutation({
@@ -146,15 +148,14 @@ export default function ThreadPage() {
       return reply;
     },
     onMutate: async (reply) => {
-      const refsKey = threadRefsQuery(threadUri).queryKey;
-      await queryClient.cancelQueries({ queryKey: refsKey });
+      await cancelRefsRefetch(threadUri);
       const previousRefs = getRefs(threadUri);
       removeRefAndReply(threadUri, reply.uri, page);
       return { previousRefs };
     },
     onError: (err, _reply, context) => {
       if (context) setRefs(threadUri, context.previousRefs);
-      alert(`Could not delete: ${err instanceof Error ? err.message : err}`);
+      alertOnError("delete")(err);
     },
   });
 
@@ -169,8 +170,7 @@ export default function ThreadPage() {
       }
       navigate(`/bbs/${handle}`);
     },
-    onError: (err) =>
-      alert(`Could not delete: ${err instanceof Error ? err.message : err}`),
+    onError: alertOnError("delete"),
   });
 
   const moderationMutationDefaults = { onSuccess: invalidateAllBBSCaches };
@@ -342,72 +342,6 @@ export default function ThreadPage() {
       )}
     </>
   );
-}
-
-// --- Cache-update helpers ---
-
-function getRefs(threadUri: string): BacklinkRef[] {
-  const key = threadRefsQuery(threadUri).queryKey;
-  return queryClient.getQueryData<BacklinkRef[]>(key) ?? [];
-}
-
-function setRefs(threadUri: string, refs: BacklinkRef[]) {
-  queryClient.setQueryData(threadRefsQuery(threadUri).queryKey, refs);
-}
-
-function pageSlice(refs: BacklinkRef[], page: number): BacklinkRef[] {
-  const start = (page - 1) * REPLIES_PER_PAGE;
-  return refs.slice(start, start + REPLIES_PER_PAGE);
-}
-
-function appendRefAndReply(
-  threadUri: string,
-  newRef: BacklinkRef,
-  newReply: Reply,
-): BacklinkRef[] {
-  const previousRefs = getRefs(threadUri);
-  const updatedRefs = [...previousRefs, newRef];
-
-  const newLastPage = Math.max(
-    1,
-    Math.ceil(updatedRefs.length / REPLIES_PER_PAGE),
-  );
-  const oldPageRefs = pageSlice(previousRefs, newLastPage);
-  const oldKey = threadPageQuery(threadUri, newLastPage, oldPageRefs).queryKey;
-  const oldData = queryClient.getQueryData<ReplyPage>(oldKey);
-
-  setRefs(threadUri, updatedRefs);
-
-  const pageRefs = pageSlice(updatedRefs, newLastPage);
-  const newKey = threadPageQuery(threadUri, newLastPage, pageRefs).queryKey;
-  queryClient.setQueryData<ReplyPage>(newKey, {
-    replies: [...(oldData?.replies ?? []), newReply],
-    parentReplies: oldData?.parentReplies ?? {},
-  });
-
-  return updatedRefs;
-}
-
-function removeRefAndReply(
-  threadUri: string,
-  replyUri: string,
-  currentPage: number,
-) {
-  const previousRefs = getRefs(threadUri);
-  const oldPageRefs = pageSlice(previousRefs, currentPage);
-  const oldKey = threadPageQuery(threadUri, currentPage, oldPageRefs).queryKey;
-  const oldData = queryClient.getQueryData<ReplyPage>(oldKey);
-
-  const updatedRefs = previousRefs.filter((ref) => refToUri(ref) !== replyUri);
-  setRefs(threadUri, updatedRefs);
-
-  if (!oldData) return;
-  const pageRefs = pageSlice(updatedRefs, currentPage);
-  const newKey = threadPageQuery(threadUri, currentPage, pageRefs).queryKey;
-  queryClient.setQueryData<ReplyPage>(newKey, {
-    ...oldData,
-    replies: oldData.replies.filter((r) => r.uri !== replyUri),
-  });
 }
 
 function buildBreadcrumb(

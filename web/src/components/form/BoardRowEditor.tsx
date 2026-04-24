@@ -4,7 +4,7 @@ import * as limits from "../../lib/limits";
 export interface BoardRow {
   slug: string;
   name: string;
-  desc: string;
+  description: string;
 }
 
 interface BoardRowEditorProps {
@@ -27,7 +27,7 @@ export default function BoardRowEditor({
     <div>
       <label className="block text-neutral-400 mb-1">Boards</label>
       <p className="text-neutral-400 text-xs mb-2">
-        One board per row: slug, name, description
+        One board per row: slug, name, descriptionription
       </p>
       <div className="space-y-2">
         {boards.map((board, i) => (
@@ -46,8 +46,8 @@ export default function BoardRowEditor({
               className="w-1/3!"
             />
             <Input
-              value={board.desc}
-              onChange={(e) => updateBoard(i, "desc", e.target.value)}
+              value={board.description}
+              onChange={(e) => updateBoard(i, "description", e.target.value)}
               placeholder="Description"
               maxLength={limits.BOARD_DESCRIPTION}
               className="flex-1!"
@@ -57,7 +57,7 @@ export default function BoardRowEditor({
       </div>
       <button
         type="button"
-        onClick={() => onChange([...boards, { slug: "", name: "", desc: "" }])}
+        onClick={() => onChange([...boards, { slug: "", name: "", description: "" }])}
         className="mt-2 text-neutral-400 hover:text-neutral-300 text-xs"
       >
         + add board

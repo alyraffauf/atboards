@@ -23,7 +23,7 @@ export default function SysopCreate() {
     {
       slug: DEFAULT_BOARD.slug,
       name: DEFAULT_BOARD.name,
-      desc: DEFAULT_BOARD.description,
+      description: DEFAULT_BOARD.description,
     },
   ]);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function SysopCreate() {
       .map((board) => ({
         slug: board.slug.trim(),
         name: board.name.trim(),
-        desc: board.desc.trim(),
+        description: board.description.trim(),
       }))
       .filter((board) => board.slug);
     if (!name.trim() || !cleanBoards.length) {
@@ -51,7 +51,7 @@ export default function SysopCreate() {
           agent,
           board.slug,
           board.name || board.slug,
-          board.desc,
+          board.description,
           now,
         );
       }

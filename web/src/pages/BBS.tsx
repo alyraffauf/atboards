@@ -20,6 +20,7 @@ import { makeAtUri, nowIso, parseAtUri, truncate } from "../lib/util";
 import * as limits from "../lib/limits";
 import { bbsQuery, newsQuery, pinsQuery } from "../lib/queries";
 import { queryClient } from "../lib/queryClient";
+import { alertOnError } from "../lib/alerts";
 import type { NewsPost } from "../lib/bbs";
 import ComposeForm from "../components/form/ComposeForm";
 import Localtime from "../components/Localtime";
@@ -89,11 +90,7 @@ export default function BBSPage() {
       setNewsBody("");
       setNewsFiles([]);
     },
-    onError: (error) => {
-      alert(
-        `Could not post: ${error instanceof Error ? error.message : error}`,
-      );
-    },
+    onError: alertOnError("post"),
   });
 
   function onPostNews(event: SyntheticEvent) {
