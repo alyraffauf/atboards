@@ -9,14 +9,11 @@ import { BOARD, POST } from "../lib/lexicon";
 import { makeAtUri, nowIso, parseAtUri } from "../lib/util";
 import * as limits from "../lib/limits";
 import {
-  createBan,
-  createHide,
   createPost,
-  deleteBan,
-  deleteHide,
   deleteRecord,
   uploadAttachments,
 } from "../lib/writes";
+import { useModerationMutations } from "../hooks/useModerationMutations";
 import {
   bbsModerationQuery,
   bbsQuery,
@@ -174,33 +171,7 @@ export default function ThreadPage() {
     onError: alertOnError("delete"),
   });
 
-  const banMutation = useMutation({
-    mutationFn: async (banDid: string) => {
-      if (!agent) throw new Error("Not signed in");
-      await createBan(agent, banDid);
-    },
-  });
-
-  const unbanMutation = useMutation({
-    mutationFn: async (rkey: string) => {
-      if (!agent) throw new Error("Not signed in");
-      await deleteBan(agent, rkey);
-    },
-  });
-
-  const hideMutation = useMutation({
-    mutationFn: async (uri: string) => {
-      if (!agent) throw new Error("Not signed in");
-      await createHide(agent, uri);
-    },
-  });
-
-  const unhideMutation = useMutation({
-    mutationFn: async (rkey: string) => {
-      if (!agent) throw new Error("Not signed in");
-      await deleteHide(agent, rkey);
-    },
-  });
+  const { ban, unban, hide, unhide } = useModerationMutations();
 
   // --- Handlers ---
 
@@ -226,22 +197,22 @@ export default function ThreadPage() {
 
   function onBan(banDid: string) {
     if (!confirm("Ban this user from your community?")) return;
-    banMutation.mutate(banDid);
+    ban.mutate(banDid);
   }
 
   function onUnban(rkey: string) {
     if (!confirm("Unban this user?")) return;
-    unbanMutation.mutate(rkey);
+    unban.mutate(rkey);
   }
 
   function onHide(uri: string) {
     if (!confirm("Hide this post?")) return;
-    hideMutation.mutate(uri);
+    hide.mutate(uri);
   }
 
   function onUnhide(rkey: string) {
     if (!confirm("Unhide this post?")) return;
-    unhideMutation.mutate(rkey);
+    unhide.mutate(rkey);
   }
 
   if (threadHidden) {

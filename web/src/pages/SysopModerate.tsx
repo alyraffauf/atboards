@@ -1,21 +1,14 @@
 import { useState } from "react";
-import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useAuth } from "../lib/auth";
-import { resolveIdentity } from "../lib/atproto";
 import { bbsQuery, sysopModerationQuery } from "../lib/queries";
 import HandleInput from "../components/form/HandleInput";
 import { Button } from "../components/form/Form";
 import { usePageTitle } from "../hooks/usePageTitle";
-import {
-  createBan,
-  createHide,
-  deleteBan,
-  deleteHide,
-} from "../lib/writes";
-import { alertOnError } from "../lib/alerts";
+import { useModerationMutations } from "../hooks/useModerationMutations";
 
 export default function SysopModerate() {
-  const { user, agent } = useAuth();
+  const { user } = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [hideUri, setHideUri] = useState("");
   usePageTitle("Moderate community — atbbs");
@@ -27,62 +20,31 @@ export default function SysopModerate() {
   );
   const { banRkeys, bannedHandles, hideRkeys, hidden } = moderation;
 
-  const banMutation = useMutation({
-    mutationFn: async (identifier: string) => {
-      if (!agent) throw new Error("Not signed in");
-      let did = identifier;
-      if (!did.startsWith("did:")) did = (await resolveIdentity(did)).did;
-      await createBan(agent, did);
-    },
-    onSuccess: () => setIdentifier(""),
-    onError: alertOnError("ban"),
-  });
+  const { ban, unban, hide, unhide } = useModerationMutations();
 
-  const unbanMutation = useMutation({
-    mutationFn: async (rkey: string) => {
-      if (!agent) throw new Error("Not signed in");
-      await deleteBan(agent, rkey);
-    },
-  });
-
-  const hideMutation = useMutation({
-    mutationFn: async (uri: string) => {
-      if (!agent) throw new Error("Not signed in");
-      await createHide(agent, uri);
-    },
-    onSuccess: () => setHideUri(""),
-  });
-
-  const unhideMutation = useMutation({
-    mutationFn: async (rkey: string) => {
-      if (!agent) throw new Error("Not signed in");
-      await deleteHide(agent, rkey);
-    },
-  });
-
-  function ban() {
+  function onBan() {
     const id = identifier.trim();
     if (!id) return;
-    banMutation.mutate(id);
+    ban.mutate(id, { onSuccess: () => setIdentifier("") });
   }
 
-  function unban(rkey: string) {
+  function onUnban(rkey: string) {
     if (!confirm("Unban this user?")) return;
-    unbanMutation.mutate(rkey);
+    unban.mutate(rkey);
   }
 
-  function hide() {
+  function onHide() {
     const uri = hideUri.trim();
     if (!uri.startsWith("at://")) {
       alert("Enter a valid AT-URI.");
       return;
     }
-    hideMutation.mutate(uri);
+    hide.mutate(uri, { onSuccess: () => setHideUri("") });
   }
 
-  function unhide(rkey: string) {
+  function onUnhide(rkey: string) {
     if (!confirm("Unhide this post?")) return;
-    unhideMutation.mutate(rkey);
+    unhide.mutate(rkey);
   }
 
   return (
@@ -113,7 +75,7 @@ export default function SysopModerate() {
                 </a>
                 {banRkeys[did] && (
                   <button
-                    onClick={() => unban(banRkeys[did])}
+                    onClick={() => onUnban(banRkeys[did])}
                     className="text-xs text-neutral-400 hover:text-red-400 shrink-0"
                   >
                     unban
@@ -129,7 +91,7 @@ export default function SysopModerate() {
               onChange={setIdentifier}
               className="flex-1"
             />
-            <Button onClick={ban}>ban</Button>
+            <Button onClick={onBan}>ban</Button>
           </div>
         </div>
 
@@ -153,7 +115,7 @@ export default function SysopModerate() {
                 </a>
                 {hideRkeys[post.uri] && (
                   <button
-                    onClick={() => unhide(hideRkeys[post.uri])}
+                    onClick={() => onUnhide(hideRkeys[post.uri])}
                     className="text-xs text-neutral-400 hover:text-red-400 shrink-0"
                   >
                     unhide
@@ -172,7 +134,7 @@ export default function SysopModerate() {
               aria-label="Post URI to hide"
               className="flex-1 bg-neutral-900 border border-neutral-800 rounded px-3 py-2 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
             />
-            <Button onClick={hide}>hide</Button>
+            <Button onClick={onHide}>hide</Button>
           </div>
         </div>
       </div>
