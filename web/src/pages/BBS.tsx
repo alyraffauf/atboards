@@ -120,7 +120,7 @@ export default function BBSPage() {
             to={`/profile/${encodeURIComponent(handle!)}`}
             icon={User}
           >
-            owner
+            admin
           </ActionLink>
           {isSysop && (
             <ActionLink to="/account/edit" icon={Pencil}>
