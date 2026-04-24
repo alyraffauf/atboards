@@ -18,6 +18,7 @@ import {
 import {
   bbsModerationQuery,
   bbsQuery,
+  myThreadsQuery,
   threadPageQuery,
   threadRefsQuery,
   threadRootQuery,
@@ -162,7 +163,12 @@ export default function ThreadPage() {
       if (!agent) throw new Error("Not signed in");
       await deleteRecord(agent, POST, thread.rkey);
     },
-    onSuccess: () => navigate(`/bbs/${handle}`),
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries(myThreadsQuery(user.pdsUrl, user.did));
+      }
+      navigate(`/bbs/${handle}`);
+    },
     onError: (err) =>
       alert(`Could not delete: ${err instanceof Error ? err.message : err}`),
   });

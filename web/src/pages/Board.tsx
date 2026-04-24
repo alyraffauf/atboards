@@ -19,6 +19,7 @@ import {
   bbsModerationQuery,
   bbsQuery,
   boardThreadsInfiniteQuery,
+  myThreadsQuery,
 } from "../lib/queries";
 import { queryClient } from "../lib/queryClient";
 import type { ThreadItem, ThreadPageResult } from "../lib/boardThreads";
@@ -143,6 +144,7 @@ export default function BoardPage() {
         },
       );
       refetchUntilIndexed(boardKey, resp.data.uri);
+      queryClient.invalidateQueries(myThreadsQuery(user.pdsUrl, user.did));
       setTitle("");
       setBody("");
       setFiles([]);
