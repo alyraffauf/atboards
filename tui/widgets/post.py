@@ -1,11 +1,58 @@
+import re
 import webbrowser
+from urllib.parse import unquote
 
 from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Markdown, Static
 
 from core.models import AtUri
-from core.util import format_datetime_local as format_datetime
+from core.util import (
+    attachment_cid,
+    blob_url,
+    format_datetime_local as format_datetime,
+)
+
+ATTACHMENT_LINK_RE = re.compile(r"!?\[([^\]]*)\]\(attachment:([^)\s]+)\)")
+ATTACHMENT_REF_RE = re.compile(r"attachment:([^)\s>\"']+)")
+BODY_LINK_RE = re.compile(r"!?\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def extract_body_links(body: str) -> list[tuple[str, str]]:
+    """Return (label, url) for every markdown link in body, in document order."""
+    return [
+        (match.group(1).strip(), match.group(2))
+        for match in BODY_LINK_RE.finditer(body)
+    ]
+
+
+def resolve_attachment_links(
+    body: str,
+    attachments: list[dict],
+    pds: str | None,
+    did: str | None,
+) -> str:
+    """Rewrite [label](attachment:name) markdown links to point at blob URLs."""
+    if not attachments or not pds or not did:
+        return body
+    attachments_by_name = {
+        attachment.get("name"): attachment for attachment in attachments
+    }
+
+    def replace_match(match: re.Match) -> str:
+        label = match.group(1)
+        name = unquote(match.group(2))
+        attachment = attachments_by_name.get(name)
+        cid = attachment_cid(attachment) if attachment else ""
+        if not cid:
+            return f"[{label or name}] (missing attachment)"
+        return f"[{label or name}]({blob_url(pds, did, cid)})"
+
+    return ATTACHMENT_LINK_RE.sub(replace_match, body)
+
+
+def referenced_attachment_names(body: str) -> set[str]:
+    return {unquote(match.group(1)) for match in ATTACHMENT_REF_RE.finditer(body)}
 
 
 class AttachmentLink(Static, can_focus=True):
@@ -25,8 +72,8 @@ class AttachmentLink(Static, can_focus=True):
     }
     """
 
-    def __init__(self, name: str, url: str, **kwargs) -> None:
-        super().__init__(f"[{name}]", markup=False, **kwargs)
+    def __init__(self, display: str, url: str, **kwargs) -> None:
+        super().__init__(display, markup=False, **kwargs)
         self._url = url
 
     def on_click(self) -> None:
@@ -112,12 +159,20 @@ class Post(Widget, can_focus=True):
             yield Static(self._title, classes="post-title", markup=False)
         if self._parent_preview:
             yield Markdown(self._parent_preview, classes="post-parent")
-        yield Markdown(self._body, classes="post-body")
+        body = resolve_attachment_links(
+            self._body, self.attachments, self.author_pds, self.author_did
+        )
+        yield Markdown(body, classes="post-body")
+        for number, (label, url) in enumerate(extract_body_links(body), 1):
+            yield AttachmentLink(f"[{number}] {label}", url)
+        embedded = referenced_attachment_names(self._body)
         for attachment in self.attachments:
             name = attachment.get("name", "file")
-            cid = attachment.get("file", {}).get("ref", {}).get("$link", "")
+            if name in embedded:
+                continue
+            cid = attachment_cid(attachment)
             if cid and self.author_pds and self.author_did:
-                url = f"{self.author_pds}/xrpc/com.atproto.sync.getBlob?did={self.author_did}&cid={cid}"
-                yield AttachmentLink(name, url)
+                url = blob_url(self.author_pds, self.author_did, cid)
+                yield AttachmentLink(f"[{name}]", url)
             else:
                 yield Static(f"[{name}]", classes="post-attachment", markup=False)

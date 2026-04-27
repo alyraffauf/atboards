@@ -1,4 +1,5 @@
 import { Paperclip } from "lucide-react";
+import { blobUrl } from "../../lib/atproto";
 
 interface AttachmentLinkProps {
   pds: string;
@@ -13,31 +14,27 @@ export default function AttachmentLink({
   cid,
   name,
 }: AttachmentLinkProps) {
+  const url = blobUrl(pds, did, cid);
+
   async function download(e: React.MouseEvent) {
     e.preventDefault();
     try {
-      const resp = await fetch(
-        `${pds}/xrpc/com.atproto.sync.getBlob?did=${did}&cid=${cid}`,
-      );
+      const resp = await fetch(url);
       const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
+      const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = objectUrl;
       a.download = name;
       a.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(objectUrl);
     } catch {
-      // Fall back to opening in a new tab
-      window.open(
-        `${pds}/xrpc/com.atproto.sync.getBlob?did=${did}&cid=${cid}`,
-        "_blank",
-      );
+      window.open(url, "_blank");
     }
   }
 
   return (
     <a
-      href={`${pds}/xrpc/com.atproto.sync.getBlob?did=${did}&cid=${cid}`}
+      href={url}
       onClick={download}
       className="text-xs text-neutral-400 hover:text-neutral-300 inline-flex items-center gap-1 mt-3 cursor-pointer"
     >

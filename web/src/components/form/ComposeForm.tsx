@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from "react";
+import { useRef, type SyntheticEvent } from "react";
 import { Send, Paperclip } from "lucide-react";
 import { Input, Textarea, Button } from "./Form";
 import FileChips from "./FileChips";
@@ -43,6 +43,27 @@ export default function ComposeForm({
   posting = false,
   className = "",
 }: ComposeFormProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertSnippet(snippet: string) {
+    const textarea = textareaRef.current;
+    const isFocused = !!textarea && document.activeElement === textarea;
+    if (!textarea || !isFocused) {
+      const sep = body.length > 0 && !body.endsWith("\n") ? "\n" : "";
+      onBodyChange(body + sep + snippet);
+      return;
+    }
+    const start = textarea.selectionStart ?? body.length;
+    const end = textarea.selectionEnd ?? body.length;
+    const next = body.slice(0, start) + snippet + body.slice(end);
+    onBodyChange(next);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const cursor = start + snippet.length;
+      textarea.setSelectionRange(cursor, cursor);
+    });
+  }
+
   function addFiles(fileList: FileList | null) {
     if (!fileList) return;
     const combined = [...files, ...Array.from(fileList)].slice(
@@ -56,6 +77,14 @@ export default function ComposeForm({
 
   function removeFile(index: number) {
     onFilesChange(files.filter((_, i) => i !== index));
+  }
+
+  function insertAttachment(file: File) {
+    const encoded = encodeURIComponent(file.name);
+    const snippet = file.type.startsWith("image/")
+      ? `![${file.name}](attachment:${encoded})`
+      : `[${file.name}](attachment:${encoded})`;
+    insertSnippet(snippet);
   }
 
   return (
@@ -86,6 +115,7 @@ export default function ComposeForm({
       )}
 
       <Textarea
+        ref={textareaRef}
         name="body"
         value={body}
         onChange={(e) => onBodyChange(e.target.value)}
@@ -101,7 +131,13 @@ export default function ComposeForm({
         maxLength={bodyMaxLength}
       />
 
-      {files.length > 0 && <FileChips files={files} onRemove={removeFile} />}
+      {files.length > 0 && (
+        <FileChips
+          files={files}
+          onRemove={removeFile}
+          onInsert={insertAttachment}
+        />
+      )}
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={posting}>

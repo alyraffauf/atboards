@@ -1,6 +1,7 @@
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
+  Ref,
   TextareaHTMLAttributes,
 } from "react";
 
@@ -16,10 +17,15 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={`${inputStyles} ${className ?? ""}`} {...rest} />;
 }
 
-export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  const { className, ...rest } = props;
+export function Textarea(
+  props: TextareaHTMLAttributes<HTMLTextAreaElement> & {
+    ref?: Ref<HTMLTextAreaElement>;
+  },
+) {
+  const { className, ref, ...rest } = props;
   return (
     <textarea
+      ref={ref}
       className={`${inputStyles} resize-y ${className ?? ""}`}
       {...rest}
     />

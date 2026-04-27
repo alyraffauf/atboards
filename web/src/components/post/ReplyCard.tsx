@@ -2,7 +2,7 @@ import { truncate } from "../../lib/util";
 import AttachmentLink from "./AttachmentLink";
 import ModerationBadge from "./ModerationBadge";
 import PostActions from "./PostActions";
-import PostBody from "./PostBody";
+import PostBody, { unembeddedAttachments } from "./PostBody";
 import PostMeta from "./PostMeta";
 
 export interface Reply {
@@ -51,6 +51,7 @@ export default function ReplyCard({
   const isAuthor = userDid === reply.did;
   const isSysop = userDid === sysopDid;
   const isModerated = !!banRkey || !!hideRkey;
+  const remaining = unembeddedAttachments(reply.attachments, reply.body);
 
   return (
     <div
@@ -90,9 +91,15 @@ export default function ReplyCard({
         </button>
       )}
 
-      <PostBody>{reply.body}</PostBody>
+      <PostBody
+        attachments={reply.attachments}
+        pds={reply.pds}
+        did={reply.did}
+      >
+        {reply.body}
+      </PostBody>
 
-      {reply.attachments.map((attachment, index) => (
+      {remaining.map((attachment, index) => (
         <AttachmentLink
           key={index}
           pds={reply.pds}

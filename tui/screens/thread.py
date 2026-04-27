@@ -17,6 +17,7 @@ from core.records import (
     post_from_record,
 )
 from core.slingshot import get_record, resolve_identity
+from core.util import attachment_cid, blob_url
 from tui.screens.compose import ComposeReplyScreen
 from tui.util import ban_user, hide_post, require_session, require_sysop
 from tui.widgets.breadcrumb import Breadcrumb
@@ -82,6 +83,15 @@ class ThreadScreen(Screen):
         self.load_replies(focus_reply=self._focus_reply)
         self._focus_reply = None
 
+    def _reply_widgets(self) -> list[Post]:
+        return [post for post in self.query(Post) if self._is_reply_widget(post)]
+
+    def _focus_reply_by_uri(self, uri: str) -> None:
+        for post in self._reply_widgets():
+            if post.record_uri == uri:
+                post.focus()
+                return
+
     def _update_page_status(self) -> None:
         text = (
             f"page {self._page} of {self._total_pages}" if self._total_pages > 1 else ""
@@ -93,12 +103,16 @@ class ThreadScreen(Screen):
         return post.record_uri is not None and post.record_uri != self.thread.uri
 
     def _clear_replies(self) -> None:
-        for post in self.query(Post):
-            if self._is_reply_widget(post):
-                post.remove()
+        for post in self._reply_widgets():
+            post.remove()
 
     @work(exclusive=True)
-    async def load_replies(self, page: int = 1, focus_reply: str | None = None) -> None:
+    async def load_replies(
+        self,
+        page: int = 1,
+        focus_reply: str | None = None,
+        focus_first_reply: bool = False,
+    ) -> None:
         client = self.app.http_client
         try:
             result = await fetch_replies(
@@ -174,10 +188,12 @@ class ThreadScreen(Screen):
                 *post_widgets, before=self.query_one("#page-status-bottom")
             )
 
-        # Focus first reply
-        replies = [post for post in self.query(Post) if self._is_reply_widget(post)]
-        if replies:
-            replies[0].focus()
+        if focus_reply:
+            self._focus_reply_by_uri(focus_reply)
+        elif focus_first_reply:
+            replies = self._reply_widgets()
+            if replies:
+                replies[0].focus()
 
     def action_ban(self) -> None:
         if not require_sysop(self, self.bbs):
@@ -210,17 +226,17 @@ class ThreadScreen(Screen):
     def action_next_page(self) -> None:
         if self._page < self._total_pages:
             self._clear_replies()
-            self.load_replies(page=self._page + 1)
+            self.load_replies(page=self._page + 1, focus_first_reply=True)
 
     def action_prev_page(self) -> None:
         if self._page > 1:
             self._clear_replies()
-            self.load_replies(page=self._page - 1)
+            self.load_replies(page=self._page - 1, focus_first_reply=True)
 
     def refresh_data(self) -> None:
         self._clear_replies()
         self._page = 1
-        self.load_replies(page=1)
+        self.load_replies(page=1, focus_first_reply=True)
 
     def action_reply(self) -> None:
         session = require_session(self)
@@ -290,13 +306,13 @@ class ThreadScreen(Screen):
         downloads.mkdir(parents=True, exist_ok=True)
 
         client = self.app.http_client
-        for att in post.attachments:
-            name = att.get("name", "file")
-            cid = att.get("file", {}).get("ref", {}).get("$link", "")
+        for attachment in post.attachments:
+            name = attachment.get("name", "file")
+            cid = attachment_cid(attachment)
             if not cid or not post.author_pds or not post.author_did:
                 continue
 
-            url = f"{post.author_pds}/xrpc/com.atproto.sync.getBlob?did={post.author_did}&cid={cid}"
+            url = blob_url(post.author_pds, post.author_did, cid)
             try:
                 resp = await client.get(url)
                 resp.raise_for_status()
