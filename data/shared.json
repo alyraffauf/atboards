@@ -25,7 +25,7 @@
     "lightrail": "https://lightrail.microcosm.blue/xrpc"
   },
   "cdn": {
-    "url": "https://cdn.bsky.app",
+    "url": "https://cdn.blueat.net",
     "image_format": "webp"
   },
   "default_board": {
