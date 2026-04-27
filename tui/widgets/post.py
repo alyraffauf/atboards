@@ -2,6 +2,7 @@ import re
 import webbrowser
 from urllib.parse import unquote
 
+from textual import work
 from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Markdown, Static
@@ -12,6 +13,7 @@ from core.util import (
     blob_url,
     format_datetime_local as format_datetime,
 )
+from tui.util import download_blob
 
 ATTACHMENT_LINK_RE = re.compile(r"!?\[([^\]]*)\]\(attachment:([^)\s]+)\)")
 ATTACHMENT_REF_RE = re.compile(r"attachment:([^)\s>\"']+)")
@@ -72,15 +74,40 @@ class AttachmentLink(Static, can_focus=True):
     }
     """
 
-    def __init__(self, display: str, url: str, **kwargs) -> None:
+    def __init__(
+        self,
+        display: str,
+        url: str,
+        filename: str | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(display, markup=False, **kwargs)
         self._url = url
+        self._filename = filename
 
     def on_click(self) -> None:
-        webbrowser.open(self._url)
+        self._activate()
 
     def key_enter(self) -> None:
-        webbrowser.open(self._url)
+        self._activate()
+
+    def _activate(self) -> None:
+        if self._filename:
+            self._save()
+        else:
+            webbrowser.open(self._url)
+
+    @work
+    async def _save(self) -> None:
+        try:
+            path = await download_blob(
+                self.app.http_client, self._url, self._filename
+            )
+            self.notify(f"Saved to {path}")
+        except Exception:
+            self.notify(
+                f"Failed to download {self._filename}.", severity="error"
+            )
 
 
 class Post(Widget, can_focus=True):
@@ -163,16 +190,36 @@ class Post(Widget, can_focus=True):
             self._body, self.attachments, self.author_pds, self.author_did
         )
         yield Markdown(body, classes="post-body")
+
+        downloadable, undownloadable = self._partition_attachments()
+        filename_by_url = {url: name for name, url in downloadable}
+
         for number, (label, url) in enumerate(extract_body_links(body), 1):
-            yield AttachmentLink(f"[{number}] {label}", url)
+            yield AttachmentLink(
+                f"[{number}] {label}", url, filename=filename_by_url.get(url)
+            )
+
         embedded = referenced_attachment_names(self._body)
+        for name, url in downloadable:
+            if name not in embedded:
+                yield AttachmentLink(f"[{name}]", url, filename=name)
+        for name in undownloadable:
+            if name not in embedded:
+                yield Static(f"[{name}]", classes="post-attachment", markup=False)
+
+    def _partition_attachments(
+        self,
+    ) -> tuple[list[tuple[str, str]], list[str]]:
+        """Split attachments into (name, url) we can fetch and names we can't."""
+        downloadable: list[tuple[str, str]] = []
+        undownloadable: list[str] = []
         for attachment in self.attachments:
             name = attachment.get("name", "file")
-            if name in embedded:
-                continue
             cid = attachment_cid(attachment)
             if cid and self.author_pds and self.author_did:
-                url = blob_url(self.author_pds, self.author_did, cid)
-                yield AttachmentLink(f"[{name}]", url)
+                downloadable.append(
+                    (name, blob_url(self.author_pds, self.author_did, cid))
+                )
             else:
-                yield Static(f"[{name}]", classes="post-attachment", markup=False)
+                undownloadable.append(name)
+        return downloadable, undownloadable

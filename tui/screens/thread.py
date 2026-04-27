@@ -1,7 +1,5 @@
 import asyncio
-from pathlib import Path
 
-from platformdirs import user_downloads_dir
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -19,7 +17,13 @@ from core.records import (
 from core.slingshot import get_record, resolve_identity
 from core.util import attachment_cid, blob_url
 from tui.screens.compose import ComposeReplyScreen
-from tui.util import ban_user, hide_post, require_session, require_sysop
+from tui.util import (
+    ban_user,
+    download_blob,
+    hide_post,
+    require_session,
+    require_sysop,
+)
 from tui.widgets.breadcrumb import Breadcrumb
 from tui.widgets.post import Post
 
@@ -302,9 +306,6 @@ class ThreadScreen(Screen):
 
     @work(exclusive=True)
     async def _do_save(self, post: Post) -> None:
-        downloads = Path(user_downloads_dir())
-        downloads.mkdir(parents=True, exist_ok=True)
-
         client = self.app.http_client
         for attachment in post.attachments:
             name = attachment.get("name", "file")
@@ -314,16 +315,7 @@ class ThreadScreen(Screen):
 
             url = blob_url(post.author_pds, post.author_did, cid)
             try:
-                resp = await client.get(url)
-                resp.raise_for_status()
-                path = downloads / name
-                if path.exists():
-                    stem, suffix = path.stem, path.suffix
-                    i = 1
-                    while path.exists():
-                        path = downloads / f"{stem}_{i}{suffix}"
-                        i += 1
-                path.write_bytes(resp.content)
+                path = await download_blob(client, url, name, downloads)
                 self.notify(f"Saved to {path}")
             except Exception:
                 self.notify(f"Failed to download {name}.", severity="error")

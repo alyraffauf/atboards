@@ -1,9 +1,40 @@
 """TUI utilities."""
 
+from pathlib import Path
+
+import httpx
+from platformdirs import user_downloads_dir
+
 from core.auth.session import SessionStore
 from core.models import AuthError, BBS
 from core.records import create_ban_record, create_hidden_record
 from core.resolver import invalidate_bbs_cache
+
+
+def unique_path(path: Path) -> Path:
+    """Return path, or path with a `_N` suffix if it already exists."""
+    if not path.exists():
+        return path
+    stem, suffix = path.stem, path.suffix
+    counter = 1
+    while True:
+        candidate = path.parent / f"{stem}_{counter}{suffix}"
+        if not candidate.exists():
+            return candidate
+        counter += 1
+
+
+async def download_blob(
+    client: httpx.AsyncClient, url: str, filename: str
+) -> Path:
+    """Fetch a blob URL and save it to the user's Downloads folder."""
+    downloads = Path(user_downloads_dir())
+    downloads.mkdir(parents=True, exist_ok=True)
+    resp = await client.get(url)
+    resp.raise_for_status()
+    path = unique_path(downloads / filename)
+    path.write_bytes(resp.content)
+    return path
 
 
 def require_session(screen) -> dict | None:
