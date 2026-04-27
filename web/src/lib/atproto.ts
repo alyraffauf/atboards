@@ -1,13 +1,12 @@
 /** Read-side wrappers for Slingshot and Constellation (no auth needed). */
 
 import { queryClient, STALE_SLOW } from "./queryClient";
-import { SERVICES } from "./shared";
+import { CDN, SERVICES } from "./shared";
 import { parseAtUri } from "./util";
 
 const SLINGSHOT = SERVICES.slingshot;
 const CONSTELLATION = SERVICES.constellation;
 
-const BSKY_CDN = "https://cdn.bsky.app";
 const BSKY_PROFILE = "app.bsky.actor.profile";
 
 // --- Types ---
@@ -45,6 +44,10 @@ interface ListRecordsResponse {
 
 export function blobUrl(pds: string, did: string, cid: string): string {
   return `${pds}/xrpc/com.atproto.sync.getBlob?did=${did}&cid=${cid}`;
+}
+
+export function cdnImageUrl(did: string, cid: string): string {
+  return `${CDN.url}/img/feed_fullsize/plain/${did}/${cid}@${CDN.image_format}`;
 }
 
 // --- Low-level JSON fetcher ---
@@ -175,7 +178,7 @@ export async function fetchAvatarUrl(did: string): Promise<string | null> {
   try {
     const record = await getRecord(did, BSKY_PROFILE, "self");
     const cid = extractAvatarCid(record.value);
-    return cid ? `${BSKY_CDN}/img/avatar/plain/${did}/${cid}` : null;
+    return cid ? `${CDN.url}/img/avatar/plain/${did}/${cid}` : null;
   } catch {
     return null;
   }

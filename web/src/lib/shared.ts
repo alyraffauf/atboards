@@ -21,6 +21,11 @@ export interface Services {
   lightrail: string;
 }
 
+export interface Cdn {
+  url: string;
+  image_format: string;
+}
+
 export interface DefaultBoard {
   slug: string;
   name: string;
@@ -31,5 +36,6 @@ export const ATPROTO_APPS = shared.atproto_apps as AtprotoApp[];
 export const LEXICON_COLLECTIONS =
   shared.lexicon_collections as LexiconCollections;
 export const SERVICES = shared.services as Services;
+export const CDN = shared.cdn as Cdn;
 export const DEFAULT_BOARD = shared.default_board as DefaultBoard;
 export const HANDLE_PLACEHOLDERS = shared.handle_placeholders as string[];

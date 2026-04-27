@@ -24,6 +24,10 @@
     "constellation": "https://constellation.microcosm.blue/xrpc",
     "lightrail": "https://lightrail.microcosm.blue/xrpc"
   },
+  "cdn": {
+    "url": "https://cdn.bsky.app",
+    "image_format": "webp"
+  },
   "default_board": {
     "slug": "general",
     "name": "General",

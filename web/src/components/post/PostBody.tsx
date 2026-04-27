@@ -1,7 +1,7 @@
 import Markdown, { defaultUrlTransform } from "react-markdown";
 import type { Components } from "react-markdown";
 import AttachmentLink from "./AttachmentLink";
-import { blobUrl } from "../../lib/atproto";
+import { blobUrl, cdnImageUrl } from "../../lib/atproto";
 import type { PostAttachment } from "../../lib/bbs";
 
 interface PostBodyProps {
@@ -28,11 +28,19 @@ function MissingAttachment({ name }: { name: string }) {
   );
 }
 
-function ImageEmbed({ url, alt }: { url: string; alt: string }) {
+function ImageEmbed({
+  imageUrl,
+  linkUrl,
+  alt,
+}: {
+  imageUrl: string;
+  linkUrl: string;
+  alt: string;
+}) {
   return (
-    <a href={url} target="_blank" rel="noreferrer">
+    <a href={linkUrl} target="_blank" rel="noreferrer">
       <img
-        src={url}
+        src={imageUrl}
         alt={alt}
         loading="lazy"
         className="max-w-full max-h-96 rounded"
@@ -63,8 +71,14 @@ function attachmentMarkdownComponents(
       const ref = findAttachment(src, attachments);
       if (!ref) return <img src={src} alt={alt} />;
       if (!ref.attachment) return <MissingAttachment name={ref.name} />;
-      const url = blobUrl(pds, did, ref.attachment.file.ref.$link);
-      return <ImageEmbed url={url} alt={alt ?? ref.name} />;
+      const cid = ref.attachment.file.ref.$link;
+      return (
+        <ImageEmbed
+          imageUrl={cdnImageUrl(did, cid)}
+          linkUrl={blobUrl(pds, did, cid)}
+          alt={alt ?? ref.name}
+        />
+      );
     },
     a({ href, children, ...rest }) {
       const ref = findAttachment(href, attachments);
