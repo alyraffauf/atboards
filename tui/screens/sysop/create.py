@@ -5,7 +5,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Input
 
 from core import lexicon
-from core.models import AtUri, AuthError
+from core.models import AuthError, make_at_uri
 from core.records import put_board_record, put_site_record
 from core.resolver import invalidate_bbs_cache, resolve_bbs
 from core.util import now_iso
@@ -77,7 +77,7 @@ class SysopCreateScreen(BBSFormMixin, Screen):
                     "description": description,
                     "intro": intro,
                     "boards": [
-                        str(AtUri(session["did"], lexicon.BOARD, board["slug"]))
+                        make_at_uri(session["did"], lexicon.BOARD, board["slug"])
                         for board in self._boards
                     ],
                     "createdAt": now,

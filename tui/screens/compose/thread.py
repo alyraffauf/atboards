@@ -3,7 +3,7 @@ from textual.containers import Vertical
 from textual.widgets import Footer, Input, Static, TextArea
 
 from core import lexicon, limits
-from core.models import AtUri, BBS, Board
+from core.models import BBS, Board, make_at_uri
 from tui.screens.compose.base import ComposeScreen
 from tui.widgets.breadcrumb import Breadcrumb
 
@@ -40,5 +40,5 @@ class ComposeThreadScreen(ComposeScreen):
         self.query_one("#compose-title", Input).focus()
 
     def get_post_params(self, title: str | None, body: str) -> dict:
-        board_uri = str(AtUri(self.bbs.identity.did, lexicon.BOARD, self.board.slug))
+        board_uri = make_at_uri(self.bbs.identity.did, lexicon.BOARD, self.board.slug)
         return {"scope": board_uri, "body": body, "title": title}

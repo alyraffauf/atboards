@@ -5,7 +5,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, Static
 
 from core import lexicon
-from core.models import AtUri, BBS
+from core.models import AtUri, BBS, make_at_uri
 from core.constellation import get_root_posts
 from core.records import delete_record, list_pds_records
 from tui.util import make_session_updater
@@ -55,7 +55,7 @@ class SysopDeleteScreen(Screen):
                 failed.append(f"board/{board.slug}")
 
         # Delete sysop's news posts (posts scoped to site)
-        site_uri = str(AtUri(session["did"], lexicon.SITE, "self"))
+        site_uri = make_at_uri(session["did"], lexicon.SITE, "self")
         try:
             backlinks = await get_root_posts(client, site_uri)
             for ref in backlinks.records:

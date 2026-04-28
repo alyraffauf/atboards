@@ -34,6 +34,11 @@ class AtUri:
         return hash(str(self))
 
 
+def make_at_uri(did: str, collection: str, rkey: str) -> str:
+    """Build an AT URI string from its components."""
+    return f"at://{did}/{collection}/{rkey}"
+
+
 # errors
 
 

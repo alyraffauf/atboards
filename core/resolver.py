@@ -11,6 +11,7 @@ from core.models import (
     BBSNotFoundError,
     NoBBSError,
     NetworkError,
+    make_at_uri,
 )
 from core import lexicon
 from core.cache import TTLCache
@@ -51,7 +52,7 @@ async def _resolve_bbs(client: httpx.AsyncClient, handle: str) -> BBS:
         raise NetworkError("Could not reach the network.")
 
     site_value = site_record.value
-    site_uri = str(AtUri(identity.did, lexicon.SITE, "self"))
+    site_uri = make_at_uri(identity.did, lexicon.SITE, "self")
 
     # Fetch boards and news concurrently
     board_uris = site_value["boards"]

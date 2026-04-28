@@ -10,7 +10,7 @@ import httpx
 from core import lexicon
 from core.constellation import get_board_activity, get_replies, get_root_posts
 from core.filters import filter_moderated
-from core.models import AtUri, AuthError, BBS, Board, MiniDoc, Post, Record
+from core.models import AtUri, AuthError, BBS, Board, MiniDoc, Post, Record, make_at_uri
 from core.slingshot import (
     get_records_batch,
     get_records_by_uri,
@@ -51,7 +51,7 @@ async def hydrate_threads(
     newest posts first, the first time a thread URI appears is its most
     recent activity — giving us bump order naturally.
     """
-    board_uri = str(AtUri(bbs.identity.did, lexicon.BOARD, board.slug))
+    board_uri = make_at_uri(bbs.identity.did, lexicon.BOARD, board.slug)
     max_scans = 4
 
     # Phase 1: Scan board activity to find unique thread URIs

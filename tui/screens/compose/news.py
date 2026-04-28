@@ -3,7 +3,7 @@ from textual.containers import Vertical
 from textual.widgets import Footer, Input, Static, TextArea
 
 from core import lexicon, limits
-from core.models import AtUri, BBS
+from core.models import BBS, make_at_uri
 from tui.screens.compose.base import ComposeScreen
 from tui.widgets.breadcrumb import Breadcrumb
 
@@ -36,5 +36,5 @@ class ComposeNewsScreen(ComposeScreen):
         self.query_one("#compose-title", Input).focus()
 
     def get_post_params(self, title: str | None, body: str) -> dict:
-        site_uri = str(AtUri(self.bbs.identity.did, lexicon.SITE, "self"))
+        site_uri = make_at_uri(self.bbs.identity.did, lexicon.SITE, "self")
         return {"scope": site_uri, "body": body, "title": title}
