@@ -10,7 +10,7 @@ def now_iso() -> str:
 
 def format_datetime_utc(value: str) -> str:
     """Format an ISO datetime string as UTC."""
-    dt = datetime.fromisoformat(value)
+    dt = datetime.fromisoformat(value).astimezone(timezone.utc)
     return dt.strftime("%Y-%m-%d %H:%M UTC")
 
 
