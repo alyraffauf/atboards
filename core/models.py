@@ -13,8 +13,12 @@ class AtUri:
 
     @classmethod
     def parse(cls, uri: str) -> "AtUri":
-        parts = uri.split("/")
-        return cls(parts[2], parts[3], parts[4])
+        if not uri.startswith("at://"):
+            raise ValueError(f"not an AT URI: {uri!r}")
+        parts = uri[5:].split("/")
+        if len(parts) != 3 or not all(parts):
+            raise ValueError(f"malformed AT URI: {uri!r}")
+        return cls(*parts)
 
     def __str__(self) -> str:
         return f"at://{self.did}/{self.collection}/{self.rkey}"
