@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { MessageSquare } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -10,16 +10,18 @@ import { queryClient } from "../lib/queryClient";
 import ViewProfile from "../components/profile/ViewProfile";
 import EditProfile from "../components/profile/EditProfile";
 import MyThreadList from "../components/dashboard/MyThreadList";
+import ListSkeleton from "../components/layout/ListSkeleton";
 
 export default function Profile() {
   const { handle } = useParams();
   const { user, agent } = useAuth();
   const [editing, setEditing] = useState(false);
 
-  const { data: profile } = useSuspenseQuery(profileQuery(handle!));
-  const { data: threads } = useSuspenseQuery(
-    myThreadsQuery(profile?.pdsUrl ?? "", profile?.did ?? ""),
-  );
+  const { data: profile } = useQuery(profileQuery(handle!));
+  const { data: threads } = useQuery({
+    ...myThreadsQuery(profile?.pdsUrl ?? "", profile?.did ?? ""),
+    enabled: !!profile,
+  });
 
   usePageTitle(`${profile?.name ?? handle} — atbbs`);
 
@@ -58,7 +60,7 @@ export default function Profile() {
     <>
       <ViewProfile
         handle={handle!}
-        profile={profile}
+        profile={profile ?? null}
         isOwner={isOwner}
         onEdit={() => setEditing(true)}
       />
@@ -66,7 +68,11 @@ export default function Profile() {
         <p className="text-xs text-neutral-400 uppercase tracking-wide mb-3 inline-flex items-center gap-1.5">
           <MessageSquare size={12} /> Recent Threads
         </p>
-        <MyThreadList threads={threads.slice(0, 5)} />
+        {threads ? (
+          <MyThreadList threads={threads.slice(0, 5)} />
+        ) : (
+          <ListSkeleton />
+        )}
       </div>
     </>
   );

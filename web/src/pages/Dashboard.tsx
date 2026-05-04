@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth, type AuthUser } from "../lib/auth";
 import { deleteBBS } from "../lib/deletebbs";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -20,6 +20,7 @@ import PinnedList from "../components/dashboard/PinnedList";
 import MyThreadList from "../components/dashboard/MyThreadList";
 import ActivityList from "../components/dashboard/ActivityList";
 import BBSPanel from "../components/dashboard/BBSPanel";
+import ListSkeleton from "../components/layout/ListSkeleton";
 
 type Tab = "inbox" | "threads" | "pinned" | "bbs";
 
@@ -37,17 +38,14 @@ export default function Dashboard({ user }: DashboardProps) {
   const [tab, setTab] = useState<Tab>("inbox");
   usePageTitle("atbbs");
 
-  const { data: sysopInfo } = useSuspenseQuery(homeSysopQuery(user.did));
-  const { data: pins } = useSuspenseQuery(pinsQuery(user.pdsUrl, user.did));
-  const { data: threads } = useSuspenseQuery(
-    myThreadsQuery(user.pdsUrl, user.did),
-  );
-  const { data: activity } = useSuspenseQuery(
-    activityQuery(user.pdsUrl, user.did),
-  );
-  const { data: discovered } = useSuspenseQuery(discoveryQuery());
+  const { data: sysopInfo } = useQuery(homeSysopQuery(user.did));
+  const { data: pins } = useQuery(pinsQuery(user.pdsUrl, user.did));
+  const { data: threads } = useQuery(myThreadsQuery(user.pdsUrl, user.did));
+  const { data: activity } = useQuery(activityQuery(user.pdsUrl, user.did));
+  const { data: discovered } = useQuery(discoveryQuery());
 
-  const suggestions = useMemo<Suggestion[]>(() => {
+  const suggestions = useMemo<Suggestion[] | undefined>(() => {
+    if (!pins || !discovered) return undefined;
     const pinnedDids = new Set(pins.map((pin) => pin.did));
     const fromPins = pins.map(bbsToSuggestion);
     const fromDiscovery = discovered
@@ -120,7 +118,7 @@ export default function Dashboard({ user }: DashboardProps) {
           <p className="text-neutral-400 text-xs mb-4">
             Recent replies from other users.
           </p>
-          <ActivityList items={activity} />
+          {activity ? <ActivityList items={activity} /> : <ListSkeleton />}
         </>
       )}
 
@@ -129,7 +127,7 @@ export default function Dashboard({ user }: DashboardProps) {
           <p className="text-neutral-400 text-xs mb-4">
             Threads you've posted across all communities.
           </p>
-          <MyThreadList threads={threads} />
+          {threads ? <MyThreadList threads={threads} /> : <ListSkeleton />}
         </>
       )}
 
@@ -138,7 +136,7 @@ export default function Dashboard({ user }: DashboardProps) {
           <p className="text-neutral-400 text-xs mb-4">
             Communities you've pinned for quick access.
           </p>
-          <PinnedList pins={pins} />
+          {pins ? <PinnedList pins={pins} /> : <ListSkeleton />}
         </>
       )}
 
@@ -147,15 +145,20 @@ export default function Dashboard({ user }: DashboardProps) {
           <p className="text-neutral-400 text-xs mb-4">
             Manage your community.
           </p>
-          <BBSPanel
-            hasBBS={sysopInfo.hasBBS}
-            userHandle={user.handle}
-            userDid={user.did}
-            bbsName={sysopInfo.bbsName}
-            onDelete={handleDeleteBBS}
-          />
+          {sysopInfo ? (
+            <BBSPanel
+              hasBBS={sysopInfo.hasBBS}
+              userHandle={user.handle}
+              userDid={user.did}
+              bbsName={sysopInfo.bbsName}
+              onDelete={handleDeleteBBS}
+            />
+          ) : (
+            <ListSkeleton />
+          )}
         </>
       )}
     </>
   );
 }
+

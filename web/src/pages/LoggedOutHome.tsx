@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Phone, Copy, Check } from "lucide-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { discoveryQuery } from "../lib/queries";
 import DialBBS, {
@@ -10,9 +10,9 @@ import DialBBS, {
 import DiscoveryList from "../components/dashboard/DiscoveryList";
 
 export default function LoggedOutHome() {
-  const { data: discovered } = useSuspenseQuery(discoveryQuery());
-  const suggestions = useMemo<Suggestion[]>(
-    () => discovered.map(bbsToSuggestion),
+  const { data: discovered } = useQuery(discoveryQuery());
+  const suggestions = useMemo<Suggestion[] | undefined>(
+    () => discovered?.map(bbsToSuggestion),
     [discovered],
   );
   const [tab, setTab] = useState<"brew" | "uv" | "telnet">("brew");
@@ -73,7 +73,7 @@ export default function LoggedOutHome() {
         <div className="mb-6">
           <DialBBS discovered={discovered} suggestions={suggestions} />
         </div>
-        <DiscoveryList discovered={discovered} />
+        {discovered && <DiscoveryList discovered={discovered} />}
       </div>
 
       <div className="border-t border-neutral-800 py-4">

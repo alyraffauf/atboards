@@ -29,6 +29,7 @@ import ListLink from "../components/nav/ListLink";
 import ActionBar from "../components/nav/ActionBar";
 import { ActionLink } from "../components/nav/ActionButton";
 import PinButton from "../components/PinButton";
+import ListSkeleton from "../components/layout/ListSkeleton";
 
 const INITIAL_NEWS_COUNT = 3;
 
@@ -41,7 +42,7 @@ export default function BBSPage() {
   const [showAllNews, setShowAllNews] = useState(false);
 
   const { data: bbs } = useSuspenseQuery(bbsQuery(handle!));
-  const { data: news } = useSuspenseQuery(newsQuery(bbs.identity.did));
+  const { data: news } = useQuery(newsQuery(bbs.identity.did));
   const { data: pins } = useQuery({
     ...pinsQuery(user?.pdsUrl ?? "", user?.did ?? ""),
     enabled: !!user,
@@ -104,7 +105,11 @@ export default function BBSPage() {
     });
   }
 
-  const visibleNews = showAllNews ? news : news.slice(0, INITIAL_NEWS_COUNT);
+  const visibleNews = news
+    ? showAllNews
+      ? news
+      : news.slice(0, INITIAL_NEWS_COUNT)
+    : [];
 
   return (
     <>
@@ -185,7 +190,9 @@ export default function BBSPage() {
           </details>
         )}
 
-        {news.length ? (
+        {!news ? (
+          <ListSkeleton />
+        ) : news.length ? (
           <>
             {visibleNews.map((item, i) => (
               <Link

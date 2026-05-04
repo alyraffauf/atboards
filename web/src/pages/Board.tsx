@@ -2,8 +2,9 @@ import { useState, type SyntheticEvent } from "react";
 import { PenLine } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  useInfiniteQuery,
   useMutation,
-  useSuspenseInfiniteQuery,
+  useQuery,
   useSuspenseQuery,
   type InfiniteData,
   type QueryKey,
@@ -27,6 +28,7 @@ import { alertOnError } from "../lib/alerts";
 import type { ThreadItem, ThreadPageResult } from "../lib/boardThreads";
 import ThreadLink, { ThreadListHeader } from "../components/nav/ThreadLink";
 import ComposeForm from "../components/form/ComposeForm";
+import ListSkeleton from "../components/layout/ListSkeleton";
 
 // Constellation indexes PDS writes asynchronously — usually within a second,
 // occasionally longer. After creating a thread we refetch with backoff until
@@ -64,21 +66,20 @@ export default function BoardPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useSuspenseInfiniteQuery(
-    boardThreadsInfiniteQuery(bbs.identity.did, slug!),
-  );
-  const { data: moderation } = useSuspenseQuery(
+  } = useInfiniteQuery(boardThreadsInfiniteQuery(bbs.identity.did, slug!));
+  const { data: moderation } = useQuery(
     bbsModerationQuery(bbs.identity.pds ?? "", bbs.identity.did),
   );
   const isSysop = !!(user && user.did === bbs.identity.did);
-  const allThreads = threadPages.pages.flatMap((page) => page.threads);
-  const threads = isSysop
-    ? allThreads
-    : allThreads.filter(
-        (t) =>
-          !moderation.banRkeys[t.did] &&
-          !moderation.hideRkeys[t.uri],
-      );
+  const ready = !!threadPages && !!moderation;
+  const allThreads = threadPages?.pages.flatMap((page) => page.threads) ?? [];
+  const threads =
+    isSysop || !moderation
+      ? allThreads
+      : allThreads.filter(
+          (t) =>
+            !moderation.banRkeys[t.did] && !moderation.hideRkeys[t.uri],
+        );
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -195,7 +196,9 @@ export default function BoardPage() {
       )}
 
       <div>
-        {threads.length ? (
+        {!ready ? (
+          <ListSkeleton />
+        ) : threads.length ? (
           <>
             <ThreadListHeader />
             {threads.map((t) => (
